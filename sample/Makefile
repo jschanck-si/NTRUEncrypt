@@ -4,11 +4,17 @@ BINDIR = $(TOPDIR)/bin
 LIBDIR = $(TOPDIR)/lib
 OBJDIR = ./obj
 NTRUENCRYPT_DIR = $(TOPDIR)/src
+UNAME := $(shell uname)
 
 # Flags.
 INCFLAGS = -I$(TOPDIR)/include
 CFLAGS   += -Wall -Wno-parentheses -Wshadow $(INCFLAGS)
+
+ifeq ($(UNAME), Darwin)
+LDFLAGS  += -L$(LIBDIR) -Wl,
+else
 LDFLAGS  += -L$(LIBDIR) -Wl,-R,$(shell cd $(TOPDIR); pwd)/lib
+endif
 
 # Source files.
 sampleNTRUEncrypt_srcs  := sample_NTRUEncrypt.c
@@ -17,7 +23,11 @@ sampleNTRUEncrypt_srcs  := sample_NTRUEncrypt.c
 sampleNTRUEncrypt_objs  := $(addprefix $(OBJDIR)/, $(sampleNTRUEncrypt_srcs:.c=.o))
 
 # Shared library files.
+ifeq ($(UNAME), Darwin)
+NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.dynlib
+else
 NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.so
+endif
 
 # Targets.
 .PHONY : all

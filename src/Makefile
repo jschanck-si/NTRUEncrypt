@@ -3,6 +3,8 @@ TOPDIR = ..
 LIBDIR = $(TOPDIR)/lib
 OBJDIR = ./obj
 
+UNAME := $(shell uname)
+
 # Paths.
 vpath %.so $(LIBDIR)
 
@@ -18,7 +20,12 @@ NTRUEncrypt_objs := $(addprefix $(OBJDIR)/, $(NTRUEncrypt_srcs:.c=.o))
 
 # Targets.
 .PHONY : all NTRUEncrypt
+
+ifeq ($(UNAME), Darwin)
+NTRUEncrypt : libNTRUEncrypt.dynlib
+else
 NTRUEncrypt : libNTRUEncrypt.so
+endif
 
 # Directory rules.
 $(OBJDIR) $(LIBDIR) :
@@ -26,8 +33,14 @@ $(OBJDIR) $(LIBDIR) :
 
 # Shared library fules.
 # Ensure LIBDIR exists before building shared libraries in it.
-libNTRUEncrypt.so : $(NTRUEncrypt_objs) | $(LIBDIR)
+
+ifeq ($(UNAME), Darwin)
+libNTRUEncrypt.dynlib : $(NTRUEncrypt_objs) | $(LIBDIR)
+	$(CC) -fmessage-length=0 -fpic -shared -dynamiclib -o $(LIBDIR)/$@ $^
+else
+libNTRUEncrypte.so : $(NTRUEncrypt_objs) | $(LIBDIR)
 	$(CC) -fmessage-length=0 -fpic -shared -Wl,-soname,$@ -o $(LIBDIR)/$@ $^
+endif
 
 # Object file rules.
 # In a dependency file (%.d), this macro appends a line with each
@@ -56,5 +69,5 @@ clean : cleanNTRUEncrypt
 
 cleanNTRUEncrypt :
 	-rm -rf $(NTRUEncrypt_objs) $(NTRUEncrypt_objs:.o=.d)
-	-rm -rf $(LIBDIR)/libNTRUEncrypt.so
+	-rm -rf $(LIBDIR)/libNTRUEncrypt.*
 
