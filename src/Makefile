@@ -38,7 +38,7 @@ ifeq ($(UNAME), Darwin)
 libNTRUEncrypt.dynlib : $(NTRUEncrypt_objs) | $(LIBDIR)
 	$(CC) -fmessage-length=0 -fpic -shared -dynamiclib -o $(LIBDIR)/$@ $^
 else
-libNTRUEncrypte.so : $(NTRUEncrypt_objs) | $(LIBDIR)
+libNTRUEncrypt.so : $(NTRUEncrypt_objs) | $(LIBDIR)
 	$(CC) -fmessage-length=0 -fpic -shared -Wl,-soname,$@ -o $(LIBDIR)/$@ $^
 endif
 
