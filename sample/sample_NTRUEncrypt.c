@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ntru_crypto.h"
+#include "../src/ntru_crypto_ntru_encrypt_key.h"
 
 /* entropy function
  *
@@ -96,6 +97,23 @@ static uint8_t const aes_key[] = {
 };
 
 
+/* Dumps a buffer in hex to the screen for debugging */
+void
+DumpHex(
+    const unsigned char* buf,
+    int len)
+{
+    int i;
+    for(i=0;i<len;i++)
+    {
+      if(i&0x1f) printf(":");
+      printf("%02X",buf[i]);
+      if((i&0x1f)==0x1f) printf("\n");
+    }
+    printf("\n");
+}
+
+
 /* main
  *
  * This sample code will:
@@ -122,6 +140,7 @@ main(void)
     DRBG_HANDLE drbg;                 /* handle for instantiated DRBG */
     uint32_t rc;                      /* return code */
     bool error = FALSE;               /* records if error occurred */
+    FILE *Handle=NULL;                /* File Handle for writing NTRU key to file */
 
     /* Instantiate a DRBG with 112-bit security strength for key generation
      * to match the security strength of the EES401EP2 parameter set.
@@ -160,12 +179,18 @@ main(void)
      * We've already done this by getting the sizes from the previous call
      * to ntru_crypto_ntru_encrypt_keygen() above.
      */
+    uint16_t expected_private_key_len=private_key_len;
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, NTRU_EES401EP2, &public_key_len,
                                          public_key, &private_key_len,
                                          private_key);
     if (rc != NTRU_OK)
         /* An error occurred during key generation. */
         error = TRUE;
+    if (expected_private_key_len!=private_key_len)
+    {
+      fprintf(stderr,"private-key-length is different than expected\n");
+      error = TRUE;
+    }
     printf("Key-pair for NTRU_EES401EP2 generated successfully.\n");
 
 
@@ -176,6 +201,28 @@ main(void)
         return 1;
     printf("Key-generation DRBG uninstantiated successfully.\n");
 
+
+    /* !!! TODO Dump the private key to the screen */
+    /* !!! TODO Dump the public key to the screen */
+    /* ntru_crypto_ntru_encrypt_key_dump_privkey(params,public_key,private_key,0,NULL); */
+
+
+    /* Writing both private key and public key to files */  
+    Handle=fopen("ntru-key.raw","wb");
+    if(Handle!=NULL)
+    {
+      printf("Writing private key to ntru-key.raw\n");
+      fwrite(private_key,private_key_len,1,Handle);
+      fclose(Handle);
+    }
+
+    Handle=fopen("ntru-pubkey.raw","wb");
+    if(Handle!=NULL)
+    {
+      printf("Writing public key to ntru-pubkey.raw\n");
+      fwrite(public_key,public_key_len,1,Handle);
+      fclose(Handle);
+    }
 
     /* Let's find out how large a buffer we need for holding a DER-encoding
      * of the public key.
@@ -193,7 +240,7 @@ main(void)
      * hold the encoded public key, but in this example we already have it
      * as a local variable.
      */
-
+    uint16_t expected_encoded_public_key_len=encoded_public_key_len;
 
     /* DER-encode the public key for inclusion in a certificate.
      * This creates a SubjectPublicKeyInfo field from a public key.
@@ -205,7 +252,26 @@ main(void)
     rc = ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
             public_key_len, public_key, &encoded_public_key_len,
             encoded_public_key);
+
+    if (expected_encoded_public_key_len!=encoded_public_key_len)
+    {
+      fprintf(stderr,"encoded_public_key_len is different than expected\n");
+      error = TRUE;
+    }
+
     printf("Public key DER-encoded for SubjectPublicKeyInfo successfully.\n");
+
+    printf("DER encoded public key in hex:\n");
+    DumpHex(encoded_public_key,encoded_public_key_len);
+
+    Handle=fopen("ntru-pubkey.der","wb");
+    if(Handle!=NULL)
+    {
+      printf("Writing DER encoded public key to ntru-pubkey.der\n");
+      fwrite(encoded_public_key,encoded_public_key_len,1,Handle);
+      fclose(Handle);
+    }
+
 
 
     /* Now suppose we are parsing a certificate so we can use the
@@ -279,6 +345,14 @@ main(void)
      */
 
 
+    Handle=fopen("original-plaintext.bin","wb");
+    if(Handle!=NULL)
+    {
+      printf("Writing original plaintext to original-plaintext.bin\n");
+      fwrite(aes_key,sizeof(aes_key),1,Handle);
+      fclose(Handle);
+    }
+
     /* Encrypt the AES-128 key.
      * We must set the ciphertext length to the size of the buffer we have
      * for the ciphertext.
@@ -294,13 +368,28 @@ main(void)
      printf("AES-128 key encrypted successfully.\n");
 
 
+    Handle=fopen("ciphertext.bin","wb");
+    if(Handle!=NULL)
+    {
+      printf("Writing ciphertext to ciphertext.bin\n");
+      fwrite(ciphertext,ciphertext_len,1,Handle);
+      fclose(Handle);
+    }
+
     /* Uninstantiate the DRBG. */
     rc = ntru_crypto_drbg_uninstantiate(drbg);
     if ((rc != DRBG_OK) || error)
-        /* An error occurred uninstantiating the DRBG, or encrypting. */
+    {
+        fprintf(stderr,"Error: An error occurred uninstantiating the DRBG, or encrypting.\n");
         return 1;
+    }
     printf("Encryption DRBG uninstantiated successfully.\n");
 
+    printf("Plaintext:\n");
+    DumpHex(aes_key,sizeof(aes_key));
+
+    printf("Ciphertext:\n");
+    DumpHex(ciphertext,ciphertext_len);
 
      /* We've received ciphertext, and want to decrypt it.
       * We can find out the maximum plaintext size as follows.
@@ -324,12 +413,39 @@ main(void)
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key, ciphertext_len,
                                   ciphertext, &plaintext_len, plaintext);
     if (rc != NTRU_OK)
-        /* An error occurred decrypting the AES-128 key. */
+    {
+        fprintf(stderr,"Error: An error occurred decrypting the AES-128 key.\n");
         return 1;
+    }
     printf("AES-128 key decrypted successfully.\n");
-    
+    printf("Decoded plaintext length: %d octets\n",plaintext_len);
+
+    if(plaintext_len!=sizeof(aes_key))
+    {
+        fprintf(stderr,"Error: Decrypted length does not match original plaintext length\n");
+        return 1;
+    }
+    if(memcmp(plaintext,aes_key,sizeof(aes_key)))
+    {
+        fprintf(stderr,"Error: Decrypted plaintext does not match original plaintext\n");
+        return 1;
+    }
+
+
+    Handle=fopen("decoded-plaintext.bin","wb");
+    if(Handle!=NULL)
+    {
+      printf("Writing decoded plaintext to decoded-plaintext.bin\n");
+      fwrite(plaintext,plaintext_len,1,Handle);
+      fclose(Handle);
+    }
+
+
+
+
     /* And now the plaintext buffer holds the decrypted AES-128 key. */
     printf("Sample code completed successfully.\n");
+
 
     return 0;
 }
