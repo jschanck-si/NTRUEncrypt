@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ntru_crypto.h"
-#include "../src/ntru_crypto_ntru_encrypt_key.h"
 
 /* entropy function
  *
