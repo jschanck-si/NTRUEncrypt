@@ -8,7 +8,7 @@ UNAME := $(shell uname)
 
 # Flags.
 INCFLAGS = -I$(TOPDIR)/include
-CFLAGS   += -Wall -Wno-parentheses -Wshadow $(INCFLAGS)
+CFLAGS   += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)
 
 ifeq ($(UNAME), Darwin)
 LDFLAGS  += -L$(LIBDIR) -Wl,
