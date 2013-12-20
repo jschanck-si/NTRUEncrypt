@@ -14,5 +14,5 @@ $(SUBDIRS) :
 clean :
 	for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir clean; done
 
-install:
+install: all
 	for dir in $(SUBDIRS) ; do $(MAKE) -C $$dir install; done
