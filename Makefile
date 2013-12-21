@@ -1,5 +1,5 @@
 # Subdirectories.
-SUBDIRS := src sample
+SUBDIRS := src sample include
 
 # Targets.
 .PHONY : all $(SUBDIRS)
