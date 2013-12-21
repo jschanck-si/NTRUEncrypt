@@ -77,8 +77,3 @@ clean_sampleNTRUEncrypt :
 	$(MAKE) -C $(NTRUENCRYPT_DIR) cleanNTRUEncrypt
 
 install:
-ifeq ($(UNAME), Darwin)
-	sudo cp $(LIBDIR)/libNTRUEncrypt.dynlib /usr/lib/
-else
-	sudo cp $(LIBDIR)/libNTRUEncrypt.so /usr/lib/
-endif
