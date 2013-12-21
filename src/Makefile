@@ -10,7 +10,7 @@ vpath %.so $(LIBDIR)
 
 # Flags.
 INCFLAGS = -I../include
-CFLAGS += -Wall -Wno-parentheses -Wshadow $(INCFLAGS)
+CFLAGS += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)
 
 # Source files.
 NTRUEncrypt_srcs := $(wildcard *.c)
