@@ -71,3 +71,9 @@ cleanNTRUEncrypt :
 	-rm -rf $(NTRUEncrypt_objs) $(NTRUEncrypt_objs:.o=.d)
 	-rm -rf $(LIBDIR)/libNTRUEncrypt.*
 
+install:
+ifeq ($(UNAME), Darwin)
+	sudo cp $(LIBDIR)/libNTRUEncrypt.dynlib /usr/lib/
+else
+	sudo cp $(LIBDIR)/libNTRUEncrypt.so /usr/lib/
+endif
