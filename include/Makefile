@@ -1,4 +1,7 @@
 all:
 
 install:
-        sudo cp *.h /usr/include/
+	sudo cp *.h /usr/include/
+
+clean:
+
