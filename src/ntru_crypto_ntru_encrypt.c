@@ -505,7 +505,7 @@ ntru_crypto_ntru_decrypt(
 #if defined(linux) && defined(__KERNEL__)
     scratch_buf = kmalloc(scratch_buf_len, GFP_KERNEL);
 #else
-    scratch_buf = malloc(scratch_buf_len)
+    scratch_buf = malloc(scratch_buf_len);
 #endif
     
     if (!scratch_buf) {

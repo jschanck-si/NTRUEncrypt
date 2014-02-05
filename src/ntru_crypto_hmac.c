@@ -122,7 +122,7 @@ ntru_crypto_hmac_create_ctx(
     if ((ctx->k0 = (uint8_t*) kmalloc(ctx->blk_len, GFP_KERNEL)) == NULL) {
         kfree(ctx);
 #else
-    if ((ctx->k0 = (uint8_t*) kmalloc(ctx->blk_len, GFP_KERNEL)) == NULL) {
+    if ((ctx->k0 = (uint8_t*) malloc(ctx->blk_len)) == NULL) {
         free(ctx);
 #endif
         HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);

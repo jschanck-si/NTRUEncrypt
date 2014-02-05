@@ -333,10 +333,10 @@ ntru_trits_2_octet(
 #if defined(linux) && defined(__KERNEL__)
     BUG_ON(trits);
     BUG_ON(octets);
-#endif
+#else
     assert(trits);
     assert(octet);
-#else
+#endif
     *octet = 0;
     for (i = 4; i >= 0; i--) {
         *octet = (*octet * 3) + trits[i];

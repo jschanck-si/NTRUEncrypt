@@ -441,9 +441,9 @@ ntru_crypto_ntru_encrypt_key_create_privkey_blob(
         default:
 #if defined(linux) && defined(__KERNEL__)
             BUG_ON(FALSE);
-#endif
-            assert(FALSE);
 #else
+            assert(FALSE);
+#endif
             break;
     }
 }
