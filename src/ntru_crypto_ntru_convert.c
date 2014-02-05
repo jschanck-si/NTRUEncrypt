@@ -30,10 +30,15 @@
  *           and others.
  *
  *****************************************************************************/
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#endif
 #include "ntru_crypto_ntru_convert.h"
 
 
@@ -61,8 +66,13 @@ ntru_bits_2_trits(
     uint32_t bits3;
     uint32_t shift;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(octets);
+    BUG_ON(trits);
+#else
     assert(octets);
     assert(trits);
+#endif
 
     while (num_trits >= 16) {
 
@@ -156,8 +166,13 @@ ntru_trits_2_bits(
     uint32_t bits3;
     uint32_t shift;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(octets);
+    BUG_ON(trits);
+#else
     assert(octets);
     assert(trits);
+#endif
 
     while (num_trits >= 16) {
 
@@ -281,8 +296,13 @@ ntru_coeffs_mod4_2_octets(
     int      shift;
     uint16_t i;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(coeffs);
+    BUG_ON(octets);
+#else
     assert(coeffs);
     assert(octets);
+#endif
 
     *octets = 0;
     shift = 6;
@@ -310,10 +330,13 @@ ntru_trits_2_octet(
     uint8_t *octet)                 /* out - address for octet */
 {
     int i;
-
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(trits);
+    BUG_ON(octets);
+#endif
     assert(trits);
     assert(octet);
-
+#else
     *octet = 0;
     for (i = 4; i >= 0; i--) {
         *octet = (*octet * 3) + trits[i];
@@ -332,8 +355,11 @@ ntru_octet_2_trits(
     uint8_t *trits)                 /* out - address for trits */
 {
     int i;
-
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(trits);
+#else
     assert(trits);
+#endif
 
     for (i = 0; i < 5; i++) {
         trits[i] = octet % 3;
@@ -357,10 +383,15 @@ ntru_indices_2_trits(
 {
     uint8_t     trit = plus1 ? 1 : 2;
     uint16_t    i;
-
+    
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(in);
+    BUG_ON(out);
+#else
     assert(in);
     assert(out);
-
+#endif
+    
     for (i = 0; i < in_len; i++) {
         out[in[i]] = trit;
     }
@@ -385,9 +416,15 @@ ntru_packed_trits_2_indices(
     uint16_t i = 0;
     int      j;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(in);
+    BUG_ON(indices_plus1);
+    BUG_ON(indices_minus1);
+#else
     assert(in);
     assert(indices_plus1);
     assert(indices_minus1);
+#endif
 
     while (num_trits >= 5) {
         ntru_octet_2_trits(*in++, trits);
@@ -434,10 +471,16 @@ ntru_indices_2_packed_trits(
     uint8_t        *buf,            /*  in - temp buf, N octets */
     uint8_t        *out)            /* out - address for packed octets */
 {
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(indices);
+    BUG_ON(buf);
+    BUG_ON(out);
+#else
     assert(indices);
     assert(buf);
     assert(out);
-
+#endif
+    
     /* convert indices to an array of trits */
 
     memset(buf, 0, num_trits);
@@ -479,10 +522,17 @@ ntru_elements_2_octets(
     int       shift;
     uint16_t  i;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(in_len);
+    BUG_ON(in);
+    BUG_ON((n_bits > 8) && (n_bits < 16));
+    BUG_ON(out);
+#else
     assert(in_len);
     assert(in);
     assert((n_bits > 8) && (n_bits < 16));
     assert(out);
+#endif
 
     /* pack */
 
@@ -541,10 +591,17 @@ ntru_octets_2_elements(
     int       shift;
     uint16_t  i;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(in_len > 1);
+    BUG_ON(in);
+    BUG_ON((n_bits > 8) && (n_bits < 16));
+    BUG_ON(out);
+#else
     assert(in_len > 1);
     assert(in);
     assert((n_bits > 8) && (n_bits < 16));
     assert(out);
+#endif
 
     /* unpack */
 

@@ -31,10 +31,15 @@
  *
  *****************************************************************************/
 
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#endif
 #include "ntru_crypto_ntru_poly.h"
 #include "ntru_crypto_ntru_mgf1.h"
 
@@ -90,10 +95,16 @@ ntru_gen_poly(
     uint8_t   left = 0;
     uint8_t   num_left = 0;
     uint32_t  retcode;
-
+    
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(seed);
+    BUG_ON(buf);
+    BUG_ON(indices);
+#else
     assert(seed);
     assert(buf);
     assert(indices);
+#endif
 
     /* generate minimum MGF1 output */
 
@@ -276,10 +287,17 @@ ntru_ring_mult_indices(
     uint16_t mod_q_mask = q - 1;
     uint16_t i, j, k;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(a);
+    BUG_ON(bi);
+    BUG_ON(t);
+    BUG_ON(c);
+#else
     assert(a);
     assert(bi);
     assert(t);
     assert(c);
+#endif
 
     /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
 
@@ -355,11 +373,18 @@ ntru_ring_mult_product_indices(
     uint16_t *t2 = t + N;
     uint16_t  mod_q_mask = q - 1;
     uint16_t  i;
-
+    
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(a);
+    BUG_ON(bi);
+    BUG_ON(t);
+    BUG_ON(c);
+#else
     assert(a);
     assert(bi);
     assert(t);
     assert(c);
+#endif
 
     /* t2 = a * b1 */
 
@@ -405,10 +430,16 @@ ntru_ring_mult_coefficients(
     uint16_t const *bptr = b;
     uint16_t        mod_q_mask = q - 1;
     uint16_t        i, k;
-
+    
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(a);
+    BUG_ON(b);
+    BUG_ON(c);
+#else
     assert(a);
     assert(b);
     assert(c);
+#endif
 
     /* c[k] = sum(a[i] * b[k-i]) mod q */
 
@@ -457,9 +488,15 @@ ntru_ring_inv(
     bool      done = FALSE;
     uint16_t  i, j;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(a);
+    BUG_ON(t);
+    BUG_ON(a_inv);
+#else
     assert(a);
     assert(t);
     assert(a_inv);
+#endif
 
     /* form a^-1 in (Z/2Z)[X]/X^N - 1) */
 

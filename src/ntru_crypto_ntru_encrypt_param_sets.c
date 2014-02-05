@@ -29,9 +29,14 @@
  * Contents: Defines the NTRUEncrypt parameter sets.
  *
  *****************************************************************************/
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#else
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "ntru_crypto_ntru_encrypt_param_sets.h"
 
 
