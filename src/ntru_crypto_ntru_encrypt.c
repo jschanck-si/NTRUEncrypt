@@ -1023,16 +1023,17 @@ ntru_crypto_ntru_encrypt_keygen(
 
 static uint8_t const der_prefix_template[] = {
     0x30, 0x82,
-    0x00, 0x23,                                 /* add pubkey length */
-    0x30, 0x18, 0x06, 0x0a, 0x2b, 0x06, 0x01,
-    0x04, 0x01, 0xc1, 0x16, 0x01, 0x01, 0x02,   /* end of NTRU OID compare */
-    0x06, 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01,
-    0xc1, 0x16, 0x01, 0x02,
-    0x00,                                       /* set param-set DER id */
+    0x00, 0x25,                                 /* add pubkey length 2 */
+    0x30, 0x1a, 0x06, 0x0b, 0x2b, 0x06, 0x01,
+    0x04, 0x01, 0xc1, 0x16, 0x01, 0x01, 0x01, 
+    0x02,                                       /* end of NTRU OID compare */
+    0x06, 0x0b, 0x2b, 0x06, 0x01, 0x04, 0x01,
+    0xc1, 0x16, 0x01, 0x01, 0x02,
+    0x00,                                       /* set param-set DER id 31 */
     0x03, 0x82,
-    0x00, 0x05,                                 /* add pubkey length */
+    0x00, 0x05,                                 /* add pubkey length 34 */
     0x00, 0x04, 0x82,
-    0x00, 0x00,                                 /* add pubkey length */
+    0x00, 0x00,                                 /* add pubkey length 39 */
 };
 
 
@@ -1153,9 +1154,9 @@ ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
     memcpy(encoded_subjectPublicKeyInfo, der_prefix_template,
            sizeof(der_prefix_template));
     add_16_to_8s(packed_pubkey_len, encoded_subjectPublicKeyInfo + 2);
-    add_16_to_8s(packed_pubkey_len, encoded_subjectPublicKeyInfo + 32);
-    add_16_to_8s(packed_pubkey_len, encoded_subjectPublicKeyInfo + 37);
-    encoded_subjectPublicKeyInfo[29] = params->der_id;
+    add_16_to_8s(packed_pubkey_len, encoded_subjectPublicKeyInfo + 34);
+    add_16_to_8s(packed_pubkey_len, encoded_subjectPublicKeyInfo + 39);
+    encoded_subjectPublicKeyInfo[31] = params->der_id;
     memcpy(encoded_subjectPublicKeyInfo + sizeof(der_prefix_template),
            pubkey_packed, packed_pubkey_len);
 
@@ -1205,7 +1206,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
                                                  subjectPublicKeyInfo */
 {
     NTRU_ENCRYPT_PARAM_SET *params = NULL;
-    uint8_t                 prefix_buf[39];
+    uint8_t                 prefix_buf[41];
     bool                    der_id_valid;
     uint16_t                packed_pubkey_len = 0;
     uint8_t                 pubkey_pack_type;
@@ -1224,7 +1225,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
 
     /* get a pointer to the parameter-set parameters */
 
-    if ((params = ntru_encrypt_get_params_with_DER_id(encoded_data[29])) ==
+    if ((params = ntru_encrypt_get_params_with_DER_id(encoded_data[31])) ==
             NULL) {
         der_id_valid = FALSE;
 
@@ -1240,9 +1241,11 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
 
         packed_pubkey_len = (params->N * params->q_bits + 7) >> 3;
         sub_16_from_8s(packed_pubkey_len, prefix_buf + 2);
-        sub_16_from_8s(packed_pubkey_len, prefix_buf + 32);
-        sub_16_from_8s(packed_pubkey_len, prefix_buf + 37);
-        prefix_buf[29] = 0;
+        sub_16_from_8s(packed_pubkey_len, prefix_buf + 34);
+        sub_16_from_8s(packed_pubkey_len, prefix_buf + 39);
+        prefix_buf[31] = 0;
+        //prefix_buf[40] = 0;
+
     }
 
     /* validate the DER prefix encoding */
