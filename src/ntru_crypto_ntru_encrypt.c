@@ -31,10 +31,15 @@
  *
  *****************************************************************************/
 
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#endif
 #include "ntru_crypto.h"
 #include "ntru_crypto_ntru_encrypt_param_sets.h"
 #include "ntru_crypto_ntru_encrypt_key.h"
@@ -171,7 +176,11 @@ ntru_crypto_ntru_encrypt(
                       (dr << 2) +           /* buffer for r indices */
                       params->sec_strength_len;
                                             /* buffer for b */
+#if defined(linux) && defined(__KERNEL__)
+    scratch_buf = kmalloc(scratch_buf_len, GFP_KERNEL);
+#else
     scratch_buf = malloc(scratch_buf_len);
+#endif
     if (!scratch_buf) {
         NTRU_RET(NTRU_OUT_OF_MEMORY);
     }
@@ -234,8 +243,11 @@ ntru_crypto_ntru_encrypt(
             uint16_t pubkey_packed_len;
 
             /* unpack the public key */
-
+#if defined(linux) && defined(__KERNEL__)
+            BUG_ON(pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
+#else
             assert(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
+#endif
             pubkey_packed_len = (params->N * params->q_bits + 7) >> 3;
             ntru_octets_2_elements(pubkey_packed_len, pubkey_packed,
                                    params->q_bits, ringel_buf);
@@ -353,7 +365,11 @@ ntru_crypto_ntru_encrypt(
     /* cleanup */
 
     memset(scratch_buf, 0, scratch_buf_len);
+#if defined(linux) && defined(__KERNEL__)
+    kfree(scratch_buf);
+#else
     free(scratch_buf);
+#endif
     
     return result;
 }
@@ -486,7 +502,12 @@ ntru_crypto_ntru_decrypt(
                                                 and overflow from temp buffer */
                       (dF_r << 2) +         /* buffer for F, r indices */
                       params->m_len_max;    /* buffer for plaintext */
+#if defined(linux) && defined(__KERNEL__)
+    scratch_buf = kmalloc(scratch_buf_len, GFP_KERNEL);
+#else
     scratch_buf = malloc(scratch_buf_len);
+#endif
+    
     if (!scratch_buf) {
         NTRU_RET(NTRU_OUT_OF_MEMORY);
     }
@@ -529,7 +550,11 @@ ntru_crypto_ntru_decrypt(
                 privkey_packed, params->N_bits, i_buf);
 
     } else {
+#if defined(linux) && defined(__KERNEL__)
+        BUG_ON(FALSE);
+#else
         assert(FALSE);
+#endif
     }
 
     /* form cm':
@@ -673,8 +698,11 @@ ntru_crypto_ntru_decrypt(
 
         {
             uint16_t pubkey_packed_len;
-
+#if defined(linux) && defined(__KERNEL__)
+            BUG_ON(pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
+#else
             assert(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
+#endif
             pubkey_packed_len = (params->N * params->q_bits + 7) >> 3;
             ntru_octets_2_elements(pubkey_packed_len, pubkey_packed,
                                    params->q_bits, ringel_buf1);
@@ -712,7 +740,12 @@ ntru_crypto_ntru_decrypt(
     /* cleanup */
 
     memset(scratch_buf, 0, scratch_buf_len);
+#if defined(linux) && defined(__KERNEL__)
+    kfree(scratch_buf);
+#else
     free(scratch_buf);
+#endif
+    
     
     if (!decryption_ok)
         NTRU_RET(NTRU_FAIL);
@@ -853,7 +886,12 @@ ntru_crypto_ntru_encrypt_keygen(
                                                 and overflow from temp buffer,
                                                2N-byte buffer for f^-1 */
                       (dF << 2);            /* buffer for F indices */
+#if defined(linux) && defined(__KERNEL__)
+    scratch_buf = kmalloc(scratch_buf_len, GFP_KERNEL);
+#else
     scratch_buf = malloc(scratch_buf_len);
+#endif
+    
     if (!scratch_buf) {
         NTRU_RET(NTRU_OUT_OF_MEMORY);
     }
@@ -1011,7 +1049,11 @@ ntru_crypto_ntru_encrypt_keygen(
     /* cleanup */
 
     memset(scratch_buf, 0, scratch_buf_len);
+#if defined(linux) && defined(__KERNEL__)
+    kfree(scratch_buf);
+#else
     free(scratch_buf);
+#endif
     
     return result;
 }

@@ -30,10 +30,15 @@
  *
  *****************************************************************************/
 
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#endif
 #include "ntru_crypto_ntru_mgf1.h"
 #include "ntru_crypto_ntru_convert.h"
 
@@ -63,9 +68,14 @@ ntru_mgf1(
 {
     uint8_t  *ctr = state + md_len;
     uint32_t  retcode;
-
+    
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(!state);
+    BUG_ON(!out);
+#else
     assert(state);
     assert(out);
+#endif
 
     /* if seed present, init state */
 
@@ -131,9 +141,15 @@ ntru_mgftp1(
     uint16_t  octets_available;
     uint32_t  retcode;
 
+#if defined(linux) && defined(__KERNEL__)
+    BUG_ON(!seed);
+    BUG_ON(!buf);
+    BUG_ON(!mask);
+#else
     assert(seed);
     assert(buf);
     assert(mask);
+#endif
 
     /* generate minimum MGF1 output */
 

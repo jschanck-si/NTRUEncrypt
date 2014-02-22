@@ -30,9 +30,14 @@
  *
  *****************************************************************************/
 
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#else
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "ntru_crypto_hmac.h"
 
 
@@ -77,15 +82,24 @@ ntru_crypto_hmac_create_ctx(
     *c = NULL;
 
     /* allocate memory for an HMAC context */
-
+#if defined(linux) && defined(__KERNEL__)
+    if ((ctx = (NTRU_CRYPTO_HMAC_CTX*) kmalloc(sizeof(NTRU_CRYPTO_HMAC_CTX), GFP_KERNEL)) ==
+        NULL)
+        HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);
+#else
     if ((ctx = (NTRU_CRYPTO_HMAC_CTX*) malloc(sizeof(NTRU_CRYPTO_HMAC_CTX))) ==
             NULL)
         HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);
+#endif
 
     /* set the algorithm */
 
     if (result = ntru_crypto_hash_set_alg(algid, &ctx->hash_ctx)) {
+#if defined(linux) && defined(__KERNEL__)
+        kfree(ctx);
+#else
         free(ctx);
+#endif
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_ALG);
     }
 
@@ -95,14 +109,22 @@ ntru_crypto_hmac_create_ctx(
                                                 &ctx->blk_len))  ||
         (result = ntru_crypto_hash_digest_length(&ctx->hash_ctx,
                                                  &ctx->md_len))) {
+#if defined(linux) && defined(__KERNEL__)
+        kfree(ctx);
+#else
         free(ctx);
+#endif
         return result;
     }
 
     /* allocate memory for K0 */
-
+#if defined(linux) && defined(__KERNEL__)
+    if ((ctx->k0 = (uint8_t*) kmalloc(ctx->blk_len, GFP_KERNEL)) == NULL) {
+        kfree(ctx);
+#else
     if ((ctx->k0 = (uint8_t*) malloc(ctx->blk_len)) == NULL) {
         free(ctx);
+#endif
         HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);
     }
 
@@ -116,8 +138,13 @@ ntru_crypto_hmac_create_ctx(
 
         if (result = ntru_crypto_hash_digest(algid, key, key_len, ctx->k0)) {
             memset(ctx->k0, 0, ctx->blk_len);
+#if defined(linux) && defined(__KERNEL__)
+            kfree(ctx->k0);
+            kfree(ctx);
+#else
             free(ctx->k0);
             free(ctx);
+#endif
             return result;
         }
 
@@ -150,9 +177,14 @@ ntru_crypto_hmac_destroy_ctx(
     /* clear key and release memory */
 
     memset(c->k0, 0, c->blk_len);
+#if defined(linux) && defined(__KERNEL__)
+    kfree(c->k0);
+    kfree(c);
+#else
     free(c->k0);
     free(c);
-
+#endif
+    
     HMAC_RET(NTRU_CRYPTO_HMAC_OK);
 }
 

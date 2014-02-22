@@ -51,10 +51,17 @@
  *
  *****************************************************************************/
 
-
+#if defined(linux) && defined(__KERNEL__)
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#include <linux/time.h>
+#else
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#endif
+
 #include "ntru_crypto_drbg.h"
 #include "ntru_crypto_hmac.h"
 
@@ -281,8 +288,11 @@ sha256_hmac_drbg_instantiate(
             DRBG_RET(DRBG_ENTROPY_FAIL);
 
     /* allocate SHA256_HMAC_DRBG state */
-
+#if defined(linux) && defined(__KERNEL__)
+    s = (SHA256_HMAC_DRBG_STATE*) kmalloc(sizeof(SHA256_HMAC_DRBG_STATE), GFP_KERNEL);
+#else
     s = (SHA256_HMAC_DRBG_STATE*) malloc(sizeof(SHA256_HMAC_DRBG_STATE));
+#endif
     if (s == NULL) {
         DRBG_RET(DRBG_OUT_OF_MEMORY);
     }
@@ -294,7 +304,11 @@ sha256_hmac_drbg_instantiate(
                                             key, sizeof(key),
                                             &s->hmac_ctx)) !=
             NTRU_CRYPTO_HMAC_OK) {
+#if defined(linux) && defined(__KERNEL__)
+        kfree(s);
+#else
         free(s);
+#endif
         return  result;
     }
 
@@ -306,7 +320,11 @@ sha256_hmac_drbg_instantiate(
                                        pers_str, pers_str_bytes)) != DRBG_OK) {
         (void) ntru_crypto_hmac_destroy_ctx(s->hmac_ctx);
         memset(s->V, 0, sizeof(s->V));
+#if defined(linux) && defined(__KERNEL__)
+        kfree(s);
+#else
         free(s);
+#endif
     }
     memset(entropy_nonce, 0, sizeof(entropy_nonce));
 
@@ -340,7 +358,11 @@ sha256_hmac_drbg_free(
     s->sec_strength = 0;
     s->requests_left = 0;
     s->entropy_fn = NULL;
+#if defined(linux) && defined(__KERNEL__)
+    kfree(s);
+#else
     free(s);
+#endif
 }
 
 
