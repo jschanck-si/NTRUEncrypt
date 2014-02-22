@@ -331,8 +331,13 @@ ntru_trits_2_octet(
 {
     int i;
 #if defined(linux) && defined(__KERNEL__)
+<<<<<<< HEAD
     BUG_ON(!trits);
     BUG_ON(!octet);
+=======
+    BUG_ON(trits);
+    BUG_ON(octets);
+>>>>>>> f425b229ac5f56e27720f376fd19f9b9cf34440c
 #else
     assert(trits);
     assert(octet);
