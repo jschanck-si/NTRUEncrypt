@@ -70,8 +70,8 @@ ntru_mgf1(
     uint32_t  retcode;
     
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(state);
-    BUG_ON(out);
+    BUG_ON(!state);
+    BUG_ON(!out);
 #else
     assert(state);
     assert(out);
@@ -142,9 +142,9 @@ ntru_mgftp1(
     uint32_t  retcode;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(seed);
-    BUG_ON(buf);
-    BUG_ON(mask);
+    BUG_ON(!seed);
+    BUG_ON(!buf);
+    BUG_ON(!mask);
 #else
     assert(seed);
     assert(buf);

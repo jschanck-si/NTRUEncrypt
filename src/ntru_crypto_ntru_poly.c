@@ -97,9 +97,9 @@ ntru_gen_poly(
     uint32_t  retcode;
     
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(seed);
-    BUG_ON(buf);
-    BUG_ON(indices);
+    BUG_ON(!seed);
+    BUG_ON(!buf);
+    BUG_ON(!indices);
 #else
     assert(seed);
     assert(buf);
@@ -288,10 +288,10 @@ ntru_ring_mult_indices(
     uint16_t i, j, k;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(a);
-    BUG_ON(bi);
-    BUG_ON(t);
-    BUG_ON(c);
+    BUG_ON(!a);
+    BUG_ON(!bi);
+    BUG_ON(!t);
+    BUG_ON(!c);
 #else
     assert(a);
     assert(bi);
@@ -375,10 +375,10 @@ ntru_ring_mult_product_indices(
     uint16_t  i;
     
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(a);
-    BUG_ON(bi);
-    BUG_ON(t);
-    BUG_ON(c);
+    BUG_ON(!a);
+    BUG_ON(!bi);
+    BUG_ON(!t);
+    BUG_ON(!c);
 #else
     assert(a);
     assert(bi);
@@ -432,9 +432,9 @@ ntru_ring_mult_coefficients(
     uint16_t        i, k;
     
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(a);
-    BUG_ON(b);
-    BUG_ON(c);
+    BUG_ON(!a);
+    BUG_ON(!b);
+    BUG_ON(!c);
 #else
     assert(a);
     assert(b);
@@ -489,9 +489,9 @@ ntru_ring_inv(
     uint16_t  i, j;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(a);
-    BUG_ON(t);
-    BUG_ON(a_inv);
+    BUG_ON(!a);
+    BUG_ON(!t);
+    BUG_ON(!a_inv);
 #else
     assert(a);
     assert(t);

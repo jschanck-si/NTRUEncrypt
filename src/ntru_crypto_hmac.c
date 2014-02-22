@@ -110,7 +110,7 @@ ntru_crypto_hmac_create_ctx(
         (result = ntru_crypto_hash_digest_length(&ctx->hash_ctx,
                                                  &ctx->md_len))) {
 #if defined(linux) && defined(__KERNEL__)
-        kfree(ctx)
+        kfree(ctx);
 #else
         free(ctx);
 #endif
@@ -122,7 +122,7 @@ ntru_crypto_hmac_create_ctx(
     if ((ctx->k0 = (uint8_t*) kmalloc(ctx->blk_len, GFP_KERNEL)) == NULL) {
         kfree(ctx);
 #else
-    if ((ctx->k0 = (uint8_t*) kmalloc(ctx->blk_len, GFP_KERNEL)) == NULL) {
+    if ((ctx->k0 = (uint8_t*) malloc(ctx->blk_len)) == NULL) {
         free(ctx);
 #endif
         HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);
@@ -179,7 +179,7 @@ ntru_crypto_hmac_destroy_ctx(
     memset(c->k0, 0, c->blk_len);
 #if defined(linux) && defined(__KERNEL__)
     kfree(c->k0);
-    free(c);
+    kfree(c);
 #else
     free(c->k0);
     free(c);

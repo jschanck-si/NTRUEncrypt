@@ -244,7 +244,7 @@ ntru_crypto_ntru_encrypt(
 
             /* unpack the public key */
 #if defined(linux) && defined(__KERNEL__)
-            BUG_ON(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
+            BUG_ON(pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
 #else
             assert(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
 #endif
@@ -505,7 +505,7 @@ ntru_crypto_ntru_decrypt(
 #if defined(linux) && defined(__KERNEL__)
     scratch_buf = kmalloc(scratch_buf_len, GFP_KERNEL);
 #else
-    scratch_buf = malloc(scratch_buf_len)
+    scratch_buf = malloc(scratch_buf_len);
 #endif
     
     if (!scratch_buf) {
@@ -699,7 +699,7 @@ ntru_crypto_ntru_decrypt(
         {
             uint16_t pubkey_packed_len;
 #if defined(linux) && defined(__KERNEL__)
-            BUG_ON(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
+            BUG_ON(pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
 #else
             assert(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
 #endif

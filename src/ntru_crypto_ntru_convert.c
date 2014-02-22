@@ -67,8 +67,8 @@ ntru_bits_2_trits(
     uint32_t shift;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(octets);
-    BUG_ON(trits);
+    BUG_ON(!octets);
+    BUG_ON(!trits);
 #else
     assert(octets);
     assert(trits);
@@ -167,8 +167,8 @@ ntru_trits_2_bits(
     uint32_t shift;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(octets);
-    BUG_ON(trits);
+    BUG_ON(!octets);
+    BUG_ON(!trits);
 #else
     assert(octets);
     assert(trits);
@@ -297,8 +297,8 @@ ntru_coeffs_mod4_2_octets(
     uint16_t i;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(coeffs);
-    BUG_ON(octets);
+    BUG_ON(!coeffs);
+    BUG_ON(!octets);
 #else
     assert(coeffs);
     assert(octets);
@@ -331,12 +331,12 @@ ntru_trits_2_octet(
 {
     int i;
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(trits);
-    BUG_ON(octets);
-#endif
+    BUG_ON(!trits);
+    BUG_ON(!octet);
+#else
     assert(trits);
     assert(octet);
-#else
+#endif
     *octet = 0;
     for (i = 4; i >= 0; i--) {
         *octet = (*octet * 3) + trits[i];
@@ -356,7 +356,7 @@ ntru_octet_2_trits(
 {
     int i;
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(trits);
+    BUG_ON(!trits);
 #else
     assert(trits);
 #endif
@@ -385,8 +385,8 @@ ntru_indices_2_trits(
     uint16_t    i;
     
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(in);
-    BUG_ON(out);
+    BUG_ON(!in);
+    BUG_ON(!out);
 #else
     assert(in);
     assert(out);
@@ -417,9 +417,9 @@ ntru_packed_trits_2_indices(
     int      j;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(in);
-    BUG_ON(indices_plus1);
-    BUG_ON(indices_minus1);
+    BUG_ON(!in);
+    BUG_ON(!indices_plus1);
+    BUG_ON(!indices_minus1);
 #else
     assert(in);
     assert(indices_plus1);
@@ -472,9 +472,9 @@ ntru_indices_2_packed_trits(
     uint8_t        *out)            /* out - address for packed octets */
 {
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(indices);
-    BUG_ON(buf);
-    BUG_ON(out);
+    BUG_ON(!indices);
+    BUG_ON(!buf);
+    BUG_ON(!out);
 #else
     assert(indices);
     assert(buf);
@@ -523,10 +523,10 @@ ntru_elements_2_octets(
     uint16_t  i;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(in_len);
-    BUG_ON(in);
-    BUG_ON((n_bits > 8) && (n_bits < 16));
-    BUG_ON(out);
+    BUG_ON(!in_len);
+    BUG_ON(!in);
+    BUG_ON(!(n_bits > 8) && (n_bits < 16));
+    BUG_ON(!out);
 #else
     assert(in_len);
     assert(in);
@@ -592,10 +592,10 @@ ntru_octets_2_elements(
     uint16_t  i;
 
 #if defined(linux) && defined(__KERNEL__)
-    BUG_ON(in_len > 1);
-    BUG_ON(in);
-    BUG_ON((n_bits > 8) && (n_bits < 16));
-    BUG_ON(out);
+    BUG_ON(!in_len > 1);
+    BUG_ON(!in);
+    BUG_ON(!(n_bits > 8) && (n_bits < 16));
+    BUG_ON(!out);
 #else
     assert(in_len > 1);
     assert(in);
