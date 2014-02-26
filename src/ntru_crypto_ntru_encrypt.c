@@ -338,7 +338,6 @@ ntru_crypto_ntru_encrypt(
             else
                 msg_rep_good = ntru_poly_check_min_weight(mprime_len, tmp_buf,
                                                        params->min_msg_rep_wt);
-            msg_rep_good = TRUE;
         }
     } while ((result == NTRU_OK) && !msg_rep_good);
 
