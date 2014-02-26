@@ -325,6 +325,8 @@ sha256_hmac_drbg_instantiate(
 #else
         free(s);
 #endif
+        memset(entropy_nonce, 0, sizeof(entropy_nonce));
+        return result;
     }
     memset(entropy_nonce, 0, sizeof(entropy_nonce));
 
