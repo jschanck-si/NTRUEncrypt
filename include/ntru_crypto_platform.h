@@ -58,6 +58,33 @@ typedef UINT64              uint64_t;
 
 #endif
 
+
+/* For linux kernel drivers:
+ * Use kmalloc and kfree in place of malloc / free
+ * Use BUG_ON in place of assert */
+#if defined(linux) && defined(__KERNEL__)
+
+#   include  <linux/kernel.h>
+#   include  <linux/module.h>
+#   include  <linux/slab.h>
+#   include  <linux/string.h>
+#   define   MALLOC(size) (kmalloc(size, GFP_KERNEL))
+#   define   FREE(x) (kfree(x))
+#   define   ASSERT(positive_condition) BUG_ON(!(positive_condition))
+
+#else
+
+#   include  <stdlib.h>
+#   include  <assert.h>
+#   include  <string.h>
+#   define   MALLOC(size) (malloc(size))
+#   define   FREE(x) (free(x))
+#   define   ASSERT(positive_condition) assert(positive_condition)
+
+#endif
+
+
+
 #if !defined(HAVE_BOOL) && !defined(__cplusplus)
 #define HAVE_BOOL
 typedef uint8_t bool;

@@ -31,15 +31,7 @@
  *
  *****************************************************************************/
 
-#if defined(linux) && defined(__KERNEL__)
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#else
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#endif
+#include "ntru_crypto.h"
 #include "ntru_crypto_ntru_encrypt_key.h"
 
 
@@ -73,19 +65,12 @@ ntru_crypto_ntru_encrypt_key_parse(
                                                          packed privkey */
 {
     uint8_t tag;
-#if defined(linux) && defined(__KERNEL__)
-    BUG_ON(!key_blob_len);
-    BUG_ON(!key_blob);
-    BUG_ON(!pubkey_pack_type);
-    BUG_ON(!params);
-    BUG_ON(!pubkey);
-#else
-    assert(key_blob_len);
-    assert(key_blob);
-    assert(pubkey_pack_type);
-    assert(params);
-    assert(pubkey);
-#endif
+
+    ASSERT(key_blob_len);
+    ASSERT(key_blob);
+    ASSERT(pubkey_pack_type);
+    ASSERT(params);
+    ASSERT(pubkey);
 
     /* parse key blob based on tag */
 
@@ -98,13 +83,8 @@ ntru_crypto_ntru_encrypt_key_parse(
         case NTRU_ENCRYPT_PRIVKEY_DEFAULT_TAG:
         case NTRU_ENCRYPT_PRIVKEY_TRITS_TAG:
         case NTRU_ENCRYPT_PRIVKEY_INDICES_TAG:
-#if defined(linux) && defined(__KERNEL__)
-            BUG_ON(!privkey_pack_type);
-            BUG_ON(!privkey);
-#else
-            assert(privkey_pack_type);
-            assert(privkey);
-#endif
+            ASSERT(privkey_pack_type);
+            ASSERT(privkey);
             if (pubkey_parse)
                 return FALSE;
             break;
@@ -236,15 +216,9 @@ ntru_crypto_ntru_encrypt_key_get_blob_params(
 {
     uint16_t pubkey_packed_len = (params->N * params->q_bits + 7) >> 3;
 
-#if defined(linux) && defined(__KERNEL__)
-    BUG_ON(!params);
-    BUG_ON(!pubkey_pack_type);
-    BUG_ON(!pubkey_blob_len);
-#else
-    assert(params);
-    assert(pubkey_pack_type);
-    assert(pubkey_blob_len);
-#endif
+    ASSERT(params);
+    ASSERT(pubkey_pack_type);
+    ASSERT(pubkey_blob_len);
     
     *pubkey_pack_type = NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS;
     *pubkey_blob_len = 5 + pubkey_packed_len;
@@ -294,15 +268,9 @@ ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
     uint8_t                      *pubkey_blob)        /* out - addr for the
                                                                pubkey blob */
 {
-#if defined(linux) && defined(__KERNEL__)
-    BUG_ON(!params);
-    BUG_ON(!pubkey);
-    BUG_ON(!pubkey_blob);
-#else
-    assert(params);
-    assert(pubkey);
-    assert(pubkey_blob);
-#endif
+    ASSERT(params);
+    ASSERT(pubkey);
+    ASSERT(pubkey_blob);
     
     switch (pubkey_pack_type) {
         case NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS:
@@ -314,11 +282,7 @@ ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
                                    pubkey_blob);
             break;
         default:
-#if defined(linux) && defined(__KERNEL__)
-            BUG_ON(FALSE);
-#else
-            assert(FALSE);
-#endif
+            ASSERT(FALSE);
     }
 }
 
@@ -342,15 +306,9 @@ ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
     uint8_t                      *pubkey_blob)        /* out - addr for the
                                                                pubkey blob */
 {
-#if defined(linux) && defined(__KERNEL__)
-    BUG_ON(!params);
-    BUG_ON(!packed_pubkey);
-    BUG_ON(!pubkey_blob);
-#else
-    assert(params);
-    assert(packed_pubkey);
-    assert(pubkey_blob);
-#endif
+    ASSERT(params);
+    ASSERT(packed_pubkey);
+    ASSERT(pubkey_blob);
     
     switch (pubkey_pack_type) {
         case NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS:
@@ -361,11 +319,7 @@ ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
             memcpy(pubkey_blob, packed_pubkey, packed_pubkey_len);
             break;
         default:
-#if defined(linux) && defined(__KERNEL__)
-            BUG_ON(FALSE);
-#else
-            assert(FALSE);
-#endif
+            ASSERT(FALSE);
     }
 }
 
@@ -392,17 +346,10 @@ ntru_crypto_ntru_encrypt_key_create_privkey_blob(
     uint8_t                      *privkey_blob)       /* out - addr for the
                                                                privkey blob */
 {
-#if defined(linux) && defined(__KERNEL__)
-    BUG_ON(!params);
-    BUG_ON(!pubkey);
-    BUG_ON(!privkey);
-    BUG_ON(!privkey_blob);
-#else
-    assert(params);
-    assert(pubkey);
-    assert(privkey);
-    assert(privkey_blob);
-#endif
+    ASSERT(params);
+    ASSERT(pubkey);
+    ASSERT(privkey);
+    ASSERT(privkey_blob);
 
     switch (privkey_pack_type) {
         case NTRU_ENCRYPT_KEY_PACKED_TRITS:
@@ -439,11 +386,7 @@ ntru_crypto_ntru_encrypt_key_create_privkey_blob(
             }
             break;
         default:
-#if defined(linux) && defined(__KERNEL__)
-            BUG_ON(FALSE);
-#else
-            assert(FALSE);
-#endif
+            ASSERT(FALSE);
             break;
     }
 }

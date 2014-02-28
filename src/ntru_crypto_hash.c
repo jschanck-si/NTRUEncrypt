@@ -30,15 +30,8 @@
  *
  *****************************************************************************/
 
-#if defined(linux) && defined(__KERNEL__)
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#else
-#include <stdlib.h>
-#endif
+#include "ntru_crypto.h"
 #include "ntru_crypto_hash.h"
-
 
 typedef uint32_t (*NTRU_CRYPTO_HASH_INIT_FN)(
     void        *c);
