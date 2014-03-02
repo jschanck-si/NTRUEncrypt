@@ -97,8 +97,12 @@ get_alg_params(
     int i;
 
     for (i = 0; i < numalgs; i++)
+    {
         if (algs_params[i].algid == algid)
+        {
             return &algs_params[i];
+        }
+    }
 
     return NULL;
 }
@@ -120,10 +124,14 @@ ntru_crypto_hash_set_alg(
     NTRU_CRYPTO_HASH_CTX   *c)      //  in/out - pointer to the hash context
 {
     if (!c)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     c->alg_params = get_alg_params(algid);
-    if (!c->alg_params) {
+    
+    if (!c->alg_params) 
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
     }
 
@@ -150,11 +158,15 @@ ntru_crypto_hash_block_length(
    uint16_t             *blk_len)   // out - address for block length in bytes
 {
     if (!c || !blk_len)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     if (!c->alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     *blk_len = c->alg_params->block_length;
     HASH_RET(NTRU_CRYPTO_HASH_OK);
 }
@@ -179,11 +191,15 @@ ntru_crypto_hash_digest_length(
    uint16_t                   *md_len) // out - addr for digest length in bytes
 {
     if (!c || !md_len)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     if (!c->alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     *md_len = c->alg_params->digest_length;
     HASH_RET(NTRU_CRYPTO_HASH_OK);
 }
@@ -205,11 +221,15 @@ ntru_crypto_hash_init(
    NTRU_CRYPTO_HASH_CTX *c)         // in/out - pointer to hash context
 {
     if (!c)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     if (!c->alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     return c->alg_params->init(&c->alg_ctx);
 }
 
@@ -235,11 +255,15 @@ ntru_crypto_hash_update(
    uint32_t              data_len)  //     in - number of bytes of input data
 {
     if (!c || (data_len && !data))
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     if (!c->alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     return c->alg_params->update(&c->alg_ctx, data, data_len);
 }
 
@@ -261,11 +285,15 @@ ntru_crypto_hash_final(
    uint8_t              *md)        //   out  - address for message digest
 {
     if (!c || !md)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     if (!c->alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     return c->alg_params->final(&c->alg_ctx, md);
 }
 
@@ -288,11 +316,15 @@ ntru_crypto_hash_final_zero_pad(
    uint8_t              *md)        //   out  - address for message digest
 {
     if (!c || !md)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     if (!c->alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     return c->alg_params->final_zero_pad(&c->alg_ctx, md);
 }
 
@@ -323,11 +355,15 @@ ntru_crypto_hash_digest(
     NTRU_CRYPTO_HASH_ALG_PARAMS const *alg_params = get_alg_params(algid);
 
     if (!alg_params)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-
+    }
+    
     if ((data_len && !data) || !md)
+    {
         HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-
+    }
+    
     return alg_params->digest(data, data_len, md);
 }
 
