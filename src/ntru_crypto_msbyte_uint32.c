@@ -53,12 +53,15 @@ ntru_crypto_msbyte_2_uint32(
 {
     uint32_t    i;
 
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) 
+    {
         words[i]  = ((uint32_t) (*bytes++)) << 24;
         words[i] |= ((uint32_t) (*bytes++)) << 16;
         words[i] |= ((uint32_t) (*bytes++)) <<  8;
         words[i] |=  (uint32_t) (*bytes++);
     }
+    
+    return;
 }
 
 
@@ -80,12 +83,15 @@ ntru_crypto_uint32_2_msbyte(
 {
     uint32_t i;
 
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) 
+    {
         *bytes++ = (uint8_t) (words[i] >> 24);
         *bytes++ = (uint8_t) (words[i] >> 16);
         *bytes++ = (uint8_t) (words[i] >>  8);
         *bytes++ = (uint8_t) (words[i]      );
     }
+    
+    return;
 }
 
 

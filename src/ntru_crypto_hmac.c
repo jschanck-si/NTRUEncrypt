@@ -70,20 +70,22 @@ ntru_crypto_hmac_create_ctx(
     /* check parameters */
 
     if (!c || !key)
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     *c = NULL;
 
     /* allocate memory for an HMAC context */
-    if (NULL ==
-          (ctx = (NTRU_CRYPTO_HMAC_CTX*) MALLOC(sizeof(NTRU_CRYPTO_HMAC_CTX))))
+    if (NULL == (ctx = (NTRU_CRYPTO_HMAC_CTX*) MALLOC(sizeof(NTRU_CRYPTO_HMAC_CTX))))
     {
         HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);
     }
 
     /* set the algorithm */
 
-    if ((result = ntru_crypto_hash_set_alg(algid, &ctx->hash_ctx))) {
+    if ((result = ntru_crypto_hash_set_alg(algid, &ctx->hash_ctx))) 
+    {
         FREE(ctx);
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_ALG);
     }
@@ -93,13 +95,15 @@ ntru_crypto_hmac_create_ctx(
     if ((result = ntru_crypto_hash_block_length(&ctx->hash_ctx,
                                                 &ctx->blk_len))  ||
         (result = ntru_crypto_hash_digest_length(&ctx->hash_ctx,
-                                                 &ctx->md_len))) {
+                                                 &ctx->md_len)))
+    {
         FREE(ctx);
         return result;
     }
 
     /* allocate memory for K0 */
-    if ((ctx->k0 = (uint8_t*) MALLOC(ctx->blk_len)) == NULL) {
+    if ((ctx->k0 = (uint8_t*) MALLOC(ctx->blk_len)) == NULL) 
+    {
         FREE(ctx);
         HMAC_RET(NTRU_CRYPTO_HMAC_OUT_OF_MEMORY);
     }
@@ -110,14 +114,18 @@ ntru_crypto_hmac_create_ctx(
 
     /* check if key is too large */
 
-    if (key_len > ctx->blk_len) {
-        if ((result = ntru_crypto_hash_digest(algid, key, key_len, ctx->k0))) {
+    if (key_len > ctx->blk_len) 
+    {
+        if ((result = ntru_crypto_hash_digest(algid, key, key_len, ctx->k0))) 
+        {
             memset(ctx->k0, 0, ctx->blk_len);
             FREE(ctx->k0);
             FREE(ctx);
             return result;
         }
-    } else {
+    } 
+    else 
+    {
         memcpy(ctx->k0, key, key_len);
     }
 
@@ -142,8 +150,10 @@ ntru_crypto_hmac_destroy_ctx(
     NTRU_CRYPTO_HMAC_CTX *c)        /* in/out - pointer to HMAC context */
 {
     if (!c || !c->k0)
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     /* clear key and release memory */
 
     memset(c->k0, 0, c->blk_len);
@@ -171,8 +181,10 @@ ntru_crypto_hmac_get_md_len(
     /* check parameters */
 
     if (!c || !md_len)
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     /* get digest length */
 
     *md_len = c->md_len;
@@ -197,8 +209,10 @@ ntru_crypto_hmac_set_key(
     /* check parameters */
 
     if (!c || !key)
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     /* copy key */
 
     memcpy(c->k0, key, c->md_len);
@@ -226,16 +240,23 @@ ntru_crypto_hmac_init(
     /* check parameters */
 
     if (!c)
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     /* init hash context and compute H(K0 ^ ipad) */
 
     for (i = 0; i < c->blk_len; i++)
+    {
         c->k0[i] ^= 0x36;                           /* K0 ^ ipad */
-    if ((result = ntru_crypto_hash_init(&c->hash_ctx))                       ||
+    }
+        
+    if ((result = ntru_crypto_hash_init(&c->hash_ctx))                   ||
         (result = ntru_crypto_hash_update(&c->hash_ctx, c->k0, c->blk_len)))
+    {
         return result;
-
+    }
+    
     HMAC_RET(NTRU_CRYPTO_HMAC_OK);
 }
 
@@ -263,11 +284,15 @@ ntru_crypto_hmac_update(
     /* check parameters */
 
     if (!c || (data_len && !data))
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     if ((result = ntru_crypto_hash_update(&c->hash_ctx, data, data_len)))
+    {
         return result;
-
+    }
+    
     HMAC_RET(NTRU_CRYPTO_HMAC_OK);
 }
 
@@ -294,8 +319,10 @@ ntru_crypto_hmac_final(
     /* check parameters */
 
     if (!c || !md)
+    {
         HMAC_RET(NTRU_CRYPTO_HMAC_BAD_PARAMETER);
-
+    }
+    
     /* form K0 ^ opad
      * complete md = H((K0 ^ ipad) || data)
      * compute  md = H((K0 ^ opad) || md)
@@ -303,15 +330,23 @@ ntru_crypto_hmac_final(
      */
 
     for (i = 0; i < c->blk_len; i++)
+    {
         c->k0[i] ^= (0x36^0x5c);
+    }
+        
     if ((result = ntru_crypto_hash_final(&c->hash_ctx, md))                  ||
         (result = ntru_crypto_hash_init(&c->hash_ctx))                       ||
         (result = ntru_crypto_hash_update(&c->hash_ctx, c->k0, c->blk_len))  ||
         (result = ntru_crypto_hash_update(&c->hash_ctx, md, c->md_len))      ||
-        (result = ntru_crypto_hash_final(&c->hash_ctx, md))) {
+        (result = ntru_crypto_hash_final(&c->hash_ctx, md))) 
+    {
     }
+    
     for (i = 0; i < c->blk_len; i++)
+    {
         c->k0[i] ^= 0x5c;
+    }
+    
     return result;
 }
 

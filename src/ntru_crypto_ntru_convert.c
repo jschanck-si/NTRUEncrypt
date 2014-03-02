@@ -63,8 +63,8 @@ ntru_bits_2_trits(
     ASSERT(octets);
     ASSERT(trits);
 
-    while (num_trits >= 16) {
-
+    while (num_trits >= 16) 
+    {
         /* get next three octets */
 
         bits24  = ((uint32_t)(*octets++)) << 16;
@@ -107,8 +107,11 @@ ntru_bits_2_trits(
 
         num_trits -= 16;
     }
+    
     if (num_trits == 0)
+    {
         return;
+    }
 
     /* get three octets */
 
@@ -117,8 +120,8 @@ ntru_bits_2_trits(
     bits24 |=  (uint32_t)(*octets++);
 
     shift = 21;
-    while (num_trits) {
-
+    while (num_trits) 
+    {
         /* for each 3 bits in the three octets, output up to 2 trits
          * until all trits needed are produced
          */
@@ -126,11 +129,15 @@ ntru_bits_2_trits(
         bits3 = (bits24 >> shift) & 0x7;
         shift -= 3;
         *trits++ = bits_2_trit1[bits3];
-        if (--num_trits) {
+        
+        if (--num_trits) 
+        {
             *trits++ = bits_2_trit2[bits3];
             --num_trits;
         }
     }
+    
+    return;
 }
 
 
@@ -158,74 +165,91 @@ ntru_trits_2_bits(
     ASSERT(octets);
     ASSERT(trits);
 
-    while (num_trits >= 16) {
+    while (num_trits >= 16) 
+    {
 
         /* convert each 2 trits to 3 bits and pack */
 
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 = (bits3 << 21);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 << 18);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 << 15);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7)
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 << 12);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 <<  9);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 <<  6);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 <<  3);
-
         bits3  = *trits++ * 3;
         bits3 += *trits++;
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= bits3;
-
         num_trits -= 16;
 
         /* output three octets */
@@ -237,19 +261,26 @@ ntru_trits_2_bits(
 
     bits24 = 0;
     shift = 21;
-    while (num_trits) {
+    
+    while (num_trits) 
+    {
 
         /* convert each 2 trits to 3 bits and pack */
 
         bits3 = *trits++ * 3;
-        if (--num_trits) {
+        
+        if (--num_trits) 
+        {
             bits3 += *trits++;
             --num_trits;
         }
-        if (bits3 > 7) {
+        
+        if (bits3 > 7) 
+        {
             bits3 = 7;
             all_trits_valid = FALSE;
         }
+        
         bits24 |= (bits3 << shift);
         shift -= 3;
     }
@@ -285,16 +316,21 @@ ntru_coeffs_mod4_2_octets(
 
     *octets = 0;
     shift = 6;
-    for (i = 0; i < num_coeffs; i++) {
+    for (i = 0; i < num_coeffs; i++) 
+    {
         bits2 = (uint8_t)(coeffs[i] & 0x3);
         *octets |= bits2 << shift;
         shift -= 2;
-        if (shift < 0) {
+        
+        if (shift < 0) 
+        {
             ++octets;
             *octets = 0;
             shift = 6;
         }
     }
+    
+    return;
 }
 
 
@@ -314,9 +350,12 @@ ntru_trits_2_octet(
     ASSERT(octet);
 
     *octet = 0;
-    for (i = 4; i >= 0; i--) {
+    for (i = 4; i >= 0; i--) 
+    {
         *octet = (*octet * 3) + trits[i];
     }
+    
+    return;
 }
 
 
@@ -334,10 +373,13 @@ ntru_octet_2_trits(
 
     ASSERT(trits);
 
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 5; i++) 
+    {
         trits[i] = octet % 3;
         octet = (octet - trits[i]) / 3;
     }
+    
+    return;
 }
 
 
@@ -360,9 +402,12 @@ ntru_indices_2_trits(
     ASSERT(in);
     ASSERT(out);
     
-    for (i = 0; i < in_len; i++) {
+    for (i = 0; i < in_len; i++) 
+    {
         out[in[i]] = trit;
     }
+    
+    return;
 }
 
 
@@ -388,32 +433,56 @@ ntru_packed_trits_2_indices(
     ASSERT(indices_plus1);
     ASSERT(indices_minus1);
 
-    while (num_trits >= 5) {
+    while (num_trits >= 5)
+    {
         ntru_octet_2_trits(*in++, trits);
         num_trits -= 5;
-        for (j = 0; j < 5; j++, i++) {
-            if (trits[j] == 1) {
+        
+        for (j = 0; j < 5; j++, i++) 
+        {
+            if (trits[j] == 1) 
+            {
                 *indices_plus1 = i;
                 ++indices_plus1;
-            } else if (trits[j] == 2) {
+            } 
+            else if (trits[j] == 2) 
+            {
                 *indices_minus1 = i;
                 ++indices_minus1;
+            }
+            else
+            {
+                ;
             }
         }
     }
-    if (num_trits) {
+    
+    if (num_trits) 
+    {
         ntru_octet_2_trits(*in, trits);
-        for (j = 0; num_trits && (j < 5); j++, i++) {
-            if (trits[j] == 1) {
+        
+        for (j = 0; num_trits && (j < 5); j++, i++) 
+        {
+            if (trits[j] == 1) 
+            {
                 *indices_plus1 = i;
                 ++indices_plus1;
-            } else if (trits[j] == 2) {
+            }
+            else if (trits[j] == 2) 
+            {
                 *indices_minus1 = i;
                 ++indices_minus1;
             }
+            else
+            {
+                ;
+            }
+            
             --num_trits;
         }
     }
+    
+    return;
 }
 
 
@@ -445,19 +514,24 @@ ntru_indices_2_packed_trits(
 
     /* pack the array of trits */
 
-    while (num_trits >= 5) {
+    while (num_trits >= 5) 
+    {
         ntru_trits_2_octet(buf, out);
         num_trits -= 5;
         buf += 5;
         ++out;
     }
-    if (num_trits) {
+    
+    if (num_trits) 
+    {
         uint8_t trits[5];
 
         memcpy(trits, buf, num_trits);
         memset(trits + num_trits, 0, sizeof(trits) - num_trits);
         ntru_trits_2_octet(trits, out);
     }
+    
+    return;
 }
 
 
@@ -488,22 +562,23 @@ ntru_elements_2_octets(
     temp = 0;
     shift = n_bits - 8;
     i = 0;
-    while (i < in_len) {
+    while (i < in_len) 
+    {
 
         /* add bits to temp to fill an octet and output the octet */
 
         temp |= in[i] >> shift;
         *out++ = (uint8_t)(temp & 0xff);
         shift = 8 - shift;
-        if (shift < 1) {
-
+        if (shift < 1) 
+        {
             /* next full octet is in current input word */
 
             shift += n_bits;
             temp = 0;
-
-        } else {
-
+        } 
+        else 
+        {
             /* put remaining bits of input word in temp as partial octet,
              * and increment index to next input word
              */
@@ -511,14 +586,18 @@ ntru_elements_2_octets(
 
             ++i;
         }
+        
         shift = n_bits - shift;
     }
 
     /* output any bits remaining in last input word */
 
-    if (shift != n_bits - 8) {
+    if (shift != n_bits - 8) 
+    {
         *out++ = (uint8_t)(temp & 0xff);
     }
+    
+    return;
 }
 
 
@@ -550,16 +629,18 @@ ntru_octets_2_elements(
     temp = 0;
     shift = n_bits;
     i = 0;
-    while (i < in_len) {
+    
+    while (i < in_len) 
+    {
         shift = 8 - shift;
-        if (shift < 0) {
-
+        if (shift < 0) 
+        {
             /* the current octet will not fill the current element */
 
             shift += n_bits;
-
-        } else {
-
+        } 
+        else 
+        {
             /* add bits from the current octet to fill the current element and
              * output the element
              */
@@ -575,6 +656,8 @@ ntru_octets_2_elements(
         temp |= ((uint16_t)in[i]) << shift;
         ++i;
     }
+    
+    return;
 }
 
 
