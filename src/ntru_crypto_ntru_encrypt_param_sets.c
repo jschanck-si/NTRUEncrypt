@@ -397,11 +397,14 @@ ntru_encrypt_get_params_with_id(
 {
     size_t i;
 
-    for (i = 0; i < numParamSets; i++) {
-        if (ntruParamSets[i].id == id) {
+    for (i = 0; i < numParamSets; i++)
+    {
+        if (ntruParamSets[i].id == id)
+        {
             return &(ntruParamSets[i]);
         }
     }
+    
     return NULL;
 }
 
@@ -421,11 +424,14 @@ ntru_encrypt_get_params_with_OID(
 {
     size_t i;
 
-    for (i = 0; i < numParamSets; i++) {
-        if (!memcmp(ntruParamSets[i].OID, oid, 3)) {
+    for (i = 0; i < numParamSets; i++)
+    {
+        if (!memcmp(ntruParamSets[i].OID, oid, 3))
+        {
             return &(ntruParamSets[i]);
         }
     }
+    
     return NULL;
 }
 
@@ -445,8 +451,10 @@ ntru_encrypt_get_params_with_DER_id(
 {
     size_t i;
 
-    for (i = 0; i < numParamSets; i++) {
-        if (ntruParamSets[i].der_id == der_id) {
+    for (i = 0; i < numParamSets; i++)
+    {
+        if (ntruParamSets[i].der_id == der_id)
+        {
             return &(ntruParamSets[i]);
         }
     }
