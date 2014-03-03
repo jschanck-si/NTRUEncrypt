@@ -97,14 +97,17 @@ ntru_gen_poly(
     mgf_out = buf + md_len + 4;
     if ((retcode = ntru_mgf1(buf, hash_algid, md_len, min_calls,
                              seed_len, seed, mgf_out)) != NTRU_OK)
+    {
         return retcode;
+    }
+    
     octets = mgf_out;
     octets_available = min_calls * md_len;
 
     /* init indices counts for number of polynomials being generated */
 
-    if (is_product_form) {
-
+    if (is_product_form)
+    {
         /* number of indices for poly1 is in low byte of indices_counts,
          * number of indices for poly2 and poly3 are in next higher bytes
          */
@@ -113,8 +116,9 @@ ntru_gen_poly(
         num_indices = (uint16_t)(indices_counts & 0xff);
         indices_counts >>= 8;
 
-    } else {
-
+    }
+    else
+    {
         /* number of bytes for poly is in low 16 bits of indices_counts */
 
         num_polys = 1;
@@ -128,11 +132,13 @@ ntru_gen_poly(
 
     /* generate indices (IGF-2) for all polynomials */
 
-    while (num_polys > 0) {
+    while (num_polys > 0)
+    {
 
         /* generate indices for a single polynomial */
 
-        while (index_cnt < num_indices) {
+        while (index_cnt < num_indices)
+        {
             uint16_t index;
             uint8_t  num_needed;
 
@@ -141,31 +147,38 @@ ntru_gen_poly(
             do {
                 /* use any leftover bits first */
 
-                if (num_left != 0) {
+                if (num_left != 0)
+                {
                     index = left << (c_bits - num_left);
-                } else {
+                }
+                else
+                {
                     index = 0;
                 }
 
                 /* get the rest of the bits needed from new octets */
 
                 num_needed = c_bits - num_left;
-                while (num_needed != 0) {
-
+                while (num_needed != 0)
+                {
                     /* get another octet */
 
-                    if (octets_available == 0) {
+                    if (octets_available == 0)
+                    {
                         if ((retcode = ntru_mgf1(buf, hash_algid, md_len, 1,
                                                  0, NULL, mgf_out)) != NTRU_OK)
+                        {
                             return retcode;
+                        }
+                        
                         octets = mgf_out;
                         octets_available = md_len;
                     }
                     left = *octets++;
                     --octets_available;
 
-                    if (num_needed <= 8) {
-
+                    if (num_needed <= 8)
+                    {
                         /* all bits needed to fill the index are in this octet */
 
                         index |= ((uint16_t)(left)) >> (8 - num_needed);
@@ -173,8 +186,9 @@ ntru_gen_poly(
                         num_needed = 0;
                         left &= 0xff >> (8 - num_left);
 
-                    } else {
-
+                    }
+                    else
+                    {
                         /* another octet will be needed after using this
                          * whole octet
                          */
@@ -188,7 +202,9 @@ ntru_gen_poly(
             /* form index and check if unique */
 
             index %= N;
-            if (!used[index]) {
+            
+            if (!used[index])
+            {
                 used[index] = 1;
                 indices[index_cnt] = index;
                 ++index_cnt;
@@ -198,7 +214,8 @@ ntru_gen_poly(
 
         /* init for next polynomial if another polynomial to be generated */
 
-        if (num_polys > 0) {
+        if (num_polys > 0)
+        {
             memset(used, 0, N);
             num_indices = num_indices +
                           (uint16_t)(indices_counts & 0xff);
@@ -226,12 +243,17 @@ ntru_poly_check_min_weight(
     uint16_t i;
 
     wt[0] = wt[1] = wt[2] = 0;
-    for (i = 0; i < num_els; i++) {
+    
+    for (i = 0; i < num_els; i++)
+    {
        ++wt[ringels[i]];
     }
-    if ((wt[0] < min_wt) || (wt[1] < min_wt) || (wt[2] < min_wt)) {
+    
+    if ((wt[0] < min_wt) || (wt[1] < min_wt) || (wt[2] < min_wt))
+    {
         return FALSE;
     }
+    
     return TRUE;
 }
 
@@ -281,34 +303,57 @@ ntru_ring_mult_indices(
     /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
 
     for (k = 0; k < N; k++)
+    {
         t[k] = 0;
-    for (j = bi_P1_len; j < bi_P1_len + bi_M1_len; j++) {
+    }
+    
+    for (j = bi_P1_len; j < bi_P1_len + bi_M1_len; j++)
+    {
         k = bi[j];
+        
         for (i = 0; k < N; ++i, ++k)
+        {
             t[k] = t[k] + a[i];
+        }
+        
         for (k = 0; i < N; ++i, ++k)
+        {
             t[k] = t[k] + a[i];
+        }
     }
 
     /* t[(i+k)%N] = -(sum i=0 through N-1 of a[i] for b[k] = -1) */
 
     for (k = 0; k < N; k++)
+    {
         t[k] = -t[k];
-
+    }
+    
     /* t[(i+k)%N] += sum i=0 through N-1 of a[i] for b[k] = +1 */
 
-    for (j = 0; j < bi_P1_len; j++) {
+    for (j = 0; j < bi_P1_len; j++)
+    {
         k = bi[j];
+        
         for (i = 0; k < N; ++i, ++k)
+        {
             t[k] = t[k] + a[i];
+        }
+        
         for (k = 0; i < N; ++i, ++k)
+        {
             t[k] = t[k] + a[i];
+        }
     }
 
     /* c = (a * b) mod q */
 
     for (k = 0; k < N; k++)
+    {
         c[k] = t[k] & mod_q_mask;
+    }
+    
+    return;
 }
 
 
@@ -375,7 +420,11 @@ ntru_ring_mult_product_indices(
     /* c = (a * b1 * b2) + (a * b3) */
 
     for (i = 0; i < N; i++)
+    {
         c[i] = (t2[i] + t[i]) & mod_q_mask;
+    }
+    
+    return;
 }
 
 
@@ -410,16 +459,27 @@ ntru_ring_mult_coefficients(
     /* c[k] = sum(a[i] * b[k-i]) mod q */
 
     memset(c, 0, N * sizeof(uint16_t));
-    for (k = 0; k < N; k++) {
+    
+    for (k = 0; k < N; k++)
+    {
         i = 0;
         while (i <= k)
+        {
             c[k] += a[i++] * *bptr--;
+        }
+        
         bptr += N;
+        
         while (i < N)
+        {
             c[k] += a[i++] * *bptr--;
+        }
+        
         c[k] &= mod_q_mask;
         ++bptr;
     }
+    
+    return;
 }
 
 
@@ -474,7 +534,10 @@ ntru_ring_inv(
     /* f(X) = a(X) mod 2 */
 
     for (i = 0; i < N; i++)
+    {
         f[i] = (uint8_t)(a[i] & 1);
+    }
+    
     deg_f = N - 1;
 
     /* g(X) = X^N - 1 */
@@ -486,8 +549,8 @@ ntru_ring_inv(
 
     /* until f(X) = 1 */
 
-    while (!done) {
-
+    while (!done)
+    {
         /* while f[0] = 0, f(X) /= X, c(X) *= X, k++ */
 
         for (i = 0; (i <= deg_f) && (f[i] == 0); ++i);
@@ -497,10 +560,17 @@ ntru_ring_inv(
             f = f + i;
             deg_f = deg_f - i;
             deg_c = deg_c + i;
+            
             for (j = deg_c; j >= i; j--)
+            {
                 c[j] = c[j-i];
+            }
+            
             for (j = 0; j < i; j++)
+            {
                 c[j] = 0;
+            }
+            
             k = k + i;
         }
 
@@ -509,21 +579,29 @@ ntru_ring_inv(
          */
 
         while (f[deg_f] == 0)
+        {
             --deg_f;
+        }
 
         /* if f(X) = 1, done
          * Note: f[0] = 1 from above, so only check the x term and up
          */
 
-        for (i = 1; (i <= deg_f) && (f[i] == 0); ++i);
-        if (i > deg_f) {
+        for (i = 1; (i <= deg_f) && (f[i] == 0); ++i)
+        {
+            ;
+        }
+        
+        if (i > deg_f)
+        {
             done = TRUE;
             break;
         }
 
         /* if deg_f < deg_g, f <-> g, b <-> c */
 
-        if (deg_f < deg_g) {
+        if (deg_f < deg_g)
+        {
             uint8_t *x;
 
             x = f;
@@ -543,40 +621,60 @@ ntru_ring_inv(
         /* f(X) += g(X), b(X) += c(X) */
 
         for (i = 0; i <= deg_g; i++)
+        {
             f[i] ^= g[i];
+        }
 
         if (deg_c > deg_b)
+        {
             deg_b = deg_c;
+        }
+        
         for (i = 0; i <= deg_c; i++)
+        {
             b[i] ^= c[i];
+        }
     }
 
     /* a^-1 in (Z/2Z)[X]/(X^N - 1) = b(X) shifted left k coefficients */
 
     j = 0;
+    
     if (k >= N)
+    {
         k = k - N;
+    }
+    
     for (i = k; i < N; i++)
+    {
         a_inv[j++] = (uint16_t)(b[i]);
+    }
+    
     for (i = 0; i < k; i++)
+    {
         a_inv[j++] = (uint16_t)(b[i]);
+    }
 
     /* lift a^-1 in (Z/2Z)[X]/(X^N - 1) to a^-1 in (Z/qZ)[X]/(X^N -1) */
 
-    for (j = 0; j < 4; ++j) {       /* assumes 256 < q <= 65536 */
+    for (j = 0; j < 4; ++j)   /* assumes 256 < q <= 65536 */
+    {
 
         /* a^-1 = a^-1 * (2 - a * a^-1) mod q */
 
         memcpy(t2, a_inv, N * sizeof(uint16_t));
         ntru_ring_mult_coefficients(a, t2, N, q, t);
+        
         for (i = 0; i < N; ++i)
+        {
             t[i] = q - t[i];
+        }
+        
         t[0] = t[0] + 2;
         ntru_ring_mult_coefficients(t2, t, N, q, a_inv);
     }
 
     return TRUE;
-
 
 }
 
