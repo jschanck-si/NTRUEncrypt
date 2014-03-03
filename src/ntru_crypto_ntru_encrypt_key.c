@@ -75,24 +75,37 @@ ntru_crypto_ntru_encrypt_key_parse(
     /* parse key blob based on tag */
 
     tag = key_blob[0];
-    switch (tag) {
+    switch (tag)
+    {
         case NTRU_ENCRYPT_PUBKEY_TAG:
+           
             if (!pubkey_parse)
+            {
                 return FALSE;
+            }
+            
             break;
+            
         case NTRU_ENCRYPT_PRIVKEY_DEFAULT_TAG:
         case NTRU_ENCRYPT_PRIVKEY_TRITS_TAG:
         case NTRU_ENCRYPT_PRIVKEY_INDICES_TAG:
+            
             ASSERT(privkey_pack_type);
             ASSERT(privkey);
+            
             if (pubkey_parse)
+            {
                 return FALSE;
+            }
             break;
+            
         default:
             return FALSE;
+            break;
     }
 
-    switch (tag) {
+    switch (tag)
+    {
         case NTRU_ENCRYPT_PUBKEY_TAG:
         case NTRU_ENCRYPT_PRIVKEY_DEFAULT_TAG:
         case NTRU_ENCRYPT_PRIVKEY_TRITS_TAG:
@@ -113,23 +126,33 @@ ntru_crypto_ntru_encrypt_key_parse(
             /* check OID length and minimum blob length for tag and OID */
 
             if ((key_blob_len < 5) || (key_blob[1] != 3))
+            {
                 return FALSE;
-
+            }
+            
             /* get a pointer to the parameter set corresponding to the OID */
 
             if ((p = ntru_encrypt_get_params_with_OID(key_blob + 2)) == NULL)
+            {
                 return FALSE;
-
+            }
+            
             /* check blob length and assign pointers to blob fields */
 
             pubkey_packed_len = (p->N * p->q_bits + 7) / 8;
-            if (pubkey_parse) { /* public-key parsing */
+            
+            if (pubkey_parse) /* public-key parsing */
+            {
                 if (key_blob_len != 5 + pubkey_packed_len)
+                {
                     return FALSE;
+                }
 
                 *pubkey = key_blob + 5;
 
-            } else { /* private-key parsing */
+            }
+            else /* private-key parsing */
+            {
                 uint16_t privkey_packed_len;
                 uint16_t privkey_packed_trits_len = (p->N + 4) / 5;
                 uint16_t privkey_packed_indices_len;
@@ -139,36 +162,54 @@ ntru_crypto_ntru_encrypt_key_parse(
 
                 if (p->is_product_form &&
                         (tag == NTRU_ENCRYPT_PRIVKEY_TRITS_TAG))
+                {
                     return FALSE;
+                }
 
                 /* set packed-key length for packed indices */
 
                 if (p->is_product_form)
+                {
                     dF = (uint16_t)( (p->dF_r & 0xff) +            /* df1 */
                                     ((p->dF_r >>  8) & 0xff) +     /* df2 */
                                     ((p->dF_r >> 16) & 0xff));     /* df3 */
+                }
                 else
+                {
                     dF = (uint16_t)p->dF_r;
+                }
+                
                 privkey_packed_indices_len = ((dF << 1) * p->N_bits + 7) >> 3;
 
                 /* set private-key packing type if defaulted */
 
-                if (tag == NTRU_ENCRYPT_PRIVKEY_DEFAULT_TAG) {
+                if (tag == NTRU_ENCRYPT_PRIVKEY_DEFAULT_TAG)
+                {
                     if (p->is_product_form ||
                             (privkey_packed_indices_len <=
                              privkey_packed_trits_len))
+                    {
                         tag = NTRU_ENCRYPT_PRIVKEY_INDICES_TAG;
+                    }
                     else
+                    {
                         tag = NTRU_ENCRYPT_PRIVKEY_TRITS_TAG;
+                    }
                 }
 
                 if (tag == NTRU_ENCRYPT_PRIVKEY_TRITS_TAG)
+                {
                     privkey_packed_len = privkey_packed_trits_len;
+                }
                 else
+                {
                     privkey_packed_len = privkey_packed_indices_len;
+                }
 
                 if (key_blob_len != 5 + pubkey_packed_len + privkey_packed_len)
+                {
                     return FALSE;
+                }
 
                 *pubkey = key_blob + 5;
                 *privkey = *pubkey + pubkey_packed_len;
@@ -182,9 +223,11 @@ ntru_crypto_ntru_encrypt_key_parse(
             *pubkey_pack_type = NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS;
             *params = p;
         }
+            
         default:
             break;  /* can't get here */
     }
+    
     return TRUE;
 }
 
@@ -223,30 +266,41 @@ ntru_crypto_ntru_encrypt_key_get_blob_params(
     *pubkey_pack_type = NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS;
     *pubkey_blob_len = 5 + pubkey_packed_len;
 
-    if (privkey_pack_type && privkey_blob_len) {
+    if (privkey_pack_type && privkey_blob_len)
+    {
         uint16_t privkey_packed_trits_len = (params->N + 4) / 5;
         uint16_t privkey_packed_indices_len;
         uint16_t dF;
 
         if (params->is_product_form)
+        {
             dF = (uint16_t)( (params->dF_r & 0xff) +            /* df1 */
                             ((params->dF_r >>  8) & 0xff) +     /* df2 */
                             ((params->dF_r >> 16) & 0xff));     /* df3 */
+        }
         else
+        {
             dF = (uint16_t)params->dF_r;
+        }
+        
         privkey_packed_indices_len = ((dF << 1) * params->N_bits + 7) >> 3;
 
         if (params->is_product_form ||
-                (privkey_packed_indices_len <= privkey_packed_trits_len)) {
+                (privkey_packed_indices_len <= privkey_packed_trits_len))
+        {
             *privkey_pack_type = NTRU_ENCRYPT_KEY_PACKED_INDICES;
             *privkey_blob_len =
                 5 + pubkey_packed_len + privkey_packed_indices_len;
-        } else {
+        }
+        else
+        {
             *privkey_pack_type = NTRU_ENCRYPT_KEY_PACKED_TRITS;
             *privkey_blob_len =
                 5 + pubkey_packed_len + privkey_packed_trits_len;
         }
     }
+    
+    return;
 }
 
 
@@ -272,7 +326,8 @@ ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
     ASSERT(pubkey);
     ASSERT(pubkey_blob);
     
-    switch (pubkey_pack_type) {
+    switch (pubkey_pack_type)
+    {
         case NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS:
             *pubkey_blob++ = NTRU_ENCRYPT_PUBKEY_TAG;
             *pubkey_blob++ = (uint8_t)sizeof(params->OID);
@@ -281,9 +336,13 @@ ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
             ntru_elements_2_octets(params->N, pubkey, params->q_bits,
                                    pubkey_blob);
             break;
+            
         default:
             ASSERT(FALSE);
+            break;
     }
+    
+    return;
 }
 
 
@@ -310,7 +369,8 @@ ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
     ASSERT(packed_pubkey);
     ASSERT(pubkey_blob);
     
-    switch (pubkey_pack_type) {
+    switch (pubkey_pack_type)
+    {
         case NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS:
             *pubkey_blob++ = NTRU_ENCRYPT_PUBKEY_TAG;
             *pubkey_blob++ = (uint8_t)sizeof(params->OID);
@@ -318,9 +378,13 @@ ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
             pubkey_blob += sizeof(params->OID);
             memcpy(pubkey_blob, packed_pubkey, packed_pubkey_len);
             break;
+            
         default:
             ASSERT(FALSE);
+            break;
     }
+    
+    return;
 }
 
 
@@ -351,7 +415,8 @@ ntru_crypto_ntru_encrypt_key_create_privkey_blob(
     ASSERT(privkey);
     ASSERT(privkey_blob);
 
-    switch (privkey_pack_type) {
+    switch (privkey_pack_type)
+    {
         case NTRU_ENCRYPT_KEY_PACKED_TRITS:
         case NTRU_ENCRYPT_KEY_PACKED_INDICES:
 
@@ -367,28 +432,38 @@ ntru_crypto_ntru_encrypt_key_create_privkey_blob(
 
             /* add packed private key */
 
-            if (privkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_TRITS) {
+            if (privkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_TRITS)
+            {
                 ntru_indices_2_packed_trits(privkey, (uint16_t)params->dF_r,
                                             (uint16_t)params->dF_r,
                                             params->N, buf, privkey_blob);
-            } else {
+            }
+            else
+            {
                 uint32_t dF;
 
-                if (params->is_product_form) {
+                if (params->is_product_form)
+                {
                     dF =  (params->dF_r & 0xff) +
                          ((params->dF_r >> 8) & 0xff) +
                          ((params->dF_r >> 16) & 0xff);
-                } else {
+                }
+                else
+                {
                     dF = params->dF_r;
                 }
+                
                 ntru_elements_2_octets((uint16_t)dF << 1, privkey,
                                        params->N_bits, privkey_blob);
             }
             break;
+            
         default:
             ASSERT(FALSE);
             break;
     }
+    
+    return;
 }
 
 
