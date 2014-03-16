@@ -325,6 +325,7 @@ ntru_crypto_ntru_encrypt(
 
             if (params->is_product_form)
             {
+                m1 = 0;
                 for (i = 0; i < mprime_len; i++) {
                     
                     tmp_buf[i] = tmp_buf[i] + Mtrin_buf[i];
