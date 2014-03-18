@@ -105,7 +105,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         NTRU_EES1087EP2,             /* parameter-set id */
         {0x00, 0x06, 0x03},          /* OID */
         0x25,                        /* DER id */
-        10,                          /* no. of bits in N (i.e., in an index) */
+        11,                          /* no. of bits in N (i.e., in an index) */
         1087,                        /* N */
         32,                          /* security strength in octets */
         2048,                        /* q */
