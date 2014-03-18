@@ -117,7 +117,7 @@ ntru_crypto_ntru_encrypt(
         NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
-    if ((pubkey_blob_len == 0) || (pt_len == 0))
+    if (pubkey_blob_len == 0)
     {
         NTRU_RET(NTRU_BAD_LENGTH);
     }
