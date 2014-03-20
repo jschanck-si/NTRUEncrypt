@@ -9,6 +9,9 @@ all : $(SUBDIRS)
 $(SUBDIRS) :
 	$(MAKE) -C $@
 
+check :
+	$(MAKE) -C test
+
 # Clean up.
 .PHONY : clean
 clean :
