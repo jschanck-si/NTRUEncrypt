@@ -17,7 +17,7 @@ LDFLAGS  += -L$(LIBDIR) -Wl,-R,$(shell cd $(TOPDIR); pwd)/lib
 endif
 
 # Source files.
-sanity_srcs  := crypto_stream.c sanity.c
+sanity_srcs  := sanity.c
 
 # Object files.
 sanity_objs  := $(addprefix $(OBJDIR)/, $(sanity_srcs:.c=.o))
@@ -31,7 +31,7 @@ endif
 
 # Targets.
 .PHONY : all
-all : sanity clean
+all : sanity clean_sanity
 
 # Directory rules.
 $(BINDIR) $(OBJDIR) :

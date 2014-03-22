@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "crypto_stream_salsa20.h"
 #include "ntru_crypto.h"
 #include "ntru_crypto_ntru_encrypt_param_sets.h"
 
@@ -44,29 +43,6 @@ static void randombytes(uint8_t *x,uint64_t xlen)
     x += i;
     xlen -= i;
   }
-}
-
-static void fastrandombytes(uint8_t *r, unsigned long long rlen)
-{
-  static int init=0;
-  static uint8_t key[crypto_stream_salsa20_KEYBYTES];
-  static uint8_t nonce[crypto_stream_salsa20_NONCEBYTES] = {0};
-
-  uint64_t n=0;
-  int i;
-  if(!init)
-  {
-    randombytes(key, crypto_stream_salsa20_KEYBYTES);
-    init = 1;
-  }
-  crypto_stream(r,rlen,nonce,key);
-
-  // Increase 64-bit counter (nonce)
-  for(i=0;i<8;i++)
-    n ^= ((uint64_t)nonce[i]) << 8*i;
-  n++;
-  for(i=0;i<8;i++)
-    nonce[i] = (n >> 8*i) & 0xff;
 }
 
 static uint8_t
@@ -199,9 +175,9 @@ main(void)
       for(mlen=0; mlen<=max_msg_len; mlen++)
       {
         plaintext_len = max_msg_len;
-        fastrandombytes(message, mlen);
-        fastrandombytes(ciphertext, ciphertext_len);
-        fastrandombytes(plaintext, plaintext_len);
+        randombytes(message, mlen);
+        randombytes(ciphertext, ciphertext_len);
+        randombytes(plaintext, plaintext_len);
 
         rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                 mlen, message, &ciphertext_len, ciphertext);
