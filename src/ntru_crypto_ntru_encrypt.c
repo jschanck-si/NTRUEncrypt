@@ -856,6 +856,8 @@ ntru_crypto_ntru_decrypt(
         {
             if (*pt_len < cm_len)
             {
+                memset(scratch_buf, 0, scratch_buf_len);
+                FREE(scratch_buf);
                 NTRU_RET(NTRU_BUFFER_TOO_SMALL);
             }
             
