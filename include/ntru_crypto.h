@@ -329,6 +329,15 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
                                                  subjectPublicKeyInfo */
 
 
+/* ntru_encrypt_get_param_set_name
+ *
+ * Returns pointer to null terminated parameter set name
+ * or NULL if parameter set ID is not found.
+ */
+const char *
+ntru_encrypt_get_param_set_name(
+    NTRU_ENCRYPT_PARAM_SET_ID id);   /*  in - parameter-set id */
+
 #if defined ( __cplusplus )
 }
 #endif /* __cplusplus */
