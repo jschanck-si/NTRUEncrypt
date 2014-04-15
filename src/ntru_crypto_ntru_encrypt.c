@@ -112,7 +112,7 @@ ntru_crypto_ntru_encrypt(
 
     /* check for bad parameters */
 
-    if (!pubkey_blob || !pt || !ct_len)
+    if (!pubkey_blob || !ct_len)
     {
         NTRU_RET(NTRU_BAD_PARAMETER);
     }
@@ -149,6 +149,13 @@ ntru_crypto_ntru_encrypt(
     if (*ct_len < packed_ct_len)
     {
         NTRU_RET(NTRU_BUFFER_TOO_SMALL);
+    }
+
+    /* check that a plaintext was provided */
+
+    if (!pt)
+    {
+        NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
     /* check the plaintext length */
@@ -495,12 +502,12 @@ ntru_crypto_ntru_decrypt(
 
     /* check for bad parameters */
 
-    if (!privkey_blob || !ct || !pt_len)
+    if (!privkey_blob || !pt_len)
     {
         NTRU_RET(NTRU_BAD_PARAMETER);
     }
     
-    if ((privkey_blob_len == 0) || (ct_len == 0))
+    if (privkey_blob_len == 0)
     {
         NTRU_RET(NTRU_BAD_LENGTH);
     }
@@ -525,6 +532,13 @@ ntru_crypto_ntru_decrypt(
     {
         *pt_len = params->m_len_max;
         NTRU_RET(NTRU_OK);
+    }
+
+    /* check that a ciphertext was provided */
+
+    if (!ct)
+    {
+        NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
     /* cannot check the plaintext buffer size until after the plaintext

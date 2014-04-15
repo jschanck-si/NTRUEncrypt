@@ -41,6 +41,7 @@
 
 typedef struct _NTRU_ENCRYPT_PARAM_SET {
     NTRU_ENCRYPT_PARAM_SET_ID id;                 /* parameter-set ID */
+    const char*               name;                /* human readable param set name */
     uint8_t const             OID[3];             /* pointer to OID */
     uint8_t                   der_id;             /* parameter-set DER id */
     uint8_t                   N_bits;             /* no. of bits in N (i.e. in
