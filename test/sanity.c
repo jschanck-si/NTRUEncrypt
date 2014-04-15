@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ntru_crypto.h"
-#include "ntru_crypto_ntru_encrypt_param_sets.h"
 
 /* For each parameter set:
  *    - Generate a key
@@ -115,18 +114,15 @@ main(void)
       NTRU_EES401EP2, NTRU_EES439EP1, NTRU_EES593EP1, NTRU_EES743EP1
     };
     NTRU_ENCRYPT_PARAM_SET_ID param_set_id;
-    NTRU_ENCRYPT_PARAM_SET *param_set;
 
     uint32_t error[(sizeof(param_set_ids)/sizeof(param_set_id))] = {0};
 
     for(i=0; i<(sizeof(param_set_ids)/sizeof(param_set_id)); i++)
     {
       param_set_id = param_set_ids[i];
-      param_set = ntru_encrypt_get_params_with_id(param_set_id);
-      fprintf(stderr, "Testing parameter set with DER id 0x%02x\n", param_set->der_id);
+      fprintf(stderr, "Testing parameter set %s\n", ntru_encrypt_get_param_set_name(param_set_id));
 
-
-      drbg_strength = param_set->sec_strength_len<<3;
+      drbg_strength = 256;
       rc = ntru_crypto_drbg_instantiate(drbg_strength, NULL, 0,
                                         (ENTROPY_FN) &get_entropy, &drbg);
       if (rc != DRBG_OK)
@@ -163,10 +159,26 @@ main(void)
         continue;
       }
 
-      max_msg_len = param_set->m_len_max;
+      rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key, 0, NULL,
+                                    &ciphertext_len, NULL);
+      if (rc != NTRU_OK)
+      {
+        fprintf(stderr,"\tError: Bad public key");
+        error[i] = 1;
+        continue;
+      }
+
+      rc = ntru_crypto_ntru_decrypt(private_key_len, private_key, 0, NULL,
+                                    &max_msg_len, NULL);
+      if (rc != NTRU_OK)
+      {
+        fprintf(stderr,"\tError: Bad private key");
+        error[i] = 1;
+        continue;
+      }
+
       message = (uint8_t *) malloc(max_msg_len * sizeof(uint8_t));
 
-      ciphertext_len = (param_set->N * param_set->q_bits + 7) >> 3;
       ciphertext = (uint8_t *) malloc(ciphertext_len * sizeof(uint8_t));
 
       plaintext_len = max_msg_len;
