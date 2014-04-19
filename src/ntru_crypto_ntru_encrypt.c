@@ -778,7 +778,7 @@ ntru_crypto_ntru_decrypt(
         
         if (params->m_len_len == 2)
         {
-            cm_len = (uint16_t)(*ptr++) << 16;
+            cm_len = (uint16_t)(*ptr++) << 8;
         }
         
         cm_len |= (uint16_t)(*ptr++);
