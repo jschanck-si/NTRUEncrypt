@@ -97,7 +97,6 @@ ntru_crypto_ntru_encrypt(
     uint32_t                dr2 = 0;
     uint32_t                dr3 = 0;
     uint16_t                ring_mult_tmp_len;
-    int16_t                 m1 = 0;
     uint16_t               *scratch_buf = NULL;
     uint16_t               *ringel_buf = NULL;
     uint16_t               *r_buf = NULL;
@@ -106,7 +105,6 @@ ntru_crypto_ntru_encrypt(
     bool                    msg_rep_good = FALSE;
     NTRU_CRYPTO_HASH_ALGID  hash_algid;
     uint8_t                 md_len;
-    uint16_t                mprime_len = 0;
     uint16_t                mod_q_mask;
     uint32_t                result = NTRU_OK;
 
@@ -290,7 +288,7 @@ ntru_crypto_ntru_encrypt(
                                  (params->N + 3) / 4, tmp_buf,
                                  tmp_buf + params->N, params->N, tmp_buf);
         }
-        
+
         if (result == NTRU_OK)
         {
             uint8_t  *Mtrin_buf = tmp_buf + params->N;
@@ -319,70 +317,25 @@ ntru_crypto_ntru_encrypt(
 
             /* convert M to trits (Mbin to Mtrin) */
 
-            mprime_len = params->N;
-            
-            if (params->is_product_form)
-            {
-                --mprime_len;
-            }
-
-            ntru_bits_2_trits(M_buf, mprime_len, Mtrin_buf);
+            ntru_bits_2_trits(M_buf, params->N, Mtrin_buf);
 
             /* form the msg representative m' by adding Mtrin to mask, mod p */
 
-            if (params->is_product_form)
+            for (i = 0; i < params->N; i++)
             {
-                m1 = 0;
-                for (i = 0; i < mprime_len; i++) {
-                    
-                    tmp_buf[i] = tmp_buf[i] + Mtrin_buf[i];
-                    
-                    if (tmp_buf[i] >= 3)
-                    {
-                        tmp_buf[i] -= 3;
-                    }
-                    
-                    if (tmp_buf[i] == 1)
-                    {
-                        ++m1;
-                    }
-                    else if (tmp_buf[i] == 2)
-                    {
-                        --m1;
-                    }
-                    else
-                    {
-                        ;
-                    }
-                }
-            }
-            else
-            {
-                for (i = 0; i < mprime_len; i++)
+                tmp_buf[i] = tmp_buf[i] + Mtrin_buf[i];
+
+                if (tmp_buf[i] >= 3)
                 {
-                    tmp_buf[i] = tmp_buf[i] + Mtrin_buf[i];
-                    
-                    if (tmp_buf[i] >= 3)
-                    {
-                        tmp_buf[i] -= 3;
-                    }
+                    tmp_buf[i] -= 3;
                 }
             }
 
             /* check that message representative meets minimum weight
              * requirements
              */
-
-            if (params->is_product_form)
-            {
-                msg_rep_good = m1 < 0 ? (bool)(-m1 <= params->min_msg_rep_wt) :
-                                        (bool)( m1 <= params->min_msg_rep_wt);
-            }
-            else
-            {
-                msg_rep_good = ntru_poly_check_min_weight(mprime_len, tmp_buf,
-                                                       params->min_msg_rep_wt);
-            }
+            msg_rep_good = ntru_poly_check_min_weight(params->N, tmp_buf,
+                                                   params->min_msg_rep_wt);
         }
     } while ((result == NTRU_OK) && !msg_rep_good);
 
@@ -392,7 +345,7 @@ ntru_crypto_ntru_encrypt(
 
         /* form ciphertext e by adding m' to R mod q */
 
-        for (i = 0; i < mprime_len; i++)
+        for (i = 0; i < params->N; i++)
         {
             if (tmp_buf[i] == 1)
             {
@@ -407,11 +360,6 @@ ntru_crypto_ntru_encrypt(
                 ;
             }
         }
-        
-        if (params->is_product_form)
-        {
-            ringel_buf[i] = (ringel_buf[i] - m1) & mod_q_mask;
-        }
 
         /* pack ciphertext */
 
@@ -423,7 +371,7 @@ ntru_crypto_ntru_encrypt(
 
     memset(scratch_buf, 0, scratch_buf_len);
     FREE(scratch_buf);
-    
+
     return result;
 }
 
@@ -479,7 +427,6 @@ ntru_crypto_ntru_decrypt(
     uint32_t                dF_r2 = 0;
     uint32_t                dF_r3 = 0;
     uint16_t                ring_mult_tmp_len;
-    int16_t                 m1 = 0;
     uint16_t               *scratch_buf = NULL;
     uint16_t               *ringel_buf1 = NULL;
     uint16_t               *ringel_buf2 = NULL;
@@ -491,7 +438,6 @@ ntru_crypto_ntru_decrypt(
     uint8_t                *ptr = NULL;
     NTRU_CRYPTO_HASH_ALGID  hash_algid;
     uint8_t                 md_len;
-    uint16_t                cmprime_len;
     uint16_t                mod_q_mask;
     uint16_t                q_mod_p;
     uint16_t                cm_len = 0;
@@ -506,12 +452,12 @@ ntru_crypto_ntru_decrypt(
     {
         NTRU_RET(NTRU_BAD_PARAMETER);
     }
-    
+
     if (privkey_blob_len == 0)
     {
         NTRU_RET(NTRU_BAD_LENGTH);
     }
-    
+
     /* get a pointer to the parameter-set parameters, the packing types for
      * the public and private keys, and pointers to the packed public and
      * private keys
@@ -525,7 +471,7 @@ ntru_crypto_ntru_decrypt(
     {
         NTRU_RET(NTRU_BAD_PRIVATE_KEY);
     }
-    
+
     /* return the max plaintext size if requested */
 
     if (!pt)
@@ -552,7 +498,7 @@ ntru_crypto_ntru_decrypt(
     {
         NTRU_RET(NTRU_BAD_LENGTH);
     }
-    
+
     /* allocate memory for all operations */
 
     if (params->is_product_form)
@@ -568,7 +514,7 @@ ntru_crypto_ntru_decrypt(
         ring_mult_tmp_len = params->N;      /* N 16-bit word buffer */
         dF_r = params->dF_r;
     }
-    
+
     scratch_buf_len = (ring_mult_tmp_len << 1) +
                                             /* X-byte temp buf for ring mult and
                                                 other intermediate results */
@@ -582,7 +528,7 @@ ntru_crypto_ntru_decrypt(
     {
         NTRU_RET(NTRU_OUT_OF_MEMORY);
     }
-    
+
     ringel_buf1 = scratch_buf + ring_mult_tmp_len;
     ringel_buf2 = ringel_buf1 + params->N;
     i_buf = ringel_buf2 + params->N;
@@ -637,78 +583,52 @@ ntru_crypto_ntru_decrypt(
      *  A = e * (1 + pF) mod q = e + pFe mod q
      *  a = A in the range [-q/2, q/2)
      *  cm' = a mod p
+     *
+     * first compute F*e w/o reduction mod q and store in ringel_buf1
      */
-
-    cmprime_len = params->N;
     if (params->is_product_form)
     {
-         --cmprime_len;
         ntru_ring_mult_product_indices(ringel_buf2, (uint16_t)dF_r1,
                                        (uint16_t)dF_r2, (uint16_t)dF_r3,
                                        i_buf, params->N, params->q,
                                        scratch_buf, ringel_buf1);
-        
-        for (i = 0; i < cmprime_len; i++)
-        {
-            ringel_buf1[i] = (ringel_buf2[i] + 3 * ringel_buf1[i]) & mod_q_mask;
-            
-            if (ringel_buf1[i] >= (params->q >> 1))
-            {
-                ringel_buf1[i] = ringel_buf1[i] - q_mod_p;
-            }
-            
-            Mtrin_buf[i] = (uint8_t)(ringel_buf1[i] % 3);
-            
-            if (Mtrin_buf[i] == 1)
-            {
-                ++m1;
-            }
-            else if (Mtrin_buf[i] == 2)
-            {
-                --m1;
-            }
-            else
-            {
-                ;
-            }
-        }
     }
     else
     {
         ntru_ring_mult_indices(ringel_buf2, (uint16_t)dF_r, (uint16_t)dF_r,
                                i_buf, params->N, params->q,
                                scratch_buf, ringel_buf1);
-        
-        for (i = 0; i < cmprime_len; i++)
+    }
+
+    /* then let ringel_buf1 = e + 3*ringel_buf1 (mod q) = e + pFe mod q
+     * lift ringel_buf1 elements to integers in the range [-q/2, q/2)
+     * let Mtrin_buf = ringel_buf1 (mod 3) = cm'
+     */
+    for (i = 0; i < params->N; i++)
+    {
+        ringel_buf1[i] = (ringel_buf2[i] + 3 * ringel_buf1[i]) & mod_q_mask;
+
+        if (ringel_buf1[i] >= (params->q >> 1))
         {
-            ringel_buf1[i] = (ringel_buf2[i] + 3 * ringel_buf1[i]) & mod_q_mask;
-            if (ringel_buf1[i] >= (params->q >> 1))
-            {
-                ringel_buf1[i] = ringel_buf1[i] - q_mod_p;
-            }
-            
-            Mtrin_buf[i] = (uint8_t)(ringel_buf1[i] % 3);
+            ringel_buf1[i] = ringel_buf1[i] - q_mod_p;
         }
+
+        Mtrin_buf[i] = (uint8_t)(ringel_buf1[i] % 3);
     }
 
     /* check that the candidate message representative meets minimum weight
      * requirements
      */
+    if (!ntru_poly_check_min_weight(params->N,
+                                    Mtrin_buf, params->min_msg_rep_wt))
+    {
+        decryption_ok = FALSE;
+    }
 
-    if (params->is_product_form)
-    {
-        decryption_ok = m1 < 0 ? (bool)(-m1 <= params->min_msg_rep_wt) :
-                                 (bool)( m1 <= params->min_msg_rep_wt);
-    }
-    else
-    {
-        decryption_ok = ntru_poly_check_min_weight(cmprime_len, Mtrin_buf,
-                                                   params->min_msg_rep_wt);
-    }
 
     /* form cR = e - cm' mod q */
 
-    for (i = 0; i < cmprime_len; i++)
+    for (i = 0; i < params->N; i++)
     {
         if (Mtrin_buf[i] == 1)
         {
@@ -722,11 +642,6 @@ ntru_crypto_ntru_decrypt(
         {
             ;
         }
-    }
-    
-    if (params->is_product_form)
-    {
-        ringel_buf2[i] = (ringel_buf2[i] + m1) & mod_q_mask;
     }
 
     /* form cR mod 4 */
@@ -744,25 +659,14 @@ ntru_crypto_ntru_decrypt(
     {
         /* form cMtrin by subtracting mask from cm', mod p */
 
-        for (i = 0; i < cmprime_len; i++)
+        for (i = 0; i < params->N; i++)
         {
             Mtrin_buf[i] = Mtrin_buf[i] - tmp_buf[i];
-            
+
             if (Mtrin_buf[i] >= 3)
             {
                 Mtrin_buf[i] += 3;
             }
-        }
-        
-        if (params->is_product_form)
-        {
-
-            /* set the last trit to zero since that's what it was, and
-             * because it can't be calculated from (cm' - mask) since
-             * we don't have the correct value for the last cm' trit
-             */
-
-            Mtrin_buf[i] = 0;
         }
 
         /* convert cMtrin to cM (Mtrin to Mbin) */
@@ -775,24 +679,24 @@ ntru_crypto_ntru_decrypt(
         /* validate the padded message cM and copy cm to m_buf */
 
         ptr = M_buf + params->sec_strength_len;
-        
+
         if (params->m_len_len == 2)
         {
             cm_len = (uint16_t)(*ptr++) << 8;
         }
-        
+
         cm_len |= (uint16_t)(*ptr++);
-        
+
         if (cm_len > params->m_len_max)
         {
             cm_len = params->m_len_max;
             decryption_ok = FALSE;
         }
-        
+
         memcpy(m_buf, ptr, cm_len);
         ptr += cm_len;
         num_zeros = params->m_len_max - cm_len + 1;
-        
+
         for (i = 0; i < num_zeros; i++)
         {
             if (ptr[i] != 0)
@@ -832,7 +736,7 @@ ntru_crypto_ntru_decrypt(
         {
             uint16_t pubkey_packed_len;
             ASSERT(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
-            
+
             pubkey_packed_len = (params->N * params->q_bits + 7) >> 3;
             ntru_octets_2_elements(pubkey_packed_len, pubkey_packed,
                                    params->q_bits, ringel_buf1);
@@ -874,7 +778,7 @@ ntru_crypto_ntru_decrypt(
                 FREE(scratch_buf);
                 NTRU_RET(NTRU_BUFFER_TOO_SMALL);
             }
-            
+
             memcpy(pt, m_buf, cm_len);
             *pt_len = cm_len;
         }
