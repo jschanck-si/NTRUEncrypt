@@ -181,8 +181,7 @@ main(void)
 
       ciphertext = (uint8_t *) malloc(ciphertext_len * sizeof(uint8_t));
 
-      plaintext_len = max_msg_len;
-      plaintext = (uint8_t *) malloc(plaintext_len * sizeof(uint8_t));
+      plaintext = (uint8_t *) malloc(max_msg_len * sizeof(uint8_t));
 
       for(mlen=0; mlen<=max_msg_len; mlen++)
       {
