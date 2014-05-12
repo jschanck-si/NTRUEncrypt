@@ -7,7 +7,7 @@ NTRUENCRYPT_DIR = $(TOPDIR)/src
 UNAME := $(shell uname)
 
 # Flags.
-INCFLAGS = -I$(TOPDIR)/include -I$(NTRUENCRYPT_DIR)
+INCFLAGS = -I$(TOPDIR)/include
 CFLAGS   += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)
 
 ifeq ($(UNAME), Darwin)

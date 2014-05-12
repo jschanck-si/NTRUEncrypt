@@ -316,7 +316,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         8 + (8 << 8) + (6 << 16),    /* df, dr */
         133,                         /* dg */
         60,                          /* maxMsgLenBytes */
-        136,                         /* m(1)_max */
+        101,                         /* dm0 */
         2005,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
@@ -338,7 +338,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         9 + (8 << 8) + (5 << 16),    /* df, dr */
         146,                         /* dg */
         65,                          /* maxMsgLenBytes */
-        126,                         /* m(1)_max */
+        112,                         /* dm0 */
         439,                         /* 2^c - (2^c mod N) */
         9,                           /* c */
         1,                           /* lLen */
@@ -360,7 +360,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10 + (10 << 8) + (8 << 16),  /* df, dr */
         197,                         /* dg */
         86,                          /* maxMsgLenBytes */
-        90,                          /* m(1)_max */
+        158,                         /* dm0 */
         1779,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
@@ -382,7 +382,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         11 + (11 << 8) + (15 << 16), /* df, dr */
         247,                         /* dg */
         106,                         /* maxMsgLenBytes */
-        60,                          /* m(1)_max */
+        204,                         /* dm0 */
         8173,                        /* 2^c - (2^c mod N) */
         13,                          /* c */
         1,                           /* lLen */
