@@ -511,14 +511,14 @@ ntru_ring_inv(
     uint16_t  deg_f;
     uint16_t  deg_g;
     uint16_t  k = 0;
-    bool      done = FALSE;
     uint16_t  i, j;
 
-    ASSERT(a);
-    ASSERT(t);
-    ASSERT(a_inv);
+    if (a == NULL || t == NULL || a_inv == NULL || (q & (q-1)))
+    {
+        return FALSE;
+    }
 
-    /* form a^-1 in (Z/2Z)[X]/X^N - 1) */
+    /* form a^-1 in (Z/2Z)[X]/(X^N - 1) */
 
     memset(b, 0, (N << 1));         /* clear to init b, c */
 
@@ -533,12 +533,12 @@ ntru_ring_inv(
 
     /* f(X) = a(X) mod 2 */
 
+    degf = 0;
     for (i = 0; i < N; i++)
     {
         f[i] = (uint8_t)(a[i] & 1);
+        if(f[i]) deg_f = i;
     }
-    
-    deg_f = N - 1;
 
     /* g(X) = X^N - 1 */
 
@@ -549,7 +549,7 @@ ntru_ring_inv(
 
     /* until f(X) = 1 */
 
-    while (!done)
+    while (1)
     {
         /* while f[0] = 0, f(X) /= X, c(X) *= X, k++ */
 
@@ -560,41 +560,24 @@ ntru_ring_inv(
             f = f + i;
             deg_f = deg_f - i;
             deg_c = deg_c + i;
-            
+
             for (j = deg_c; j >= i; j--)
             {
                 c[j] = c[j-i];
             }
-            
+
             for (j = 0; j < i; j++)
             {
                 c[j] = 0;
             }
-            
+
             k = k + i;
         }
 
-        /* adjust degree of f(X) if the highest coefficients are zero
-         * Note: f[0] = 1 from above so the loop will terminate.
-         */
+        /* if f(X) = 1, done */
 
-        while (f[deg_f] == 0)
+        if (deg_f == 0)
         {
-            --deg_f;
-        }
-
-        /* if f(X) = 1, done
-         * Note: f[0] = 1 from above, so only check the x term and up
-         */
-
-        for (i = 1; (i <= deg_f) && (f[i] == 0); ++i)
-        {
-            ;
-        }
-        
-        if (i > deg_f)
-        {
-            done = TRUE;
             break;
         }
 
@@ -618,38 +601,53 @@ ntru_ring_inv(
             deg_b ^= deg_c;
         }
 
-        /* f(X) += g(X), b(X) += c(X) */
+        /* f(X) += g(X)
+         * might change degree of f if deg_g >= deg_f
+         */
 
         for (i = 0; i <= deg_g; i++)
         {
             f[i] ^= g[i];
         }
 
-        if (deg_c > deg_b)
+        if(deg_g == deg_f)
         {
-            deg_b = deg_c;
+            while(deg_f > 0 && f[deg_f] == 0)
+            {
+                --deg_f;
+            }
         }
-        
+
+        /* b(X) += c(X) */
         for (i = 0; i <= deg_c; i++)
         {
             b[i] ^= c[i];
+        }
+
+        if (deg_c >= deg_b)
+        {
+            deg_b = deg_c;
+            while(deg_b > 0 && b[deg_b] == 0)
+            {
+                --deg_b;
+            }
         }
     }
 
     /* a^-1 in (Z/2Z)[X]/(X^N - 1) = b(X) shifted left k coefficients */
 
     j = 0;
-    
+
     if (k >= N)
     {
         k = k - N;
     }
-    
+
     for (i = k; i < N; i++)
     {
         a_inv[j++] = (uint16_t)(b[i]);
     }
-    
+
     for (i = 0; i < k; i++)
     {
         a_inv[j++] = (uint16_t)(b[i]);
@@ -664,12 +662,12 @@ ntru_ring_inv(
 
         memcpy(t2, a_inv, N * sizeof(uint16_t));
         ntru_ring_mult_coefficients(a, t2, N, q, t);
-        
+
         for (i = 0; i < N; ++i)
         {
             t[i] = q - t[i];
         }
-        
+
         t[0] = t[0] + 2;
         ntru_ring_mult_coefficients(t2, t, N, q, a_inv);
     }
