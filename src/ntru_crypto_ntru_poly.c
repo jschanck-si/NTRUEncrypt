@@ -424,17 +424,20 @@ ntru_ring_mult_indices_double_width_conv(
     /* c = (a * b) mod q */
 
     iC = 0;
-    memset(c, 0, N*sizeof(uint16_t));
+    memset(a_exp, 0, N*sizeof(uint32_t));
     for (iT = 0; iT < N; iT++) {
-        c[iC] += (t[iC] + (t_exp[iT] >> storage_width));
-        c[iC] &= mod_q_mask;
+        a_exp[iC] += (t[iC] + (t_exp[iT] >> storage_width));
+        a_exp[iC] &= mod_q_mask;
         t[iC] = 0;
         iC++;
         if (iC == N) iC = 0;
-        c[iC] += (t[iC] + t_exp[iT]);
-        c[iC] &= mod_q_mask;
+        a_exp[iC] += (t[iC] + t_exp[iT]);
+        a_exp[iC] &= mod_q_mask;
         t[iC] = 0;
         iC++;
+    }
+    for (iT = 0; iT < N; iT++) {
+        c[iT] = a_exp[iT];
     }
     
     
