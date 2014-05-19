@@ -125,7 +125,7 @@ main(int argc, char **argv)
       loops = 0;
     }
     else {
-      if (argc == 2 && memcmp (argv[1], "-bench", strlen ("-bench"))) {
+      if (argc == 2 && !(memcmp (argv[1], "-bench", strlen ("-bench")))) {
         loops = LOOPS;
       }
       else {
