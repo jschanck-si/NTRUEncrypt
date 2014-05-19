@@ -1,0 +1,24 @@
+make -C test
+make[1]: Entering directory `/home/wwhyte/Dev/github/ntru-crypto-fast-convo/test'
+cc -Wall -Wno-parentheses -Wshadow -fPIC -I../include -L../lib -Wl,-R,/home/wwhyte/Dev/github/ntru-crypto-fast-convo/lib -o ../bin/sanity obj/sanity.o ../lib/libNTRUEncrypt.so
+../bin/sanity
+Testing parameter set ees401ep1... kg 6300us, e 460us, d 800us
+Testing parameter set ees449ep1... kg 7800us, e 710us, d 1070us
+Testing parameter set ees677ep1... kg 18200us, e 1040us, d 2160us
+Testing parameter set ees1087ep2... kg 46600us, e 1230us, d 2320us
+Testing parameter set ees541ep1... kg 11800us, e 330us, d 500us
+Testing parameter set ees613ep1... kg 14900us, e 360us, d 640us
+Testing parameter set ees887ep1... kg 31200us, e 680us, d 1290us
+Testing parameter set ees1171ep1... kg 55500us, e 1180us, d 2210us
+Testing parameter set ees659ep1... kg 18100us, e 340us, d 530us
+Testing parameter set ees761ep1... kg 24400us, e 360us, d 630us
+Testing parameter set ees1087ep1... kg 47300us, e 680us, d 1200us
+Testing parameter set ees1499ep1... kg 88800us, e 1120us, d 2040us
+Testing parameter set ees401ep2... kg 6800us, e 140us, d 210us
+Testing parameter set ees439ep1... kg 7700us, e 150us, d 250us
+Testing parameter set ees593ep1... kg 14800us, e 230us, d 400us
+Testing parameter set ees743ep1... kg 22800us, e 360us, d 620us
+Result: Pass
+rm -rf ./obj/sanity.o ./obj/sanity.d
+rm -rf ../bin/sanity
+make[1]: Leaving directory `/home/wwhyte/Dev/github/ntru-crypto-fast-convo/test'

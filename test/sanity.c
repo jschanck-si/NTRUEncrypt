@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "ntru_crypto.h"
 
 /* For each parameter set:
@@ -85,12 +86,12 @@ get_entropy(
     return 0;
 }
 
-
+#define LOOPS 1000
 
 int
-main(void)
+main(int argc, char **argv)
 {
-    int i;
+    int i, j;
     uint8_t *public_key;
     uint8_t *private_key;
     uint8_t *message;
@@ -106,6 +107,9 @@ main(void)
     DRBG_HANDLE drbg;                 /* handle for instantiated DRBG */
     uint32_t rc;                      /* return code */
     uint16_t drbg_strength;
+    uint32_t loops;                   /* number of loops when benchmarking */
+
+    clock_t clk;
 
     NTRU_ENCRYPT_PARAM_SET_ID param_set_ids[] = {
       NTRU_EES401EP1, NTRU_EES449EP1, NTRU_EES677EP1, NTRU_EES1087EP2,
@@ -117,10 +121,26 @@ main(void)
 
     uint32_t error[(sizeof(param_set_ids)/sizeof(param_set_id))] = {0};
 
+    if (argc == 1) {
+      loops = 0;
+    }
+    else {
+      if (argc == 2 && memcmp (argv[1], "-bench", strlen ("-bench"))) {
+        loops = LOOPS;
+      }
+      else {
+        fprintf(stderr, "Usage: %s [-bench]\n"
+          "-bench runs quick & dirty benchmarks; omit to run just sanity "
+            "checks\n", argv[0]);
+         exit(0);
+      }
+    }
+
     for(i=0; i<(sizeof(param_set_ids)/sizeof(param_set_id)); i++)
     {
       param_set_id = param_set_ids[i];
-      fprintf(stderr, "Testing parameter set %s\n", ntru_encrypt_get_param_set_name(param_set_id));
+      fprintf(stderr, "Testing parameter set %s... ", ntru_encrypt_get_param_set_name(param_set_id));
+      fflush (stderr);
 
       drbg_strength = 256;
       rc = ntru_crypto_drbg_instantiate(drbg_strength, NULL, 0,
@@ -145,10 +165,13 @@ main(void)
       public_key = (uint8_t *)malloc(public_key_len * sizeof(uint8_t));
       private_key = (uint8_t *)malloc(private_key_len * sizeof(uint8_t));
 
-      rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id, &public_key_len,
+      clk = clock();
+      for (j = 0; j < loops/10 || j < 1; j++)
+        rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id, &public_key_len,
                                            public_key,
                                            &private_key_len,
                                            private_key);
+      clk = clock() - clk;
       if (rc != NTRU_OK)
       {
         ntru_crypto_drbg_uninstantiate(drbg);
@@ -157,6 +180,11 @@ main(void)
         fprintf(stderr,"\tError: An error occurred during key generation\n");
         error[i] = 1;
         continue;
+      }
+
+      if (loops) {
+        fprintf(stderr, "kg %dus, ", (int)((1.0*clk)/(loops/10)));
+        fflush (stderr);
       }
 
       rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key, 0, NULL,
@@ -177,35 +205,52 @@ main(void)
         continue;
       }
 
+
       message = (uint8_t *) malloc(max_msg_len * sizeof(uint8_t));
 
       ciphertext = (uint8_t *) malloc(ciphertext_len * sizeof(uint8_t));
 
       plaintext = (uint8_t *) malloc(max_msg_len * sizeof(uint8_t));
 
-      for(mlen=0; mlen<=max_msg_len; mlen++)
+      for(mlen=max_msg_len; mlen<=max_msg_len; mlen++)
+      /* for(mlen=0; mlen<=max_msg_len; mlen++) */
       {
         plaintext_len = max_msg_len;
         randombytes(message, mlen);
         randombytes(ciphertext, ciphertext_len);
         randombytes(plaintext, plaintext_len);
 
-        rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
+        clk = clock();
+        for (j = 0; j < loops || j < 1; j++)
+          rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                 mlen, message, &ciphertext_len, ciphertext);
+        clk = clock() - clk;
         if (rc != NTRU_OK){
           fprintf(stderr, "\tError: Encryption error %x\n", rc);
           error[i] = 1;
           break;
         }
 
-        rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
+        if (loops) {
+          fprintf(stderr, "e %dus, ", (int)((1.0*clk)/loops));
+          fflush (stderr);
+        }
+ 
+        clk = clock();
+        for (j = 0; j < loops || j < 1; j++)
+          rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                 ciphertext_len, ciphertext,
                 &plaintext_len, plaintext);
+        clk = clock() - clk;
         if (rc != NTRU_OK)
         {
           fprintf(stderr, "\tError: Decryption error %x\n", rc);
           error[i] = 1;
           break;
+        }
+
+        if (loops) {
+          fprintf(stderr, "d %dus", (int)((1.0*clk)/loops));
         }
 
         if(plaintext_len != mlen || memcmp(plaintext,message,mlen))
@@ -223,6 +268,7 @@ main(void)
       free(private_key);
       free(plaintext);
       free(ciphertext);
+      fprintf(stderr, "\n");
     }
 
     for(i=0; i<(sizeof(param_set_ids)/sizeof(param_set_id)); i++) {

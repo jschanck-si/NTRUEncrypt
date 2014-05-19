@@ -8,7 +8,7 @@ UNAME := $(shell uname)
 
 # Flags.
 INCFLAGS = -I$(TOPDIR)/include
-CFLAGS   += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)
+CFLAGS   += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS) -g
 
 ifeq ($(UNAME), Darwin)
 LDFLAGS  += -L$(LIBDIR) -Wl,
@@ -16,11 +16,18 @@ else
 LDFLAGS  += -L$(LIBDIR) -Wl,-R,$(shell cd $(TOPDIR); pwd)/lib
 endif
 
+tgts:=test_poly_mul sanity
+
 # Source files.
 sanity_srcs  := sanity.c
+test_poly_mul_srcs  := test_poly_mul.c
 
 # Object files.
-sanity_objs  := $(addprefix $(OBJDIR)/, $(sanity_srcs:.c=.o))
+sanity_objs  := $(addprefix $(OBJDIR)/, $(sanity_srcs:%.c=%.o))
+test_poly_mul_objs  := $(addprefix $(OBJDIR)/, $(test_poly_mul_srcs:%.c=%.o))
+
+# Extra include dirs
+test_poly_mul_INCFLAGS = -I$(TOPDIR)/src
 
 # Shared library files.
 ifeq ($(UNAME), Darwin)
@@ -31,7 +38,8 @@ endif
 
 # Targets.
 .PHONY : all
-all : sanity clean_sanity
+all : $(tgts) 
+# all : $(tgts) $(patsubst %, clean_%, $(tgts)) -- not sure why we always clean?
 
 # Directory rules.
 $(BINDIR) $(OBJDIR) :
@@ -39,11 +47,13 @@ $(BINDIR) $(OBJDIR) :
 
 # Executable rules.
 # Ensure BINDIR exists before building excutables in it.
-sanity: $(sanity_objs) $(NTRUEncryptlib) | $(BINDIR)
+.SECONDEXPANSION:
+$(tgts): $$($$@_objs) $$(NTRUEncryptlib) | $$(BINDIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BINDIR)/$@ $^
 	-$(BINDIR)/$@
 
 # Shared library rules.
+.PHONY : $(NTRUEncryptlib)
 $(NTRUEncryptlib) :
 	$(MAKE) -C $(NTRUENCRYPT_DIR) NTRUEncrypt
 
@@ -61,7 +71,7 @@ EXPAND_DEPENDENCY_FILE =                                            \
 # Ensure OBJDIR exists before building objects and dependency files in it.
 # Note: -MMD creates %.o and %.d simultaneously, omitting system headers.
 $(OBJDIR)/%.o : %.c | $(OBJDIR)
-	$(CC) -c -MMD $(CFLAGS) $< -o $@
+	$(CC) -c -MMD $(CFLAGS) $($*_INCFLAGS) $< -o $@
 	@$(call EXPAND_DEPENDENCY_FILE, $(@:.o=.d))
 
 # Include dependency files.
@@ -69,11 +79,11 @@ $(OBJDIR)/%.o : %.c | $(OBJDIR)
 -include $(all_objs:.o=.d)
 
 # Clean up.
-.PHONY: clean clean_sanity
+.PHONY: clean $(tgts:%=clean_%)
 clean : clean_sanity
 
-clean_sanity :
-	-rm -rf $(sanity_objs) $(sanity_objs:.o=.d)
-	-rm -rf $(BINDIR)/sanity
+$(tgts:%=clean_%):
+	-rm -rf $($(@:clean_%=%)_objs) $($(@:clean_%=%)_objs:.o=.d)
+	-rm -rf $(BINDIR)/$(@:clean_%=%)
 
 install:

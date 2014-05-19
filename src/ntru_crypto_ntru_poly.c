@@ -278,7 +278,169 @@ ntru_poly_check_min_weight(
  */
 
 void
-ntru_ring_mult_indices(
+ntru_ring_mult_indices_double_width_conv(
+    uint16_t const *a,          /*  in - pointer to ring element a */
+    uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
+    uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
+    uint16_t const *bi,         /*  in - pointer to the list of nonzero
+                                         indices of ring element b,
+                                         containing indices for the +1
+                                         coefficients followed by the
+                                         indices for -1 coefficients */
+    uint16_t        N,          /*  in - no. of coefficients in a, b, c */
+    uint16_t        q,          /*  in - large modulus */
+    uint16_t       *t,          /*  in - temp buffer of N elements */
+    uint16_t       *c)          /* out - address for polynomial c */
+{
+    uint32_t storage_width = 16;
+    uint16_t mod_q_mask = q - 1;
+    uint32_t double_mod_q_mask = (mod_q_mask << storage_width) | mod_q_mask;
+    uint32_t mask_interval_tmp = ((1 << storage_width) / q)-1;
+    uint32_t mask_interval = mask_interval_tmp > 0 ? mask_interval_tmp : 1;
+    uint16_t iA, iAE, iC, iT, iB; /* Loop variables for the relevant arrays */
+    uint32_t *a_exp; /* expanded a */
+    uint32_t *t_exp; /* expanded t */
+
+    /* ONLY WORKS FOR N ODD! */
+
+    uint16_t halfN = (N-1)/2;
+
+    ASSERT(a);
+    ASSERT(bi);
+    ASSERT(t);
+    ASSERT(c);
+
+    /* Fix this -- we don't like using malloc() internally */
+
+    a_exp = malloc(N*sizeof(uint32_t));
+    t_exp = malloc(N*sizeof(uint32_t));
+    memset (t_exp, 0, N*sizeof(uint32_t));
+    memset (t, 0, N*sizeof(uint16_t));
+    
+    /* Initialize double-width loops */
+
+    iAE = 0;
+    for(iA = 0; iA < N-1; iA++) {
+        a_exp[iAE] = a[iA] << storage_width;
+        iA++;
+        a_exp[iAE] |= a[iA];
+        iAE++;
+    }
+    a_exp[iAE] = a[N-1] << storage_width | a[0];
+    iAE++;
+    for(iA = 1; iA < N; iA++) {
+        a_exp[iAE] = a[iA] << storage_width;
+        iA++;
+        a_exp[iAE] |= a[iA];
+        iAE++;
+    }
+
+
+    /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
+
+    for (iB = 0; iB < bi_M1_len; iB++) {
+        iT = bi[iB + bi_P1_len];
+        if (iT & 1) {
+            iT+=N;
+        }
+        iT /= 2;
+
+        /* want to add the next halfN uint32s starting from k, and then add
+	 * the top storage_width-bit quantity from the one after that. */
+        
+        for (iAE = 0; iT < N && iAE < halfN; ++iAE, ++iT) {
+            t_exp[iT] = t_exp[iT] + a_exp[iAE];
+        }
+        
+	if (iT == N) {
+            for (iT = 0; iAE < halfN; ++iAE, ++iT) {
+                t_exp[iT] = t_exp[iT] + a_exp[iAE];
+            }
+	}
+
+        t_exp[iT] += (a_exp[iAE] & 0xffff0000);
+
+	if (((iB+1) % mask_interval) == 0) {
+	    for (iT = 0; iT < N; iT++) {
+	        t_exp[iT] &= double_mod_q_mask;
+	    }
+	}
+
+    }
+
+    /* t[(i+k)%N] = -(sum i=0 through N-1 of a[i] for b[k] = -1) */
+
+    iC = 0;
+    for (iT = 0; iT < N; iT++) {
+        t[iC] += (t_exp[iT] >> storage_width) & mod_q_mask;
+        iC++;
+        if (iC == N) iC = 0;
+        t[iC] += t_exp[iT] & mod_q_mask;
+        iC++;
+    }
+    for (iT = 0; iT < N; iT++) {
+        t[iT] = - t[iT];
+	t_exp[iT] = 0;
+    }
+    
+    /* t[(i+k)%N] += sum i=0 through N-1 of a[i] for b[k] = +1 */
+
+    for (iB = 0; iB < bi_P1_len; iB++) {
+        iT = bi[iB];
+        if (iT & 1) {
+            iT+=N;
+        }
+        iT /= 2;
+
+        /* want to add the next halfN uint32s starting from k, and then add
+	 * the top storage_width-bit quantity from the one after that. */
+        
+        for (iAE = 0; iT < N && iAE < halfN; ++iAE, ++iT) {
+            t_exp[iT] = t_exp[iT] + a_exp[iAE];
+        }
+        
+	if (iT == N) {
+            for (iT = 0; iAE < halfN; ++iAE, ++iT) {
+                t_exp[iT] = t_exp[iT] + a_exp[iAE];
+            }
+	}
+
+        t_exp[iT] += (a_exp[iAE] & 0xffff0000);
+
+	if (((iB+1) % mask_interval) == 0) {
+	    for (iT = 0; iT < N; iT++) {
+	        t_exp[iT] &= double_mod_q_mask;
+	    }
+	}
+
+    }
+
+    /* c = (a * b) mod q */
+
+    iC = 0;
+    memset(c, 0, N*sizeof(uint16_t));
+    for (iT = 0; iT < N; iT++) {
+        c[iC] += (t[iC] + (t_exp[iT] >> storage_width));
+	c[iC] &= mod_q_mask;
+	t[iC] = 0;
+        iC++;
+        if (iC == N) iC = 0;
+        c[iC] += (t[iC] + t_exp[iT]);
+	c[iC] &= mod_q_mask;
+	t[iC] = 0;
+        iC++;
+    }
+    
+    
+    free(a_exp);
+    free(t_exp);
+
+    return;
+}
+
+
+void
+ntru_ring_mult_indices_orig(
     uint16_t const *a,          /*  in - pointer to ring element a */
     uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
     uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
@@ -355,6 +517,34 @@ ntru_ring_mult_indices(
     
     return;
 }
+
+void
+ntru_ring_mult_indices(
+    uint16_t const *a,          /*  in - pointer to ring element a */
+    uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
+    uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
+    uint16_t const *bi,         /*  in - pointer to the list of nonzero
+                                         indices of ring element b,
+                                         containing indices for the +1
+                                         coefficients followed by the
+                                         indices for -1 coefficients */
+    uint16_t        N,          /*  in - no. of coefficients in a, b, c */
+    uint16_t        q,          /*  in - large modulus */
+    uint16_t       *t,          /*  in - temp buffer of N elements */
+    uint16_t       *c)          /* out - address for polynomial c */
+{
+    if (1) {
+        ntru_ring_mult_indices_double_width_conv
+            (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
+        return;
+    }
+    else {
+        ntru_ring_mult_indices_orig
+            (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
+        return;
+    }
+}
+
 
 
 /* ntru_ring_mult_product_indices
