@@ -136,6 +136,7 @@ main(void)
     uint8_t plaintext[16];            /* size of AES-128 key */
     uint16_t plaintext_len;           /* no. of octets in plaintext */
     uint8_t *next = NULL;             /* points to next cert field to parse */
+    uint32_t next_len;                /* no. of octets it next */
     DRBG_HANDLE drbg;                 /* handle for instantiated DRBG */
     uint32_t rc;                      /* return code */
     bool error = FALSE;               /* records if error occurred */
@@ -282,8 +283,9 @@ main(void)
      */
     next = encoded_public_key;          /* the next pointer will be pointing
                                            to the SubjectPublicKeyInfo field */
+    next_len = encoded_public_key_len;
     rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
-            &public_key_len, NULL, &next);
+            &public_key_len, NULL, &next, &next_len);
     if (rc != NTRU_OK)
         /* An error occurred requesting the buffer size needed. */
         return 1;
@@ -298,10 +300,11 @@ main(void)
 
     /* Decode the SubjectPublicKeyInfo field.  Note that if successful,
      * the "next" pointer will now point to the next field following
-     * the SubjectPublicKeyInfo field.
+     * the SubjectPublicKeyInfo field, or NULL if we've exhausted the
+     * buffer.
      */
     rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
-            &public_key_len, public_key, &next);
+            &public_key_len, public_key, &next, &next_len);
     if (rc != NTRU_OK)
         /* An error occurred decoding the SubjectPublicKeyInfo field.
          * This could indicate that the field is not a valid encoding

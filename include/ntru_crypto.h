@@ -289,7 +289,7 @@ ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
                                     /*    out - address for encoded info */
 
 
-/* ntru_crypto_ntru_encrypt_SubjectPublicKeyInfo2PublicKey
+/* ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey
  *
  * Decodes a DER-encoded NTRUEncrypt public-key from a
  * SubjectPublicKeyInfo field in an X.509 certificate and returns the
@@ -305,6 +305,8 @@ ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
  * Upon return, it is the actual size of the public-key blob.
  *
  * Returns NTRU_OK if successful.
+ * Returns NTRU_ERROR_BASE + NTRU_BAD_LENGTH if the encoded data buffer
+ *  does not contain a full der prefix and public key.
  * Returns NTRU_ERROR_BASE + NTRU_BAD_PARAMETER if an argument pointer
  *  (other than pubkey_blob) is NULL.
  * Returns NTRU_ERROR_BASE + NTRU_BAD_ENCODING if the encoded data is
@@ -324,9 +326,11 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
                                                  address for no. of octets in
                                                  pubkey blob */
     uint8_t        *pubkey_blob,     /*    out - address for pubkey blob */
-    uint8_t       **next);           /*    out - address for ptr to encoded
+    uint8_t       **next,            /*    out - address for ptr to encoded
                                                  data following the 
                                                  subjectPublicKeyInfo */
+    uint32_t       *remaining_data_len);/* out - number of bytes remaining in
+                                                 buffer *next */
 
 
 /* ntru_encrypt_get_param_set_name

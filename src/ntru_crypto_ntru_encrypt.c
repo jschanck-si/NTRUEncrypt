@@ -1326,6 +1326,8 @@ ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
  * Upon return, it is the actual size of the public-key blob.
  *
  * Returns NTRU_OK if successful.
+ * Returns NTRU_ERROR_BASE + NTRU_BAD_LENGTH if the encoded data buffer
+ *  does not contain a full der prefix and public key.
  * Returns NTRU_ERROR_BASE + NTRU_BAD_PARAMETER if an argument pointer
  *  (other than pubkey_blob) is NULL.
  * Returns NTRU_ERROR_BASE + NTRU_BAD_ENCODING if the encoded data is
@@ -1345,9 +1347,11 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
                                                  address for no. of octets in
                                                  pubkey blob */
     uint8_t        *pubkey_blob,     /*    out - address for pubkey blob */
-    uint8_t       **next)            /*    out - address for ptr to encoded
+    uint8_t       **next,            /*    out - address for ptr to encoded
                                                  data following the 
                                                  subjectPublicKeyInfo */
+    uint32_t       *remaining_data_len) /* out - number of bytes remaining in
+                                                 buffer *next */
 {
     NTRU_ENCRYPT_PARAM_SET *params = NULL;
     uint8_t                 prefix_buf[41];
@@ -1355,6 +1359,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     uint16_t                packed_pubkey_len = 0;
     uint8_t                 pubkey_pack_type;
     uint16_t                public_key_blob_len;
+    uint8_t                *data_ptr;
 
     /* check for bad parameters */
 
@@ -1363,15 +1368,21 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
         NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
+    if (*remaining_data_len < sizeof(prefix_buf))
+    {
+        NTRU_RET(NTRU_BAD_LENGTH);
+    }
+
     /* determine if data to be decoded is a valid encoding of an NTRU
      * public key
      */
 
-    memcpy(prefix_buf, encoded_data, sizeof(prefix_buf));
+    data_ptr = (uint8_t *)encoded_data;
+    memcpy(prefix_buf, data_ptr, sizeof(prefix_buf));
 
     /* get a pointer to the parameter-set parameters */
 
-    if ((params = ntru_encrypt_get_params_with_DER_id(encoded_data[31])) == NULL)
+    if ((params = ntru_encrypt_get_params_with_DER_id(data_ptr[31])) == NULL)
     {
         der_id_valid = FALSE;
 
@@ -1415,6 +1426,11 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
         }
     }
 
+    /* done with prefix */
+
+    data_ptr += sizeof(prefix_buf);
+    *remaining_data_len -= sizeof(prefix_buf);
+
     /* get public key packing type and blob length */
 
     ntru_crypto_ntru_encrypt_key_get_blob_params(params, &pubkey_pack_type,
@@ -1436,14 +1452,30 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
         NTRU_RET(NTRU_BUFFER_TOO_SMALL);
     }
 
+    /* check that blob contains additional data of length packed_pubkey_len */
+    if(*remaining_data_len < packed_pubkey_len)
+    {
+        NTRU_RET(NTRU_BAD_LENGTH);
+    }
+
     /* create the public-key blob */
 
     ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(params, packed_pubkey_len,
-                                     encoded_data + sizeof(der_prefix_template),
-                                     pubkey_pack_type, pubkey_blob);
+                                     data_ptr, pubkey_pack_type, pubkey_blob);
     *pubkey_blob_len = public_key_blob_len;
 
-    *next = *next + sizeof(der_prefix_template) + packed_pubkey_len;
+    data_ptr += packed_pubkey_len;
+    *remaining_data_len -= packed_pubkey_len;
+
+    /* check whether the buffer is empty and update *next */
+    if(*remaining_data_len > 0)
+    {
+        *next = data_ptr;
+    }
+    else
+    {
+        *next = NULL;
+    }
 
     NTRU_RET(NTRU_OK);
 }
