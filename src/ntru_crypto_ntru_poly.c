@@ -533,7 +533,7 @@ ntru_ring_inv(
 
     /* f(X) = a(X) mod 2 */
 
-    degf = 0;
+    deg_f = 0;
     for (i = 0; i < N; i++)
     {
         f[i] = (uint8_t)(a[i] & 1);
