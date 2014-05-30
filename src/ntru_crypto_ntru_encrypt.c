@@ -1350,8 +1350,8 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     uint8_t       **next,            /*    out - address for ptr to encoded
                                                  data following the 
                                                  subjectPublicKeyInfo */
-    uint32_t       *remaining_data_len) /* out - number of bytes remaining in
-                                                 buffer *next */
+    uint32_t       *remaining_data_len) /* in/out - number of bytes remaining in
+                                                    buffer *next */
 {
     NTRU_ENCRYPT_PARAM_SET *params = NULL;
     uint8_t                 prefix_buf[41];
