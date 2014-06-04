@@ -1360,15 +1360,17 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     uint8_t                 pubkey_pack_type;
     uint16_t                public_key_blob_len;
     uint8_t                *data_ptr;
+    uint32_t                data_len;
 
     /* check for bad parameters */
 
-    if (!encoded_data || !pubkey_blob_len || !next)
+    if (!encoded_data || !pubkey_blob_len || !next || !remaining_data_len)
     {
         NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
-    if (*remaining_data_len < sizeof(prefix_buf))
+    data_len = *remaining_data_len;
+    if (data_len < sizeof(prefix_buf))
     {
         NTRU_RET(NTRU_BAD_LENGTH);
     }
@@ -1429,7 +1431,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     /* done with prefix */
 
     data_ptr += sizeof(prefix_buf);
-    *remaining_data_len -= sizeof(prefix_buf);
+    data_len -= sizeof(prefix_buf);
 
     /* get public key packing type and blob length */
 
@@ -1453,7 +1455,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     }
 
     /* check that blob contains additional data of length packed_pubkey_len */
-    if(*remaining_data_len < packed_pubkey_len)
+    if(data_len < packed_pubkey_len)
     {
         NTRU_RET(NTRU_BAD_LENGTH);
     }
@@ -1465,16 +1467,18 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     *pubkey_blob_len = public_key_blob_len;
 
     data_ptr += packed_pubkey_len;
-    *remaining_data_len -= packed_pubkey_len;
+    data_len -= packed_pubkey_len;
 
     /* check whether the buffer is empty and update *next */
     if(*remaining_data_len > 0)
     {
         *next = data_ptr;
+        *remaining_data_len = data_len;
     }
     else
     {
         *next = NULL;
+        *remaining_data_len = 0;
     }
 
     NTRU_RET(NTRU_OK);
