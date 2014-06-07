@@ -24,7 +24,7 @@ sanity_objs  := $(addprefix $(OBJDIR)/, $(sanity_srcs:.c=.o))
 
 # Shared library files.
 ifeq ($(UNAME), Darwin)
-NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.dynlib
+NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.dylib
 else
 NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.so
 endif

@@ -24,7 +24,7 @@ sampleNTRUEncrypt_objs  := $(addprefix $(OBJDIR)/, $(sampleNTRUEncrypt_srcs:.c=.
 
 # Shared library files.
 ifeq ($(UNAME), Darwin)
-NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.dynlib
+NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.dylib
 else
 NTRUEncryptlib := $(LIBDIR)/libNTRUEncrypt.so
 endif
