@@ -9,8 +9,13 @@ UNAME := $(shell uname)
 vpath %.so $(LIBDIR)
 
 # Flags.
+
+CFLAGS_DEBUG_yes:= -g
+CFLAGS_DEBUG_no:= -O2
+
 INCFLAGS = -I../include
-CFLAGS += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS) 
+CFLAGS += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS) \
+  $(CFLAGS_DEBUG_$(DEBUG))
 
 # Source files.
 NTRUEncrypt_srcs := $(wildcard *.c)

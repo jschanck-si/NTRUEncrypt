@@ -142,9 +142,18 @@ main ()
   uint16_t N;
   uint16_t df;
 
+  uint16_t tmp[] = {0, 1, 2, 3, 4};
+  uint32_t *t1 = (uint32_t*)&tmp[0];
+  uint32_t *t2 = (uint32_t*)&tmp[1];
+  printf("%08x %08x\n", *t1, *(t1+1));
+  printf("%08x %08x\n", *t2, *(t2+1));
+  *t2 += *t1;
+  printf("%08x \n", *t2);
+
+/*
   rval = inner_loop(779, 50, 50, 1, 1);
   if (rval) exit (rval);
-
+*/
   for (N = 29; N < 1000; N+=30) {
     for (df = 5; df < N/3; df+= 5) {
     

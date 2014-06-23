@@ -86,7 +86,7 @@ get_entropy(
     return 0;
 }
 
-#define LOOPS 1000
+#define LOOPS 10000
 
 int
 main(int argc, char **argv)
@@ -166,7 +166,7 @@ main(int argc, char **argv)
       private_key = (uint8_t *)malloc(private_key_len * sizeof(uint8_t));
 
       clk = clock();
-      for (j = 0; j < loops/10 || j < 1; j++)
+      for (j = 0; j < loops/100 || j < 1; j++)
         rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id, &public_key_len,
                                            public_key,
                                            &private_key_len,
@@ -183,7 +183,7 @@ main(int argc, char **argv)
       }
 
       if (loops) {
-        fprintf(stderr, "kg %dus, ", (int)((1.0*clk)/(loops/10)));
+        fprintf(stderr, "kg %dus, ", (int)((1.0*clk)/(loops/100)));
         fflush (stderr);
       }
 
