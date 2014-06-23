@@ -717,7 +717,7 @@ ntru_ring_mult_indices(
     uint16_t       *t,          /*  in - temp buffer of N elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
-    if (0) {
+    if (1) {
         ntru_ring_mult_indices_double_width_conv
             (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
         return;
