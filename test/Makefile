@@ -84,7 +84,7 @@ $(OBJDIR)/%.o : %.c | $(OBJDIR)
 
 # Clean up.
 .PHONY: clean $(tgts:%=clean_%)
-clean : clean_sanity
+clean : $(tgts:%=clean_%)
 
 $(tgts:%=clean_%):
 	-rm -rf $($(@:clean_%=%)_objs) $($(@:clean_%=%)_objs:.o=.d)
