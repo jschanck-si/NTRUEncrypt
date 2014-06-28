@@ -22,6 +22,32 @@
  *
  *****************************************************************************/
  
+// Check windows
+#if _WIN32 || _WIN64
+   #if _WIN64
+     #define ENV64BIT
+  #else
+    #define ENV32BIT
+  #endif
+
+// Check GCC
+#elif __GNUC__
+  #if __x86_64__ || __ppc64__
+    #define ENV64BIT
+  #else
+    #define ENV32BIT
+  #endif
+
+#else
+    #define ENVUNKNOWN
+#endif
+
+#ifdef TEST_COMPARE_CONVOLUTIONS
+    #define ENV64BIT
+    #define ENV32BIT
+    #define ENVUNKNOWN
+#endif /* def TEST_COMPARE_CONVOLUTIONS */
+
 /******************************************************************************
  *
  * File: ntru_crypto_ntru_poly.c
@@ -276,6 +302,8 @@ ntru_poly_check_min_weight(
  * beyond 16 bits does not matter.
  */
 
+#ifdef ENV64BIT
+
 void
 ntru_ring_mult_indices_quadruple_width_conv(
     uint16_t const *a,          /*  in - pointer to ring element a */
@@ -480,6 +508,8 @@ ntru_ring_mult_indices_quadruple_width_conv(
     return;
 }
 
+#endif  /* def ENV64BIT */
+
 
 
 /* ntru_ring_mult_indices
@@ -500,6 +530,8 @@ ntru_ring_mult_indices_quadruple_width_conv(
  * This assumes q is 2^r where 8 < r < 16, so that overflow of the sum
  * beyond 16 bits does not matter.
  */
+
+#ifdef ENV32BIT
 
 void
 ntru_ring_mult_indices_double_width_conv(
@@ -653,6 +685,7 @@ ntru_ring_mult_indices_double_width_conv(
 
     return;
 }
+#endif  /* def ENV32BIT */
 
 
 /* ntru_ring_mult_indices
@@ -673,6 +706,9 @@ ntru_ring_mult_indices_double_width_conv(
  * This assumes q is 2^r where 8 < r < 16, so that overflow of the sum
  * beyond 16 bits does not matter.
  */
+
+
+#ifdef ENVUNKNOWN
 
 void
 ntru_ring_mult_indices_orig(
@@ -752,6 +788,7 @@ ntru_ring_mult_indices_orig(
     
     return;
 }
+#endif   /* def ENVUNKNOWN */
 
 void
 ntru_ring_mult_indices(
@@ -768,21 +805,20 @@ ntru_ring_mult_indices(
     uint16_t       *t,          /*  in - temp buffer of N elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
-    if (1) {
-        ntru_ring_mult_indices_quadruple_width_conv
-            (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
-        return;
-    }
-    else if (0) {
-        ntru_ring_mult_indices_double_width_conv
-            (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
-        return;
-    }
-    else {
-        ntru_ring_mult_indices_orig
-            (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
-        return;
-    }
+#ifdef ENV64BIT
+    ntru_ring_mult_indices_quadruple_width_conv
+        (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
+    return;
+#endif
+#ifdef ENV32BIT
+    ntru_ring_mult_indices_double_width_conv
+        (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
+    return;
+#endif
+#ifdef ENVUNKNOWN
+    ntru_ring_mult_indices_orig (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
+    return;
+#endif
 }
 
 
@@ -1107,3 +1143,12 @@ ntru_ring_inv(
 }
 
 
+#ifdef ENV64BIT
+    #undef ENV64BIT
+#endif
+#ifdef ENV32BIT
+    #undef ENV32BIT
+#endif
+#ifdef ENVUNKNOWN
+    #undef ENVUNKNOWN
+#endif

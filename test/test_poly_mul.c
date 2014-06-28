@@ -1,6 +1,9 @@
 #include "ntru_crypto_ntru_poly.h"
 #include <stdio.h>
 
+#ifdef TEST_COMPARE_CONVOLUTIONS 
+
+
 #define NDEF (29)
 #define DF (5)
 
@@ -169,3 +172,18 @@ main ()
 
   exit (0);
 }
+
+#else  /* def/ndef TEST_COMPARE_CONVOLUTIONS  */
+
+int main()
+{
+  printf(
+    "\n\n    **************************\n\n"
+    "compile this test program and the library with -DTEST_COMPARE_CONVOLUTIONS"
+    "\nto run these tests.\n"
+    "\n    **************************\n\n"
+  );
+  exit (0);
+}
+
+#endif  /* def TEST_COMPARE_CONVOLUTIONS  */
