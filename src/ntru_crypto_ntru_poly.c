@@ -257,6 +257,230 @@ ntru_poly_check_min_weight(
     return TRUE;
 }
 
+/* ntru_ring_mult_indices
+ *
+ * Multiplies ring element (polynomial) "a" by ring element (polynomial) "b"
+ * to produce ring element (polynomial) "c" in (Z/qZ)[X]/(X^N - 1).
+ * This is a convolution operation.
+ *
+ * Ring element "b" is a sparse trinary polynomial with coefficients -1, 0,
+ * and 1.  It is specified by a list, bi, of its nonzero indices containing
+ * indices for the bi_P1_len +1 coefficients followed by the indices for the
+ * bi_M1_len -1 coefficients.
+ * The indices are in the range [0,N).
+ *
+ * The result array "c" may share the same memory space as input array "a",
+ * input array "b", or temp array "t".
+ *
+ * This assumes q is 2^r where 8 < r < 16, so that overflow of the sum
+ * beyond 16 bits does not matter.
+ */
+
+void
+ntru_ring_mult_indices_quadruple_width_conv(
+    uint16_t const *a,          /*  in - pointer to ring element a */
+    uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
+    uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
+    uint16_t const *bi,         /*  in - pointer to the list of nonzero
+                                         indices of ring element b,
+                                         containing indices for the +1
+                                         coefficients followed by the
+                                         indices for -1 coefficients */
+    uint16_t        N,          /*  in - no. of coefficients in a, b, c */
+    uint16_t        q,          /*  in - large modulus */
+    uint16_t       *t,          /*  in - temp buffer of N elements */
+    uint16_t       *c)          /* out - address for polynomial c */
+{
+    uint32_t storage_width = 16;
+    uint16_t mod_q_mask = q - 1;
+    uint64_t full_mod_q_mask = (mod_q_mask << storage_width) | mod_q_mask;
+    uint32_t mask_interval_tmp = ((1 << storage_width) / q);
+    uint32_t mask_interval = mask_interval_tmp > 0 ? mask_interval_tmp : 1;
+    uint16_t iA, iA64, iT, iB; /* Loop variables for the relevant arrays */
+    uint16_t mask_time;
+    const uint64_t *a64o0; /* expanded a */
+    const uint64_t *a64o1; /* expanded a */
+    const uint64_t *a64o2; /* expanded a */
+    const uint64_t *a64o3; /* expanded a */
+    uint64_t *t64o0; /* expanded t */
+    uint64_t *t64o1; /* expanded t */
+    uint64_t *t64o2; /* expanded t */
+    uint64_t *t64o3; /* expanded t */
+    uint16_t o0end, o1end, o2end, o3end;
+    uint8_t picker;
+    uint64_t *ptr;
+    const uint64_t *cPtr;
+    uint32_t iT64;
+    uint16_t end;
+    uint16_t Nmod4 = N & 3;
+
+    /* ONLY WORKS FOR N ODD! */
+
+    ASSERT(a);
+    ASSERT(bi);
+    ASSERT(t);
+    ASSERT(c);
+
+    a64o0 = (const uint64_t *) &a[0]; a64o1 = (const uint64_t *) &a[1];
+    a64o2 = (const uint64_t *) &a[2]; a64o3 = (const uint64_t *) &a[3];
+    t64o0 = (uint64_t *) &t[0]; t64o1 = (uint64_t *) &t[1]; 
+    t64o2 = (uint64_t *) &t[2]; t64o3 = (uint64_t *) &t[3]; 
+    o0end = N >> 2; o1end = (N-1) >> 2; o2end = (N-2) >> 2; o3end = (N-3) >> 2;
+    full_mod_q_mask = (mod_q_mask << storage_width) | mod_q_mask;
+    full_mod_q_mask = (full_mod_q_mask << 2*storage_width) | full_mod_q_mask;
+
+    /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
+
+    mask_time = 0;
+
+    memset(t, 0, N *sizeof(uint16_t));
+    for (iB = 0; iB < bi_M1_len; iB++) {
+        iT = bi[iB + bi_P1_len];
+        picker = iT & 3;
+
+        /* first half -- from iT to N */
+        switch (picker) {
+            case 0: ptr = t64o0; end = o0end; break;
+            case 1: ptr = t64o1; end = o1end; break;
+            case 2: ptr = t64o2; end = o2end; break;
+            case 3: ptr = t64o3; end = o3end; break;
+        }
+
+        iT64 = iT >> 2; iA64 = 0;
+
+        for (; iT64 < end; iA64++, iT64++) {
+            ptr[iT64] += a64o0[iA64];
+        }
+        iA = iA64 << 2; iT = (iT64 << 2) + picker;
+        while (iT < N) {
+            t[iT] += a[iA];
+            iT++; iA++;
+        }
+
+        /* second half -- from 0 to start -1 */
+
+        /* at this point we have used (N-bi[iB + bi_P1_len]) and iA should be
+         * equal to bi[iB+bi_P1_len]+1.
+         */
+        iA64 = iA >> 2; iT64 = 0; 
+        picker = iA & 3;
+        switch (picker) {
+            case 0: cPtr = a64o0; end = o0end; break;
+            case 1: cPtr = a64o1; end = o1end; break;
+            case 2: cPtr = a64o2; end = o2end; break;
+            case 3: cPtr = a64o3; end = o3end; break;
+        }
+
+        for (; iA64 < end; iA64++, iT64++) {
+            t64o0[iT64] += cPtr[iA64];
+        }
+        iT = iT64 << 2; iA = (iA64 << 2) + picker;
+        while (iA < N) {
+            t[iT] += a[iA];
+            iT++; iA++;
+        }
+
+        mask_time++;
+        if (mask_time == mask_interval) {
+            t64o0[0] &= full_mod_q_mask;
+            if (1 == Nmod4) {
+                for (iT64 = 0; iT64 < o1end; iT64++) {
+                    t64o1[iT64] &= full_mod_q_mask;
+                }
+            }
+
+            else if (3 == Nmod4) {
+                for (iT64 = 0; iT64 < o3end; iT64++) {
+                    t64o3[iT64] &= full_mod_q_mask;
+                }
+            }
+            else { ASSERT (0); }
+            mask_time = 0;
+        }
+        
+    } /* for (iB = 0; iB < bi_M1_len; iB++) -- minus-index loop */
+
+    /* Minus everything */
+    for (iT = 0; iT < N; iT++) {
+        t[iT] = -t[iT]; t[iT] &= mod_q_mask;
+    }
+    mask_time = 0;
+
+    for (iB = 0; iB < bi_P1_len; iB++) {
+        iT = bi[iB];
+        picker = iT & 3;
+
+        /* first half -- from iT to N */
+        switch (picker) {
+            case 0: ptr = t64o0; end = o0end; break;
+            case 1: ptr = t64o1; end = o1end; break;
+            case 2: ptr = t64o2; end = o2end; break;
+            case 3: ptr = t64o3; end = o3end; break;
+        }
+
+        iT64 = iT >> 2; iA64 = 0;
+
+        for (; iT64 < end; iA64++, iT64++) {
+            ptr[iT64] += a64o0[iA64];
+        }
+        iA = iA64 << 2; iT = (iT64 << 2) + picker;
+        while (iT < N) {
+            t[iT] += a[iA];
+            iT++; iA++;
+        }
+
+        /* second half -- from 0 to start -1 */
+
+        /* at this point we have used (N-bi[iB + bi_P1_len]) and iA should be
+         * equal to bi[iB+bi_P1_len]+1. 
+         */
+        iA64 = iA >> 2; iT64 = 0; 
+        picker = iA & 3;
+        switch (picker) {
+            case 0: cPtr = a64o0; end = o0end; break;
+            case 1: cPtr = a64o1; end = o1end; break;
+            case 2: cPtr = a64o2; end = o2end; break;
+            case 3: cPtr = a64o3; end = o3end; break;
+        }
+
+        for (; iA64 < end; iA64++, iT64++) {
+            t64o0[iT64] += cPtr[iA64];
+        }
+        iT = iT64 << 2; iA = (iA64 << 2) + picker;
+        while (iA < N) {
+            t[iT] += a[iA];
+            iT++; iA++;
+        }
+
+        mask_time++;
+        if (mask_time == mask_interval) {
+            t64o0[0] &= full_mod_q_mask;
+            if (1 == Nmod4) {
+                for (iT64 = 0; iT64 < o1end; iT64++) {
+                    t64o1[iT64] &= full_mod_q_mask;
+                }
+            }
+
+            else if (3 == Nmod4) {
+                for (iT64 = 0; iT64 < o3end; iT64++) {
+                    t64o3[iT64] &= full_mod_q_mask;
+                }
+            }
+            else { ASSERT (0); }
+            mask_time = 0;
+        }
+        
+    } /* for (iB = 0; iB < bi_P1_len; iB++) -- plus-index loop */
+
+    /* c = (a * b) mod q */
+    for (iT = 0; iT < N; iT++) {
+        c[iT] = t[iT] & mod_q_mask;
+    }
+
+    return;
+}
+
+
 
 /* ntru_ring_mult_indices
  *
@@ -297,12 +521,12 @@ ntru_ring_mult_indices_double_width_conv(
     uint32_t double_mod_q_mask = (mod_q_mask << storage_width) | mod_q_mask;
     uint32_t mask_interval_tmp = ((1 << storage_width) / q);
     uint32_t mask_interval = mask_interval_tmp > 0 ? mask_interval_tmp : 1;
-    uint16_t iA, iAE, iC, iT, iB; /* Loop variables for the relevant arrays */
+    uint16_t iAE, iT, iB; /* Loop variables for the relevant arrays */
     uint16_t mask_time;
-    const uint32_t *a0_exp; /* expanded a */
-    const uint32_t *a1_exp; /* expanded a */
-    uint32_t *t0_exp; /* expanded t */
-    uint32_t *t1_exp; /* expanded t */
+    const uint32_t *a32o0; /* expanded a */
+    const uint32_t *a32o1; /* expanded a */
+    uint32_t *t32o0; /* expanded t */
+    uint32_t *t32o1; /* expanded t */
 
     /* ONLY WORKS FOR N ODD! */
 
@@ -313,8 +537,8 @@ ntru_ring_mult_indices_double_width_conv(
     ASSERT(t);
     ASSERT(c);
 
-    a0_exp = (const uint32_t *) &a[0]; a1_exp = (const uint32_t *) &a[1];
-    t0_exp = (uint32_t *) &t[0]; t1_exp = (uint32_t *) &t[1]; 
+    a32o0 = (const uint32_t *) &a[0]; a32o1 = (const uint32_t *) &a[1];
+    t32o0 = (uint32_t *) &t[0]; t32o1 = (uint32_t *) &t[1]; 
 
     /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
 
@@ -331,36 +555,36 @@ ntru_ring_mult_indices_double_width_conv(
 
             iT -= 1; iT /= 2;
             for (iAE = 0; iT < halfN && iAE < halfN; ++iAE, ++iT) {
-                t1_exp[iT] += a0_exp[iAE];
+                t32o1[iT] += a32o0[iAE];
             }
             iT = 0;
             for (; iAE < halfN; ++iAE, ++iT) {
-                t0_exp[iT] += a0_exp[iAE];
+                t32o0[iT] += a32o0[iAE];
             }
             t[2*iT] += a[N-1];
         }
 
         else { /* iT & 1 == 0 */
-	/* Even case -- add a0 till iT0 == halfN, at which point the a0 index =
-	 * say iA; then add the next entry of a to t[N-1]; and move the pointer
-	 * to iT = 0, i.e. t[0]; then add a1 from iA to the end. */
+        /* Even case -- add a0 till iT0 == halfN, at which point the a0 index =
+         * say iA; then add the next entry of a to t[N-1]; and move the pointer
+         * to iT = 0, i.e. t[0]; then add a1 from iA to the end. */
             iT /= 2;
 
             for (iAE = 0; iT < halfN && iAE < halfN; ++iAE, ++iT) {
-                t0_exp[iT] += a0_exp[iAE];
+                t32o0[iT] += a32o0[iAE];
             }
             t[N-1] += a[iAE*2];
             iT = 0;
             for (; iAE < halfN; ++iAE, ++iT) {
-                t0_exp[iT] += a1_exp[iAE];
+                t32o0[iT] += a32o1[iAE];
             }
         }
 
         mask_time++;
         if (mask_time == mask_interval) {
-            t0_exp[0] &= double_mod_q_mask;
+            t32o0[0] &= double_mod_q_mask;
             for (iT = 0; iT < halfN; iT++) {
-                t1_exp[iT] &= double_mod_q_mask;
+                t32o1[iT] &= double_mod_q_mask;
             }
             mask_time = 0;
         }
@@ -371,9 +595,9 @@ ntru_ring_mult_indices_double_width_conv(
     for (iT = 0; iT < N; iT++) {
         t[iT] = -t[iT];
     }
-    t0_exp[0] &= double_mod_q_mask;
+    t32o0[0] &= double_mod_q_mask;
     for (iT = 0; iT < halfN; iT++) {
-        t1_exp[iT] &= double_mod_q_mask;
+        t32o1[iT] &= double_mod_q_mask;
     }
     mask_time = 0;
     
@@ -387,42 +611,40 @@ ntru_ring_mult_indices_double_width_conv(
 
             iT -= 1; iT /= 2;
             for (iAE = 0; iT < halfN && iAE < halfN; ++iAE, ++iT) {
-                t1_exp[iT] += a0_exp[iAE];
+                t32o1[iT] += a32o0[iAE];
             }
             iT = 0;
             for (; iAE < halfN; ++iAE, ++iT) {
-                t0_exp[iT] += a0_exp[iAE];
+                t32o0[iT] += a32o0[iAE];
             }
             t[2*iT] += a[N-1];
         }
 
         else { /* iT & 1 == 0 */
-	/* Even case -- add a0 till iT0 == halfN, at which point the a0 index =
-	 * say iA; then add the next entry of a to t[N-1]; and move the pointer
-	 * to iT = 0, i.e. t[0]; then add a1 from iA to the end. */
+        /* Even case -- add a0 till iT0 == halfN, at which point the a0 index =
+         * say iA; then add the next entry of a to t[N-1]; and move the pointer
+         * to iT = 0, i.e. t[0]; then add a1 from iA to the end. */
             iT /= 2;
 
             for (iAE = 0; iT < halfN && iAE < halfN; ++iAE, ++iT) {
-                t0_exp[iT] += a0_exp[iAE];
+                t32o0[iT] += a32o0[iAE];
             }
             t[N-1] += a[iAE*2];
             iT = 0;
             for (; iAE < halfN; ++iAE, ++iT) {
-                t0_exp[iT] += a1_exp[iAE];
+                t32o0[iT] += a32o1[iAE];
             }
         }
 
         mask_time++;
         if (mask_time == mask_interval) {
-            t0_exp[0] &= double_mod_q_mask;
+            t32o0[0] &= double_mod_q_mask;
             for (iT = 0; iT < halfN; iT++) {
-                t1_exp[iT] &= double_mod_q_mask;
+                t32o1[iT] &= double_mod_q_mask;
             }
             mask_time = 0;
         }
     }
-
-
 
     /* c = (a * b) mod q */
     for (iT = 0; iT < N; iT++) {
@@ -451,177 +673,6 @@ ntru_ring_mult_indices_double_width_conv(
  * This assumes q is 2^r where 8 < r < 16, so that overflow of the sum
  * beyond 16 bits does not matter.
  */
-
-void
-ntru_ring_mult_indices_double_width_conv_orig(
-    uint16_t const *a,          /*  in - pointer to ring element a */
-    uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
-    uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
-    uint16_t const *bi,         /*  in - pointer to the list of nonzero
-                                         indices of ring element b,
-                                         containing indices for the +1
-                                         coefficients followed by the
-                                         indices for -1 coefficients */
-    uint16_t        N,          /*  in - no. of coefficients in a, b, c */
-    uint16_t        q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of N elements */
-    uint16_t       *c)          /* out - address for polynomial c */
-{
-    uint32_t storage_width = 16;
-    uint16_t mod_q_mask = q - 1;
-    uint32_t double_mod_q_mask = (mod_q_mask << storage_width) | mod_q_mask;
-    uint32_t mask_interval_tmp = ((1 << storage_width) / q);
-    uint32_t mask_interval = mask_interval_tmp > 0 ? mask_interval_tmp : 1;
-    uint16_t iA, iAE, iC, iT, iB; /* Loop variables for the relevant arrays */
-    uint16_t mask_time;
-    uint32_t *a_exp; /* expanded a */
-    uint32_t *t_exp; /* expanded t */
-
-    /* ONLY WORKS FOR N ODD! */
-
-    uint16_t halfN = (N-1)/2;
-
-    ASSERT(a);
-    ASSERT(bi);
-    ASSERT(t);
-    ASSERT(c);
-
-    /* Fix this -- we don't like using malloc() internally */
-
-    a_exp = malloc(N*sizeof(uint32_t));
-    t_exp = malloc(N*sizeof(uint32_t));
-    memset (t_exp, 0, N*sizeof(uint32_t));
-    memset (t, 0, N*sizeof(uint16_t));
-    
-    /* Initialize double-width loops */
-
-    iAE = 0;
-    for(iA = 0; iA < N-1; iA++) {
-        a_exp[iAE] = a[iA] << storage_width;
-        iA++;
-        a_exp[iAE] |= a[iA];
-        iAE++;
-    }
-    a_exp[iAE] = a[N-1] << storage_width | a[0];
-    iAE++;
-    for(iA = 1; iA < N; iA++) {
-        a_exp[iAE] = a[iA] << storage_width;
-        iA++;
-        a_exp[iAE] |= a[iA];
-        iAE++;
-    }
-
-
-    /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
-
-    mask_time = 0;
-    for (iB = 0; iB < bi_M1_len; iB++) {
-        iT = bi[iB + bi_P1_len];
-        if (iT & 1) {
-            iT+=N;
-        }
-        iT /= 2;
-
-        /* want to add the next halfN uint32s starting from k, and then add
-         * the top storage_width-bit quantity from the one after that. */
-        
-        for (iAE = 0; iT < N && iAE < halfN; ++iAE, ++iT) {
-            t_exp[iT] = t_exp[iT] + a_exp[iAE];
-        }
-        
-        if (iT == N) {
-            for (iT = 0; iAE < halfN; ++iAE, ++iT) {
-                t_exp[iT] = t_exp[iT] + a_exp[iAE];
-            }
-        }
-
-        t_exp[iT] += (a_exp[iAE] & 0xffff0000);
-
-        mask_time++;
-        if (mask_time == mask_interval) {
-            for (iT = 0; iT < N; iT++) {
-                t_exp[iT] &= double_mod_q_mask;
-            }
-            mask_time = 0;
-        }
-
-    }
-
-    /* t[(i+k)%N] = -(sum i=0 through N-1 of a[i] for b[k] = -1) */
-
-    iC = 0;
-    for (iT = 0; iT < N; iT++) {
-        t[iC] += (t_exp[iT] >> storage_width) & mod_q_mask;
-        iC++;
-        if (iC == N) iC = 0;
-        t[iC] += t_exp[iT] & mod_q_mask;
-        iC++;
-    }
-    for (iT = 0; iT < N; iT++) {
-        t[iT] = - t[iT];
-        t_exp[iT] = 0;
-    }
-    
-    /* t[(i+k)%N] += sum i=0 through N-1 of a[i] for b[k] = +1 */
-
-    mask_time = 0;
-    for (iB = 0; iB < bi_P1_len; iB++) {
-        iT = bi[iB];
-        if (iT & 1) {
-            iT+=N;
-        }
-        iT /= 2;
-
-        /* want to add the next halfN uint32s starting from k, and then add
-         * the top storage_width-bit quantity from the one after that. */
-        
-        for (iAE = 0; iT < N && iAE < halfN; ++iAE, ++iT) {
-            t_exp[iT] = t_exp[iT] + a_exp[iAE];
-        }
-        
-        if (iT == N) {
-            for (iT = 0; iAE < halfN; ++iAE, ++iT) {
-                t_exp[iT] = t_exp[iT] + a_exp[iAE];
-            }
-        }
-
-        t_exp[iT] += (a_exp[iAE] & 0xffff0000);
-
-        mask_time++;
-        if (mask_time == mask_interval) {
-            for (iT = 0; iT < N; iT++) {
-                t_exp[iT] &= double_mod_q_mask;
-            }
-            mask_time = 0;
-        }
-    }
-
-    /* c = (a * b) mod q */
-
-    iC = 0;
-    memset(a_exp, 0, N*sizeof(uint32_t));
-    for (iT = 0; iT < N; iT++) {
-        a_exp[iC] += (t[iC] + (t_exp[iT] >> storage_width));
-        a_exp[iC] &= mod_q_mask;
-        t[iC] = 0;
-        iC++;
-        if (iC == N) iC = 0;
-        a_exp[iC] += (t[iC] + t_exp[iT]);
-        a_exp[iC] &= mod_q_mask;
-        t[iC] = 0;
-        iC++;
-    }
-    for (iT = 0; iT < N; iT++) {
-        c[iT] = a_exp[iT];
-    }
-    
-    
-    free(a_exp);
-    free(t_exp);
-
-    return;
-}
-
 
 void
 ntru_ring_mult_indices_orig(
@@ -718,6 +769,11 @@ ntru_ring_mult_indices(
     uint16_t       *c)          /* out - address for polynomial c */
 {
     if (1) {
+        ntru_ring_mult_indices_quadruple_width_conv
+            (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
+        return;
+    }
+    else if (0) {
         ntru_ring_mult_indices_double_width_conv
             (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
         return;
