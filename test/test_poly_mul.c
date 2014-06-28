@@ -87,7 +87,7 @@ int inner_loop(
   ntru_ring_mult_indices_orig
     (a, bi_P1_len, bi_M1_len, b, N, q, t, cOrig);
 
-  ntru_ring_mult_indices_double_width_conv
+  ntru_ring_mult_indices_quadruple_width_conv
     (a, bi_P1_len, bi_M1_len, b, N, q, t, cDouble);
 
   if (memcmp(cOrig, cDouble, N*sizeof(uint16_t))) {
@@ -145,15 +145,13 @@ main ()
   uint16_t tmp[] = {0, 1, 2, 3, 4};
   uint32_t *t1 = (uint32_t*)&tmp[0];
   uint32_t *t2 = (uint32_t*)&tmp[1];
-  printf("%08x %08x\n", *t1, *(t1+1));
-  printf("%08x %08x\n", *t2, *(t2+1));
   *t2 += *t1;
-  printf("%08x \n", *t2);
 
 /*
-  rval = inner_loop(779, 50, 50, 1, 1);
+  rval = inner_loop(29, 5, 5, 1, 1);
   if (rval) exit (rval);
 */
+
   for (N = 29; N < 1000; N+=30) {
     for (df = 5; df < N/3; df+= 5) {
     
@@ -167,6 +165,7 @@ main ()
       if (rval) exit (rval);
     }
   }
+  printf("\nSuccess!\n");
 
   exit (0);
 }
