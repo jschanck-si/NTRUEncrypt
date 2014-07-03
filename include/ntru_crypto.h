@@ -91,6 +91,7 @@ typedef enum _NTRU_ENCRYPT_PARAM_SET_ID {
 #define NTRU_OUT_OF_MEMORY          8
 #define NTRU_BAD_ENCODING           9
 #define NTRU_OID_NOT_RECOGNIZED    10
+#define NTRU_UNSUPPORTED_PARAM_SET 11
 
 #define NTRU_RESULT(r)   ((uint32_t)((r) ? NTRU_ERROR_BASE + (r) : (r)))
 #define NTRU_RET(r)      return NTRU_RESULT((r))

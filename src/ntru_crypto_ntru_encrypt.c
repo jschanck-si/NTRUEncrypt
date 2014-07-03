@@ -132,6 +132,13 @@ ntru_crypto_ntru_encrypt(
         NTRU_RET(NTRU_BAD_PUBLIC_KEY);
     }
 
+    if(params->q_bits <= 8
+            || params->q_bits >= 16
+            || pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS)
+    {
+        NTRU_RET(NTRU_UNSUPPORTED_PARAM_SET);
+    }
+
     /* return the ciphertext size if requested */
 
     packed_ct_len = (params->N * params->q_bits + 7) >> 3;
@@ -255,8 +262,6 @@ ntru_crypto_ntru_encrypt(
             uint16_t pubkey_packed_len;
 
             /* unpack the public key */
-            ASSERT(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
-
             pubkey_packed_len = (params->N * params->q_bits + 7) >> 3;
             ntru_octets_2_elements(pubkey_packed_len, pubkey_packed,
                                    params->q_bits, ringel_buf);
@@ -472,6 +477,17 @@ ntru_crypto_ntru_decrypt(
         NTRU_RET(NTRU_BAD_PRIVATE_KEY);
     }
 
+    if(params->q_bits <= 8
+            || params->q_bits >= 16
+            || params->N_bits <= 8
+            || params->N_bits >= 16
+            || pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS
+            || (privkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_TRITS
+                && privkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_INDICES))
+    {
+        NTRU_RET(NTRU_UNSUPPORTED_PARAM_SET);
+    }
+
     /* return the max plaintext size if requested */
 
     if (!pt)
@@ -575,7 +591,7 @@ ntru_crypto_ntru_decrypt(
     }
     else
     {
-        ASSERT(FALSE);
+        /* Unreachable due to supported parameter set check above */
     }
 
     /* form cm':
@@ -735,8 +751,6 @@ ntru_crypto_ntru_decrypt(
 
         {
             uint16_t pubkey_packed_len;
-            ASSERT(pubkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS);
-
             pubkey_packed_len = (params->N * params->q_bits + 7) >> 3;
             ntru_octets_2_elements(pubkey_packed_len, pubkey_packed,
                                    params->q_bits, ringel_buf1);
