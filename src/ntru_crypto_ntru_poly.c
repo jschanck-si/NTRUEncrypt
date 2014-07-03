@@ -113,10 +113,6 @@ ntru_gen_poly(
     uint8_t   left = 0;
     uint8_t   num_left = 0;
     uint32_t  retcode;
-    
-    ASSERT(seed);
-    ASSERT(buf);
-    ASSERT(indices);
 
     /* generate minimum MGF1 output */
 
@@ -126,7 +122,7 @@ ntru_gen_poly(
     {
         return retcode;
     }
-    
+
     octets = mgf_out;
     octets_available = min_calls * md_len;
 
