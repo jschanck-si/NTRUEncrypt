@@ -148,10 +148,27 @@ ntru_ring_mult_indices_orig(
     uint16_t       *t,          /*  in - temp buffer of N elements */
     uint16_t       *c);         /* out - address for polynomial c */
 
-/* fits two coefficients into a uint32_t */
 
+/* fits two coefficients into a uint32_t */
 extern void
 ntru_ring_mult_indices_double_width_conv(
+    uint16_t const *a,          /*  in - pointer to ring element a */
+    uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
+    uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
+    uint16_t const *bi,         /*  in - pointer to the list of nonzero
+                                         indices of ring element b,
+                                         containing indices for the +1
+                                         coefficients followed by the
+                                         indices for -1 coefficients */
+    uint16_t        N,          /*  in - no. of coefficients in a, b, c */
+    uint16_t        q,          /*  in - large modulus */
+    uint16_t       *t,          /*  in - temp buffer of N elements */
+    uint16_t       *c);         /* out - address for polynomial c */
+
+
+/* fits four coefficients into a uint64_t */
+void
+ntru_ring_mult_indices_quadruple_width_conv(
     uint16_t const *a,          /*  in - pointer to ring element a */
     uint16_t        bi_P1_len,  /*  in - no. of +1 coefficients in b */
     uint16_t        bi_M1_len,  /*  in - no. of -1 coefficients in b */
