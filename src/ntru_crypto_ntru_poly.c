@@ -333,11 +333,6 @@ ntru_ring_mult_indices_quadruple_width_conv(
 
     /* ONLY WORKS FOR N ODD! */
 
-    ASSERT(a);
-    ASSERT(bi);
-    ASSERT(t);
-    ASSERT(c);
-
     for(i=0; i<4; i++)
     {
       a64o[i] = (const uint64_t *) &a[i];
@@ -552,11 +547,6 @@ ntru_ring_mult_indices_double_width_conv(
 
     uint16_t halfN = (N-1)/2;
 
-    ASSERT(a);
-    ASSERT(bi);
-    ASSERT(t);
-    ASSERT(c);
-
     a32o[0] = (uint32_t const *) &a[0];
     a32o[1] = (uint32_t const *) &a[1];
     t32o[0] = (uint32_t *) &t[0];
@@ -717,11 +707,6 @@ ntru_ring_mult_indices_orig(
     uint16_t mod_q_mask = q - 1;
     uint16_t i, j, k;
 
-    ASSERT(a);
-    ASSERT(bi);
-    ASSERT(t);
-    ASSERT(c);
-
     /* t[(i+k)%N] = sum i=0 through N-1 of a[i], for b[k] = -1 */
 
     for (k = 0; k < N; k++)
@@ -853,11 +838,6 @@ ntru_ring_mult_product_indices(
     uint16_t  mod_q_mask = q - 1;
     uint16_t  i;
     
-    ASSERT(a);
-    ASSERT(bi);
-    ASSERT(t);
-    ASSERT(c);
-
     /* t2 = a * b1 */
 
     ntru_ring_mult_indices(a, b1i_len, b1i_len, bi, N, q, t, t2);
@@ -907,10 +887,6 @@ ntru_ring_mult_coefficients(
     uint16_t        mod_q_mask = q - 1;
     uint16_t        i, k;
     
-    ASSERT(a);
-    ASSERT(b);
-    ASSERT(c);
-
     /* c[k] = sum(a[i] * b[k-i]) mod q */
 
     memset(c, 0, N * sizeof(uint16_t));
