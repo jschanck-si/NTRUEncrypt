@@ -924,12 +924,12 @@ ntru_crypto_ntru_encrypt_keygen(
         {
             *pubkey_blob_len = public_key_blob_len;
         }
-        
+
         if (!privkey_blob)
         {
             *privkey_blob_len = private_key_blob_len;
         }
-        
+
         NTRU_RET(NTRU_OK);
     }
 
@@ -966,7 +966,7 @@ ntru_crypto_ntru_encrypt_keygen(
     {
         NTRU_RET(NTRU_OUT_OF_MEMORY);
     }
-    
+
     ringel_buf1 = scratch_buf + (params->N << 1);
     ringel_buf2 = ringel_buf1 + params->N;
     F_buf = ringel_buf2 + params->N;
@@ -984,7 +984,7 @@ ntru_crypto_ntru_encrypt_keygen(
         hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
         md_len = 32;
     }
-    
+
     seed_len = params->sec_strength_len + 8;
 
     /* set constants */
@@ -1031,12 +1031,12 @@ ntru_crypto_ntru_encrypt_keygen(
             {
                 ringel_buf1[F_buf[i]] = 1;
             }
-            
+
             for (; i < (dF1 << 1); i++)
             {
                 ringel_buf1[F_buf[i]] = mod_q_mask;
             }
-            
+
             /* form F1 * F2 */
 
             ntru_ring_mult_indices(ringel_buf1, (uint16_t)dF2, (uint16_t)dF2,
@@ -1050,7 +1050,7 @@ ntru_crypto_ntru_encrypt_keygen(
                 uint16_t index = F_buf[dF3_offset + i];
                 ringel_buf1[index] = (ringel_buf1[index]+1) & mod_q_mask;
             }
-            
+
             for (; i < (dF3 << 1); i++)
             {
                 uint16_t index = F_buf[dF3_offset + i];
@@ -1060,14 +1060,13 @@ ntru_crypto_ntru_encrypt_keygen(
         }
         else
         {
-
             /* form F as a ring element */
 
             for (i = 0; i < dF; i++)
             {
                 ringel_buf1[F_buf[i]] = 1;
             }
-            
+
             for (; i < (dF << 1); i++)
             {
                 ringel_buf1[F_buf[i]] = mod_q_mask;
@@ -1080,16 +1079,53 @@ ntru_crypto_ntru_encrypt_keygen(
         {
             ringel_buf1[i] = (ringel_buf1[i] * 3) & mod_q_mask;
         }
-        
+
         ringel_buf1[0] = (ringel_buf1[0] + 1) & mod_q_mask;
 
         /* find f^-1 in (Z/qZ)[X]/(X^N - 1) */
 
-        if (!ntru_ring_inv(ringel_buf1, params->N, params->q,
-                           scratch_buf, ringel_buf2))
+        if (!ntru_ring_inv(ringel_buf1, params->N, scratch_buf, ringel_buf2))
         {
             result = NTRU_ERROR_BASE + NTRU_FAIL;
         }
+
+        /* lift f^-1 in (Z/2Z)[X]/(X^N - 1) to f^-1 in (Z/qZ)[X]/(X^N -1) */
+        uint16_t *t = scratch_buf;
+        uint16_t *t2 = scratch_buf + params->N;
+        uint16_t *f = ringel_buf1;
+        uint16_t *f_inv = ringel_buf2;
+        uint16_t j;
+        for (j = 0; j < 4; ++j)   /* assumes 256 < q <= 65536 */
+        {
+
+            /* f^-1 = f^-1 * (2 - f * f^-1) mod q */
+
+            if(params->is_product_form)
+            {
+                ntru_ring_mult_product_indices(f_inv, (uint16_t)dF1,
+                                               (uint16_t)dF2, (uint16_t)dF3,
+                                               F_buf, params->N, params->q,
+                                               t, t);
+                for (i = 0; i < params->N; ++i)
+                {
+                    t[i] = ~((f_inv[i] + 3 * t[i]) & mod_q_mask);
+                }
+            }
+            else
+            {
+                ntru_ring_mult_coefficients(f, f_inv, params->N, params->q, t);
+                for (i = 0; i < params->N; ++i)
+                {
+                    t[i] = ~t[i];
+                }
+            }
+            t[0] = t[0] + 2;
+
+            ntru_ring_mult_coefficients(f_inv, t, params->N, params->q, t2);
+
+            memcpy(f_inv, t2, params->N * sizeof(uint16_t));
+        }
+
     }
 
     if (result == NTRU_OK)
@@ -1154,7 +1190,7 @@ ntru_crypto_ntru_encrypt_keygen(
 
     memset(scratch_buf, 0, scratch_buf_len);
     FREE(scratch_buf);
-    
+
     return result;
 }
 

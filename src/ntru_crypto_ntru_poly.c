@@ -916,17 +916,13 @@ ntru_ring_mult_coefficients(
 
 /* ntru_ring_inv
  *
- * Finds the inverse of a polynomial, a, in (Z/2^rZ)[X]/(X^N - 1).
- *
- * This assumes q is 2^r where 8 < r < 16, so that operations mod q can
- * wait until the end, and only 16-bit arrays need to be used.
- */
+ * Finds the inverse of a polynomial, a, in (Z/2Z)[X]/(X^N - 1).
+  */
 
 bool
 ntru_ring_inv(
     uint16_t       *a,          /*  in - pointer to polynomial a */
     uint16_t        N,          /*  in - no. of coefficients in a */
-    uint16_t        q,          /*  in - large modulus */
     uint16_t       *t,          /*  in - temp buffer of 2N elements */
     uint16_t       *a_inv)      /* out - address for polynomial a^-1 */
 {
@@ -936,7 +932,6 @@ ntru_ring_inv(
                                        with b, and b cannot be in a_inv */
     uint8_t  *f = c + N;
     uint8_t  *g = (uint8_t *)a_inv; /* g needs N + 1 bytes */
-    uint16_t *t2 = t + N;
     uint16_t  deg_b;
     uint16_t  deg_c;
     uint16_t  deg_f;
@@ -944,7 +939,7 @@ ntru_ring_inv(
     uint16_t  k = 0;
     uint16_t  i, j;
 
-    if (a == NULL || t == NULL || a_inv == NULL || (q & (q-1)))
+    if (a == NULL || t == NULL || a_inv == NULL)
     {
         return FALSE;
     }
@@ -1084,27 +1079,7 @@ ntru_ring_inv(
         a_inv[j++] = (uint16_t)(b[i]);
     }
 
-    /* lift a^-1 in (Z/2Z)[X]/(X^N - 1) to a^-1 in (Z/qZ)[X]/(X^N -1) */
-
-    for (j = 0; j < 4; ++j)   /* assumes 256 < q <= 65536 */
-    {
-
-        /* a^-1 = a^-1 * (2 - a * a^-1) mod q */
-
-        memcpy(t2, a_inv, N * sizeof(uint16_t));
-        ntru_ring_mult_coefficients(a, t2, N, q, t);
-
-        for (i = 0; i < N; ++i)
-        {
-            t[i] = q - t[i];
-        }
-
-        t[0] = t[0] + 2;
-        ntru_ring_mult_coefficients(t2, t, N, q, a_inv);
-    }
-
     return TRUE;
-
 }
 
 

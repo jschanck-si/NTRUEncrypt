@@ -253,7 +253,6 @@ extern bool
 ntru_ring_inv(
     uint16_t       *a,          /*  in - pointer to polynomial a */
     uint16_t        N,          /*  in - no. of coefficients in a */
-    uint16_t        q,          /*  in - large modulus */
     uint16_t       *t,          /*  in - temp buffer of 2N elements */
     uint16_t       *a_inv);     /* out - address for polynomial a^-1 */
 
