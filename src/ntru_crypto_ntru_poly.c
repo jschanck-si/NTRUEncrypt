@@ -62,6 +62,7 @@
 #include "ntru_crypto_ntru_mgf1.h"
 
 
+
 /* ntru_gen_poly
  *
  * Generates polynomials by creating for each polynomial, a list of the
@@ -319,25 +320,18 @@ ntru_ring_mult_indices_quadruple_width_conv(
     uint16_t        mod_q_mask;
     uint64_t        full_mod_q_mask;
     uint32_t        mask_interval;
-    uint16_t        iA, iA64, iT, iB; /* Loop variables for the relevant arrays */
+    uint16_t        iA, iT, iB; /* Loop variables for the relevant arrays */
     uint16_t        mask_time;
-    uint64_t const *a64o[4]; /* expanded a */
-    uint64_t       *t64o[4]; /* expanded t */
     uint16_t        oend[4];
-    uint8_t         picker;
-    uint64_t       *ptr;
-    uint64_t const *cPtr;
-    uint32_t        iT64;
     uint16_t        end;
     uint16_t const  Nmod4 = N & 3;
 
-    /* ONLY WORKS FOR N ODD! */
+    uint64_t        tmp1;
+    uint64_t        tmp2;
 
     for(i=0; i<4; i++)
     {
-      a64o[i] = (const uint64_t *) &a[i];
-      t64o[i] = (uint64_t *) &t[i];
-      oend[i] = (N-i) / 4;
+      oend[i] = (N-i) & 0xfffc; /* 4 * floor((N-i)/4) */
     }
 
     mod_q_mask = q - 1;
@@ -349,24 +343,21 @@ ntru_ring_mult_indices_quadruple_width_conv(
 
     mask_time = 0;
 
-    memset(t, 0, N *sizeof(uint16_t));
+    memset(t, 0, N*sizeof(uint16_t));
     for (iB = bi_P1_len; iB < bi_P1_len + bi_M1_len; iB++)
     {
         /* first half -- from iT to N */
         iT = bi[iB];
-        picker = iT&3;
-        ptr = t64o[picker];
-        cPtr = a64o[0];
-        end = oend[picker];
+        end = oend[iT & 3];
 
-        iT64 = iT >> 2;
-        for (iA64 = 0; iT64 < end; iA64++, iT64++)
+        for (iA = 0; iT < end; iA+=4, iT+=4)
         {
-            ptr[iT64] += cPtr[iA64];
+            memcpy(&tmp1, t + iT, sizeof tmp1);
+            memcpy(&tmp2, a + iA, sizeof tmp2);
+            tmp1 += tmp2;
+            memcpy(t + iT, &tmp1, sizeof tmp1);
         }
 
-        iA = iA64 << 2;
-        iT = (iT64 << 2) + picker;
         while (iT < N)
         {
             t[iT] += a[iA];
@@ -379,19 +370,16 @@ ntru_ring_mult_indices_quadruple_width_conv(
         /* at this point we have used (N-bi[iB + bi_P1_len]) and iA should be
          * equal to bi[iB+bi_P1_len]+1.
          */
-        iA64 = iA >> 2;
-        picker = iA & 3;
-        ptr = t64o[0];
-        cPtr = a64o[picker];
-        end = oend[picker];
+        end = oend[iA & 3];
 
-        for (iT64 = 0; iA64 < end; iA64++, iT64++)
+        for (iT = 0; iA < end; iA+=4, iT+=4)
         {
-            ptr[iT64] += cPtr[iA64];
+            memcpy(&tmp1, t + iT, sizeof tmp1);
+            memcpy(&tmp2, a + iA, sizeof tmp2);
+            tmp1 += tmp2;
+            memcpy(t + iT, &tmp1, sizeof tmp1);
         }
 
-        iT = iT64 << 2;
-        iA = (iA64 << 2) + picker;
         while (iA < N)
         {
             t[iT] += a[iA];
@@ -402,12 +390,16 @@ ntru_ring_mult_indices_quadruple_width_conv(
         mask_time++;
         if (mask_time == mask_interval)
         {
-            t64o[0][0] &= full_mod_q_mask;
-            ptr = t64o[Nmod4];
+            memcpy(&tmp1, t, sizeof tmp1);
+            tmp1 &= full_mod_q_mask;
+            memcpy(t, &tmp1, sizeof tmp1);
+
             end = oend[Nmod4];
-            for (iT64 = 0; iT64 < end; iT64++)
+            for (iT = Nmod4; iT < end; iT+=4)
             {
-                ptr[iT64] &= full_mod_q_mask;
+                memcpy(&tmp1, t + iT, sizeof tmp1);
+                tmp1 &= full_mod_q_mask;
+                memcpy(t + iT, &tmp1, sizeof tmp1);
             }
             mask_time = 0;
         }
@@ -425,19 +417,16 @@ ntru_ring_mult_indices_quadruple_width_conv(
     {
         /* first half -- from iT to N */
         iT = bi[iB];
-        picker = iT & 3;
-        ptr = t64o[picker];
-        cPtr = a64o[0];
-        end = oend[picker];
+        end = oend[iT & 3];
 
-        iT64 = iT >> 2;
-        for (iA64 = 0; iT64 < end; iA64++, iT64++)
+        for (iA = 0; iT < end; iA+=4, iT+=4)
         {
-            ptr[iT64] += cPtr[iA64];
+            memcpy(&tmp1, t + iT, sizeof tmp1);
+            memcpy(&tmp2, a + iA, sizeof tmp1);
+            tmp1 += tmp2;
+            memcpy(t + iT, &tmp1, sizeof tmp1);
         }
 
-        iA = iA64 << 2;
-        iT = (iT64 << 2) + picker;
         while (iT < N)
         {
             t[iT] += a[iA];
@@ -450,19 +439,16 @@ ntru_ring_mult_indices_quadruple_width_conv(
         /* at this point we have used (N-bi[iB + bi_P1_len]) and iA should be
          * equal to bi[iB+bi_P1_len]+1.
          */
-        iA64 = iA >> 2;
-        picker = iA & 3;
-        ptr = t64o[0];
-        cPtr = a64o[picker];
-        end = oend[picker];
+        end = oend[iA & 3];
 
-        for (iT64 = 0; iA64 < end; iA64++, iT64++)
+        for (iT = 0; iA < end; iA+=4, iT+=4)
         {
-            ptr[iT64] += cPtr[iA64];
+            memcpy(&tmp1, t + iT, sizeof tmp1);
+            memcpy(&tmp2, a + iA, sizeof tmp1);
+            tmp1 += tmp2;
+            memcpy(t + iT, &tmp1, sizeof tmp1);
         }
 
-        iT = iT64 << 2;
-        iA = (iA64 << 2) + picker;
         while (iA < N)
         {
             t[iT] += a[iA];
@@ -473,12 +459,16 @@ ntru_ring_mult_indices_quadruple_width_conv(
         mask_time++;
         if (mask_time == mask_interval)
         {
-            t64o[0][0] &= full_mod_q_mask;
-            ptr = t64o[Nmod4];
+            memcpy(&tmp1, t, sizeof tmp1);
+            tmp1 &= full_mod_q_mask;
+            memcpy(t, &tmp1, sizeof tmp1);
+
             end = oend[Nmod4];
-            for (iT64 = 0; iT64 < end; iT64++)
+            for (iT = Nmod4; iT < end; iT+=4)
             {
-                ptr[iT64] &= full_mod_q_mask;
+                memcpy(&tmp1, t + iT, sizeof tmp1);
+                tmp1 &= full_mod_q_mask;
+                memcpy(t + iT, &tmp1, sizeof tmp1);
             }
             mask_time = 0;
         }
@@ -713,16 +703,16 @@ ntru_ring_mult_indices_orig(
     {
         t[k] = 0;
     }
-    
+
     for (j = bi_P1_len; j < bi_P1_len + bi_M1_len; j++)
     {
         k = bi[j];
-        
+
         for (i = 0; k < N; ++i, ++k)
         {
             t[k] = t[k] + a[i];
         }
-        
+
         for (k = 0; i < N; ++i, ++k)
         {
             t[k] = t[k] + a[i];
@@ -735,18 +725,18 @@ ntru_ring_mult_indices_orig(
     {
         t[k] = -t[k];
     }
-    
+
     /* t[(i+k)%N] += sum i=0 through N-1 of a[i] for b[k] = +1 */
 
     for (j = 0; j < bi_P1_len; j++)
     {
         k = bi[j];
-        
+
         for (i = 0; k < N; ++i, ++k)
         {
             t[k] = t[k] + a[i];
         }
-        
+
         for (k = 0; i < N; ++i, ++k)
         {
             t[k] = t[k] + a[i];
@@ -759,7 +749,7 @@ ntru_ring_mult_indices_orig(
     {
         c[k] = t[k] & mod_q_mask;
     }
-    
+
     return;
 }
 #endif   /* def ENVUNKNOWN */
