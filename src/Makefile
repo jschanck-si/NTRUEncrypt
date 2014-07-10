@@ -10,12 +10,14 @@ vpath %.so $(LIBDIR)
 
 # Flags.
 
-CFLAGS_DEBUG_yes:= -g
-CFLAGS_DEBUG_no:= -O2
+ifeq ($(DEBUG), yes)
+CFLAGS?=-g
+else
+CFLAGS?=-O2 -funroll-loops -fomit-frame-pointer
+endif
 
 INCFLAGS = -I../include
-CFLAGS += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS) \
-  $(CFLAGS_DEBUG_$(DEBUG))
+CFLAGS += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)
 
 # Source files.
 NTRUEncrypt_srcs := $(wildcard *.c)
