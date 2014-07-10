@@ -526,7 +526,7 @@ ntru_elements_2_octets(
     uint8_t        *out)            /* out - addr for output octets */
 {
     uint16_t  temp;
-    int       shift;
+    uint16_t  shift;
     uint16_t  i;
 
     /* pack */
@@ -536,30 +536,27 @@ ntru_elements_2_octets(
     i = 0;
     while (i < in_len) 
     {
-
         /* add bits to temp to fill an octet and output the octet */
-
         temp |= in[i] >> shift;
         *out++ = (uint8_t)(temp & 0xff);
-        shift = 8 - shift;
-        if (shift < 1) 
+        if (shift > 8)
         {
             /* next full octet is in current input word */
 
-            shift += n_bits;
+            shift = shift - 8;
             temp = 0;
-        } 
-        else 
+        }
+        else
         {
+            shift = 8 - shift;
             /* put remaining bits of input word in temp as partial octet,
              * and increment index to next input word
              */
-            temp = in[i] << (uint16_t)shift;
+            temp = in[i] << shift;
+            shift = n_bits - shift;
 
             ++i;
         }
-        
-        shift = n_bits - shift;
     }
 
     /* output any bits remaining in last input word */
@@ -568,7 +565,7 @@ ntru_elements_2_octets(
     {
         *out++ = (uint8_t)(temp & 0xff);
     }
-    
+
     return;
 }
 
@@ -589,7 +586,7 @@ ntru_octets_2_elements(
 {
     uint16_t  temp;
     uint16_t  mask;
-    int       shift;
+    uint16_t  shift;
     uint16_t  i;
 
     /* unpack */
@@ -598,34 +595,34 @@ ntru_octets_2_elements(
     mask = (1 << n_bits) - 1;
     shift = n_bits;
     i = 0;
-    
+
     while (i < in_len) 
     {
-        shift = 8 - shift;
-        if (shift < 0) 
+        if (shift > 8)
         {
             /* the current octet will not fill the current element */
 
-            shift += n_bits;
-        } 
-        else 
+            shift = shift - 8;
+            temp |= ((uint16_t)in[i]) << shift;
+        }
+        else
         {
             /* add bits from the current octet to fill the current element and
              * output the element
              */
 
+            shift = 8 - shift;
+
             temp |= ((uint16_t)in[i]) >> shift;
             *out++ = temp & mask;
-            temp = 0;
+
+            /* add the remaining bits of the current octet to start an element */ 
+            shift = n_bits - shift;
+            temp = ((uint16_t)in[i]) << shift;
         }
-
-        /* add the remaining bits of the current octet to start an element */
-
-        shift = n_bits - shift;
-        temp |= ((uint16_t)in[i]) << shift;
         ++i;
     }
-    
+
     return;
 }
 
