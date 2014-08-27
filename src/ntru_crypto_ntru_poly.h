@@ -236,8 +236,10 @@ extern void
 ntru_ring_mult_coefficients(
     uint16_t const *a,          /*  in - pointer to polynomial a */
     uint16_t const *b,          /*  in - pointer to polynomial b */
-    uint16_t        N,          /*  in - no. of coefficients in a, b, c */
+    uint16_t        N,          /*  in - degree of (x^N - 1) */
+    uint16_t        padN,       /*  in - no. of coefficients in a, b, c */
     uint16_t        q,          /*  in - large modulus */
+    uint16_t       *tmp,        /*  in - temp buffer of 3*padN elements */
     uint16_t       *c);         /* out - address for polynomial c */
 
 
