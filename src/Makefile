@@ -13,7 +13,7 @@ vpath %.so $(LIBDIR)
 ifeq ($(DEBUG), yes)
 CFLAGS?=-g
 else
-CFLAGS?=-O2 -funroll-loops -fomit-frame-pointer
+CFLAGS?=-O2 -mssse3 -funroll-loops -fomit-frame-pointer
 endif
 
 INCFLAGS = -I../include
