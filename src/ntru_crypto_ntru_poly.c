@@ -1050,21 +1050,14 @@ ntru_ring_inv(
         if (i > deg_f)
             return FALSE;
         if (i) {
+            k = k + i;
+
             f = f + i;
             deg_f = deg_f - i;
+
+            memmove(c+i, c, deg_c+1);
+            memset(c, 0, i);
             deg_c = deg_c + i;
-
-            for (j = deg_c; j >= i; j--)
-            {
-                c[j] = c[j-i];
-            }
-
-            for (j = 0; j < i; j++)
-            {
-                c[j] = 0;
-            }
-
-            k = k + i;
         }
 
         /* if f(X) = 1, done */
