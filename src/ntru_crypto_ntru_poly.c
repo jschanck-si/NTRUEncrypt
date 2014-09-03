@@ -1091,7 +1091,16 @@ ntru_ring_inv(
          * might change degree of f if deg_g >= deg_f
          */
 
-        for (i = 0; i <= deg_g; i++)
+        for (i = 0; i <= deg_g-8; i+=8)
+        {
+            uint64_t x;
+            uint64_t y;
+            memcpy(&x, f+i, sizeof(uint64_t));
+            memcpy(&y, g+i, sizeof(uint64_t));
+            x^=y;
+            memcpy(f+i, &x, sizeof(uint64_t));
+        }
+        for (; i<=deg_g; i++)
         {
             f[i] ^= g[i];
         }
@@ -1105,7 +1114,16 @@ ntru_ring_inv(
         }
 
         /* b(X) += c(X) */
-        for (i = 0; i <= deg_c; i++)
+        for (i = 0; i <= deg_c-8; i+=8)
+        {
+            uint64_t x;
+            uint64_t y;
+            memcpy(&x, b+i, sizeof(uint64_t));
+            memcpy(&y, c+i, sizeof(uint64_t));
+            x^=y;
+            memcpy(b+i, &x, sizeof(uint64_t));
+        }
+        for (; i<=deg_c; i++)
         {
             b[i] ^= c[i];
         }
