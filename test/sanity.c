@@ -166,11 +166,14 @@ main(int argc, char **argv)
       private_key = (uint8_t *)malloc(private_key_len * sizeof(uint8_t));
 
       clk = clock();
-      for (j = 0; j < loops/100 || j < 1; j++)
+      for (j = 0; j < loops/10 || j < 1; j++)
+      {
         rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id, &public_key_len,
                                            public_key,
                                            &private_key_len,
                                            private_key);
+        if (rc != NTRU_OK) break;
+      }
       clk = clock() - clk;
       if (rc != NTRU_OK)
       {
@@ -183,7 +186,7 @@ main(int argc, char **argv)
       }
 
       if (loops) {
-        fprintf(stderr, "kg %dus, ", (int)((1.0*clk)/(loops/100)));
+        fprintf(stderr, "kg %dus, ", (int)((1.0*clk)/(loops/10)));
         fflush (stderr);
       }
 
@@ -222,8 +225,11 @@ main(int argc, char **argv)
 
         clk = clock();
         for (j = 0; j < loops || j < 1; j++)
+        {
           rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                 mlen, message, &ciphertext_len, ciphertext);
+          if(rc != NTRU_OK) break;
+        }
         clk = clock() - clk;
         if (rc != NTRU_OK){
           fprintf(stderr, "\tError: Encryption error %x\n", rc);
@@ -238,9 +244,12 @@ main(int argc, char **argv)
  
         clk = clock();
         for (j = 0; j < loops || j < 1; j++)
+        {
           rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                 ciphertext_len, ciphertext,
                 &plaintext_len, plaintext);
+          if(rc != NTRU_OK) break;
+        }
         clk = clock() - clk;
         if (rc != NTRU_OK)
         {
