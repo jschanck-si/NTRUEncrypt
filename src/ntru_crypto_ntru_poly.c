@@ -1091,6 +1091,7 @@ ntru_ring_inv(
          * might change degree of f if deg_g >= deg_f
          */
 
+        #if defined(ENV64BIT)
         for (i = 0; i <= deg_g-8; i+=8)
         {
             uint64_t x;
@@ -1100,6 +1101,19 @@ ntru_ring_inv(
             x^=y;
             memcpy(f+i, &x, sizeof(uint64_t));
         }
+        #elif defined(ENV32BIT)
+        for (i = 0; i <= deg_g-4; i+=4)
+        {
+            uint32_t x;
+            uint32_t y;
+            memcpy(&x, f+i, sizeof(uint32_t));
+            memcpy(&y, g+i, sizeof(uint32_t));
+            x^=y;
+            memcpy(f+i, &x, sizeof(uint32_t));
+        }
+        #else
+        i=0;
+        #endif
         for (; i<=deg_g; i++)
         {
             f[i] ^= g[i];
@@ -1114,6 +1128,7 @@ ntru_ring_inv(
         }
 
         /* b(X) += c(X) */
+        #if defined(ENV64BIT)
         for (i = 0; i <= deg_c-8; i+=8)
         {
             uint64_t x;
@@ -1123,6 +1138,19 @@ ntru_ring_inv(
             x^=y;
             memcpy(b+i, &x, sizeof(uint64_t));
         }
+        #elif defined(ENV32BIT)
+        for (i = 0; i <= deg_c-4; i+=4)
+        {
+            uint32_t x;
+            uint32_t y;
+            memcpy(&x, b+i, sizeof(uint32_t));
+            memcpy(&y, c+i, sizeof(uint32_t));
+            x^=y;
+            memcpy(b+i, &x, sizeof(uint32_t));
+        }
+        #else
+        i=0;
+        #endif
         for (; i<=deg_c; i++)
         {
             b[i] ^= c[i];
