@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include "ntru_crypto.h"
+#include "ntru_crypto_drbg.h"
 
 /* For each parameter set:
  *    - Generate a key
@@ -18,7 +19,7 @@
  */
 
 #define RAND_LEN (4096)
-static void randombytes(uint8_t *x,uint64_t xlen)
+static uint32_t randombytes(uint8_t *x,uint64_t xlen)
 {
   static int fd = -1;
   int i;
@@ -43,8 +44,10 @@ static void randombytes(uint8_t *x,uint64_t xlen)
     x += i;
     xlen -= i;
   }
+  DRBG_RET(DRBG_OK);
 }
 
+#if 0
 static uint8_t
 get_entropy(
     ENTROPY_CMD  cmd,
@@ -85,6 +88,7 @@ get_entropy(
     }
     return 0;
 }
+#endif
 
 #define LOOPS 10000
 
@@ -143,8 +147,11 @@ main(int argc, char **argv)
       fflush (stderr);
 
       drbg_strength = 256;
-      rc = ntru_crypto_drbg_instantiate(drbg_strength, NULL, 0,
-                                        (ENTROPY_FN) &get_entropy, &drbg);
+
+      //rc = ntru_crypto_drbg_instantiate(drbg_strength, NULL, 0,
+      //                                  (ENTROPY_FN) &get_entropy, &drbg);
+      rc = ntru_crypto_external_drbg_instantiate(&randombytes, &drbg);
+
       if (rc != DRBG_OK)
       {
         fprintf(stderr,"\tError: An error occurred instantiating the DRBG\n");
