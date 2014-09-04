@@ -80,6 +80,12 @@ extern "C" {
  ********************/
 
 typedef uint32_t DRBG_HANDLE;               /* drbg handle */
+
+typedef enum {                              /* drbg types */
+    EXTERNAL_DRBG,
+    SHA256_HMAC_DRBG,
+} DRBG_TYPE;
+
 typedef enum {                              /* entropy-function commands */
     GET_NUM_BYTES_PER_BYTE_OF_ENTROPY = 0,
     INIT,
@@ -88,6 +94,12 @@ typedef enum {                              /* entropy-function commands */
 typedef uint8_t (*ENTROPY_FN)(              /* get entropy function */
                     ENTROPY_CMD  cmd,       /* command */
                     uint8_t     *out);      /* address for output */
+
+
+/* Type for external PRNG functions. Must return DRBG_OK on success */
+typedef uint32_t (*RANDOM_BYTES_FN)(                /* random bytes function */
+                    unsigned char *out,             /* output buffer */
+                    unsigned long long num_bytes);  /* number of bytes */
 
 
 /***************
