@@ -970,10 +970,11 @@ ntru_ring_mult_product_indices(
 }
 
 
+#if defined(NTRUENVSSE3)
 static void
 grade_school_mul(
-    uint16_t        *res1,   /* out - a * b in Z[x], must be length 2k */
-    uint16_t        *tmp1,   /*  in - k coefficients of scratch space */
+    uint16_t        *res1,   /* out - a * b in Z[x], must be length 2N */
+    uint16_t        *tmp1,   /*  in - N coefficients of scratch space */
     uint16_t const  *a,     /*  in - polynomial */
     uint16_t const  *b,     /*  in - polynomial */
     uint16_t const   N)     /*  in - number of coefficients in a and b */
@@ -1046,30 +1047,37 @@ grade_school_mul(
 
   return;
 }
-#if 0
+#else
+static void
+grade_school_mul(
+    uint16_t        *res1,   /* out - a * b in Z[x], must be length 2N */
+    uint16_t        *tmp1,   /*  in - N coefficients of scratch space */
+    uint16_t const  *a,     /*  in - polynomial */
+    uint16_t const  *b,     /*  in - polynomial */
+    uint16_t const   N)     /*  in - number of coefficients in a and b */
 {
     uint16_t i;
     uint16_t j;
 
-    for(j=0; j<k; j++)
+    for(j=0; j<N; j++)
     {
         res1[j] = a[0]*b[j];
     }
-    for(i=1; i<k; i++)
+    for(i=1; i<N; i++)
     {
-        res1[i+k-1] = 0;
-        for(j=0; j<k; j++)
+        res1[i+N-1] = 0;
+        for(j=0; j<N; j++)
         {
             res1[i+j] += a[i]*b[j];
         }
     }
-    res1[2*k-1] = 0;
+    res1[2*N-1] = 0;
 
     return;
 }
 #endif
 
-#if 0
+#if !defined(NTRUENVSSE3)
 static void
 karatsuba(
     uint16_t        *res1,   /* out - a * b in Z[x], must be length 2k */
@@ -1083,22 +1091,8 @@ karatsuba(
     /* Grade school multiplication for small / odd inputs */
     if(k <= 38 || (k & 1) != 0)
     {
-        uint16_t j;
-
-        for(j=0; j<k; j++)
-        {
-            res1[j] = a[0]*b[j];
-        }
-        for(i=1; i<k; i++)
-        {
-            res1[i+k-1] = 0;
-            for(j=0; j<k; j++)
-            {
-                res1[i+j] += a[i]*b[j];
-            }
-        }
-        res1[2*k-1] = 0;
-        return;
+      grade_school_mul(res1,tmp1,a,b,k);
+      return;
     }
 
     uint16_t const p = k>>1;
@@ -1170,9 +1164,13 @@ ntru_ring_mult_coefficients(
 {
     uint16_t i;
     uint16_t q_mask = q-1;
-    //memset(tmp, 0, 3*padN*sizeof(uint16_t));
 
+#if !defined(NTRUENVSSE3)
+    memset(tmp, 0, 3*padN*sizeof(uint16_t));
+    karatsuba(tmp, tmp+2*padN, a, b, N);
+#else
     grade_school_mul(tmp, tmp+2*padN, a, b, N);
+#endif
 
     for(i=0; i<N; i++)
     {
