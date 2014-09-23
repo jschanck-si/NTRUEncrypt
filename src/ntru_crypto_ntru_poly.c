@@ -21,32 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  *****************************************************************************/
- 
-// Check windows
-#if _WIN32 || _WIN64
-   #if _WIN64
-     #define ENV64BIT
-  #else
-    #define ENV32BIT
-  #endif
 
-// Check GCC
-#elif __GNUC__
-  #if __x86_64__ || __ppc64__
-    #define ENV64BIT
-  #else
-    #define ENV32BIT
-  #endif
-
-#else
-    #define ENVUNKNOWN
-#endif
-
-#ifdef TEST_COMPARE_CONVOLUTIONS
-    #define ENV64BIT
-    #define ENV32BIT
-    #define ENVUNKNOWN
-#endif /* def TEST_COMPARE_CONVOLUTIONS */
 
 /******************************************************************************
  *
@@ -61,6 +36,12 @@
 #include "ntru_crypto_ntru_poly.h"
 #include "ntru_crypto_ntru_mgf1.h"
 
+
+#ifdef TEST_COMPARE_CONVOLUTIONS
+    #define NTRUENV64BIT
+    #define NTRUENV32BIT
+    #define NTRUENVUNKNOWN
+#endif /* def TEST_COMPARE_CONVOLUTIONS */
 
 
 /* ntru_gen_poly
@@ -299,7 +280,7 @@ ntru_poly_check_min_weight(
  * beyond 16 bits does not matter.
  */
 
-#ifdef ENV64BIT
+#ifdef NTRUENV64BIT
 
 void
 ntru_ring_mult_indices_quadruple_width_conv(
@@ -484,7 +465,7 @@ ntru_ring_mult_indices_quadruple_width_conv(
     return;
 }
 
-#endif  /* def ENV64BIT */
+#endif  /* def NTRUENV64BIT */
 
 
 
@@ -508,7 +489,7 @@ ntru_ring_mult_indices_quadruple_width_conv(
  */
 
 
-#ifdef ENV32BIT
+#ifdef NTRUENV32BIT
 void
 ntru_ring_mult_indices_double_width_conv(
     uint16_t const *a,          /*  in - pointer to ring element a */
@@ -680,7 +661,7 @@ ntru_ring_mult_indices_double_width_conv(
  */
 
 
-#ifdef ENVUNKNOWN
+#ifdef NTRUENVUNKNOWN
 
 void
 ntru_ring_mult_indices_orig(
@@ -755,7 +736,7 @@ ntru_ring_mult_indices_orig(
 
     return;
 }
-#endif   /* def ENVUNKNOWN */
+#endif   /* def NTRUENVUNKNOWN */
 
 void
 ntru_ring_mult_indices(
@@ -772,17 +753,17 @@ ntru_ring_mult_indices(
     uint16_t       *t,          /*  in - temp buffer of N elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
-#ifdef ENV64BIT
+#ifdef NTRUENV64BIT
     ntru_ring_mult_indices_quadruple_width_conv
         (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
     return;
 #endif
-#ifdef ENV32BIT
+#ifdef NTRUENV32BIT
     ntru_ring_mult_indices_double_width_conv
         (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
     return;
 #endif
-#ifdef ENVUNKNOWN
+#ifdef NTRUENVUNKNOWN
     ntru_ring_mult_indices_orig (a, bi_P1_len, bi_M1_len, bi, N, q, t, c);
     return;
 #endif
@@ -1091,7 +1072,7 @@ ntru_ring_inv(
          * might change degree of f if deg_g >= deg_f
          */
 
-        #if defined(ENV64BIT)
+        #if defined(NTRUENV64BIT)
         for (i = 0; i <= deg_g-8; i+=8)
         {
             uint64_t x;
@@ -1101,7 +1082,7 @@ ntru_ring_inv(
             x^=y;
             memcpy(f+i, &x, sizeof(uint64_t));
         }
-        #elif defined(ENV32BIT)
+        #elif defined(NTRUENV32BIT)
         for (i = 0; i <= deg_g-4; i+=4)
         {
             uint32_t x;
@@ -1128,7 +1109,7 @@ ntru_ring_inv(
         }
 
         /* b(X) += c(X) */
-        #if defined(ENV64BIT)
+        #if defined(NTRUENV64BIT)
         for (i = 0; i <= deg_c-8; i+=8)
         {
             uint64_t x;
@@ -1138,7 +1119,7 @@ ntru_ring_inv(
             x^=y;
             memcpy(b+i, &x, sizeof(uint64_t));
         }
-        #elif defined(ENV32BIT)
+        #elif defined(NTRUENV32BIT)
         for (i = 0; i <= deg_c-4; i+=4)
         {
             uint32_t x;
@@ -1187,14 +1168,3 @@ ntru_ring_inv(
 
     return TRUE;
 }
-
-
-#ifdef ENV64BIT
-    #undef ENV64BIT
-#endif
-#ifdef ENV32BIT
-    #undef ENV32BIT
-#endif
-#ifdef ENVUNKNOWN
-    #undef ENVUNKNOWN
-#endif
