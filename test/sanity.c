@@ -110,7 +110,7 @@ main(int argc, char **argv)
     uint16_t plaintext_len;           /* no. of octets in plaintext */
     DRBG_HANDLE drbg;                 /* handle for instantiated DRBG */
     uint32_t rc;                      /* return code */
-    uint16_t drbg_strength;
+    //uint16_t drbg_strength;
     uint32_t loops;                   /* number of loops when benchmarking */
 
     clock_t clk;
@@ -146,11 +146,12 @@ main(int argc, char **argv)
       fprintf(stderr, "Testing parameter set %s... ", ntru_encrypt_get_param_set_name(param_set_id));
       fflush (stderr);
 
-      drbg_strength = 256;
+      //drbg_strength = 256;
 
       //rc = ntru_crypto_drbg_instantiate(drbg_strength, NULL, 0,
       //                                  (ENTROPY_FN) &get_entropy, &drbg);
-      rc = ntru_crypto_external_drbg_instantiate(&randombytes, &drbg);
+      rc = ntru_crypto_external_drbg_instantiate(
+                                        (RANDOM_BYTES_FN) &randombytes, &drbg);
 
       if (rc != DRBG_OK)
       {
