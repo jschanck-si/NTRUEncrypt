@@ -529,6 +529,13 @@ ntru_elements_2_octets(
     uint16_t  shift;
     uint16_t  i;
 
+    /* XXX: handle n_bits < 8 for challenge parameter sets */
+
+    if(n_bits <= 8) {
+        memcpy(out, in, in_len);
+        return;
+    }
+
     /* pack */
 
     temp = 0;
@@ -588,6 +595,16 @@ ntru_octets_2_elements(
     uint16_t  mask;
     uint16_t  shift;
     uint16_t  i;
+
+
+    /* XXX: handle n_bits < 8 for challenge parameter sets */
+    if(n_bits <= 8) {
+        for(i=0; i < in_len; i++)
+        {
+            out[i] = in[i];
+        }
+        return;
+    }
 
     /* unpack */
 

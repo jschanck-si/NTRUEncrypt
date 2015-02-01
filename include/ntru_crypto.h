@@ -59,6 +59,36 @@ extern "C" {
 /* parameter set ID list */
 
 typedef enum _NTRU_ENCRYPT_PARAM_SET_ID {
+    CHL_63R0,
+    CHL_107R0,
+    CHL_113R0,
+    CHL_131R0,
+    CHL_139R0,
+    CHL_149R0,
+    CHL_163R0,
+    CHL_173R0,
+    CHL_181R0,
+    CHL_191R0,
+    CHL_199R0,
+    CHL_211R0,
+    CHL_227R0,
+    CHL_239R0,
+    CHL_251R0,
+    CHL_263R0,
+    CHL_271R0,
+    CHL_281R0,
+    CHL_293R0,
+    CHL_307R0,
+    CHL_317R0,
+    CHL_331R0,
+    CHL_347R0,
+    CHL_359R0,
+    CHL_367R0,
+    CHL_379R0,
+    CHL_389R0,
+    CHL_401R0,
+
+
     NTRU_EES401EP1,
     NTRU_EES449EP1,
     NTRU_EES677EP1,
@@ -342,6 +372,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
 const char *
 ntru_encrypt_get_param_set_name(
     NTRU_ENCRYPT_PARAM_SET_ID id);   /*  in - parameter-set id */
+
 
 #if defined ( __cplusplus )
 }

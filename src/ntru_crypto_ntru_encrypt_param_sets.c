@@ -39,6 +39,630 @@
 static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
 
     {
+        CHL_63R0,                    /* parameter-set id */
+        "chl-63r0",                  /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        6,                           /* no. of bits in N (i.e., in an index) */
+        63,                          /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        512,                         /* q */
+        9,                           /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        3 + (3 << 8) + (3 << 16),    /* df, dr */
+        21,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        10,                          /* dm0 */
+        252,                         /* 2^c - (2^c mod N) */
+        8,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_107R0,                   /* parameter-set id */
+        "chl-107r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        7,                           /* no. of bits in N (i.e., in an index) */
+        107,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        512,                         /* q */
+        9,                           /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        4 + (4 << 8) + (4 << 16),    /* df, dr */
+        36,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        20,                          /* dm0 */
+        2033,                        /* 2^c - (2^c mod N) */
+        11,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_113R0,                   /* parameter-set id */
+        "chl-113r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        7,                           /* no. of bits in N (i.e., in an index) */
+        113,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        5 + (4 << 8) + (3 << 16),    /* df, dr */
+        38,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        22,                          /* dm0 */
+        1017,                        /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_131R0,                   /* parameter-set id */
+        "chl-131r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        131,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        5 + (4 << 8) + (4 << 16),    /* df, dr */
+        44,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        27,                          /* dm0 */
+        4061,                        /* 2^c - (2^c mod N) */
+        12,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_139R0,                   /* parameter-set id */
+        "chl-139r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        139,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        5 + (5 << 8) + (3 << 16),    /* df, dr */
+        46,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        29,                          /* dm0 */
+        973,                         /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_149R0,                   /* parameter-set id */
+        "chl-149r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        149,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        5 + (5 << 8) + (3 << 16),    /* df, dr */
+        50,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        31,                          /* dm0 */
+        447,                         /* 2^c - (2^c mod N) */
+        9,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_163R0,                   /* parameter-set id */
+        "chl-163r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        163,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        5 + (5 << 8) + (4 << 16),    /* df, dr */
+        54,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        35,                          /* dm0 */
+        4075,                        /* 2^c - (2^c mod N) */
+        12,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_173R0,                   /* parameter-set id */
+        "chl-173r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        173,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        6 + (5 << 8) + (4 << 16),    /* df, dr */
+        58,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        38,                          /* dm0 */
+        8131,                        /* 2^c - (2^c mod N) */
+        13,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_181R0,                   /* parameter-set id */
+        "chl-181r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        181,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        6 + (5 << 8) + (4 << 16),    /* df, dr */
+        60,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        40,                          /* dm0 */
+        8145,                        /* 2^c - (2^c mod N) */
+        13,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_191R0,                   /* parameter-set id */
+        "chl-191r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        191,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        6 + (5 << 8) + (4 << 16),    /* df, dr */
+        64,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        43,                          /* dm0 */
+        191,                         /* 2^c - (2^c mod N) */
+        8,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_199R0,                   /* parameter-set id */
+        "chl-199r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        199,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        6 + (5 << 8) + (6 << 16),    /* df, dr */
+        66,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        45,                          /* dm0 */
+        995,                         /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_211R0,                   /* parameter-set id */
+        "chl-211r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        211,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        6 + (6 << 8) + (4 << 16),    /* df, dr */
+        70,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        48,                          /* dm0 */
+        211,                         /* 2^c - (2^c mod N) */
+        8,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_227R0,                   /* parameter-set id */
+        "chl-227r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        227,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        6 + (6 << 8) + (4 << 16),    /* df, dr */
+        76,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        53,                          /* dm0 */
+        2043,                        /* 2^c - (2^c mod N) */
+        11,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_239R0,                   /* parameter-set id */
+        "chl-239r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        239,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (6 << 8) + (4 << 16),    /* df, dr */
+        80,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        56,                          /* dm0 */
+        239,                         /* 2^c - (2^c mod N) */
+        8,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_251R0,                   /* parameter-set id */
+        "chl-251r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        8,                           /* no. of bits in N (i.e., in an index) */
+        251,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (6 << 8) + (4 << 16),    /* df, dr */
+        84,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        59,                          /* dm0 */
+        251,                         /* 2^c - (2^c mod N) */
+        8,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_263R0,                   /* parameter-set id */
+        "chl-263r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        263,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (6 << 8) + (4 << 16),    /* df, dr */
+        88,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        63,                          /* dm0 */
+        8153,                        /* 2^c - (2^c mod N) */
+        13,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_271R0,                   /* parameter-set id */
+        "chl-271r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        271,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        1024,                        /* q */
+        10,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (6 << 8) + (6 << 16),    /* df, dr */
+        90,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        65,                          /* dm0 */
+        4065,                        /* 2^c - (2^c mod N) */
+        12,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_281R0,                   /* parameter-set id */
+        "chl-281r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        281,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (7 << 8) + (4 << 16),    /* df, dr */
+        94,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        68,                          /* dm0 */
+        8149,                        /* 2^c - (2^c mod N) */
+        13,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_293R0,                   /* parameter-set id */
+        "chl-293r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        293,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (7 << 8) + (4 << 16),    /* df, dr */
+        98,                          /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        71,                          /* dm0 */
+        879,                         /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_307R0,                   /* parameter-set id */
+        "chl-307r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        307,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        7 + (7 << 8) + (4 << 16),    /* df, dr */
+        102,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        75,                          /* dm0 */
+        921,                         /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_317R0,                   /* parameter-set id */
+        "chl-317r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        317,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (7 << 8) + (5 << 16),    /* df, dr */
+        106,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        78,                          /* dm0 */
+        951,                         /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_331R0,                   /* parameter-set id */
+        "chl-331r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        331,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (7 << 8) + (5 << 16),    /* df, dr */
+        110,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        82,                          /* dm0 */
+        993,                         /* 2^c - (2^c mod N) */
+        10,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_347R0,                   /* parameter-set id */
+        "chl-347r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        347,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (7 << 8) + (5 << 16),    /* df, dr */
+        116,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        87,                          /* dm0 */
+        347,                         /* 2^c - (2^c mod N) */
+        9,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_359R0,                   /* parameter-set id */
+        "chl-359r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        359,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (7 << 8) + (8 << 16),    /* df, dr */
+        120,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        90,                          /* dm0 */
+        3949,                        /* 2^c - (2^c mod N) */
+        12,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_367R0,                   /* parameter-set id */
+        "chl-367r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        367,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (8 << 8) + (5 << 16),    /* df, dr */
+        122,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        92,                          /* dm0 */
+        4037,                        /* 2^c - (2^c mod N) */
+        12,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_379R0,                   /* parameter-set id */
+        "chl-379r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        379,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (8 << 8) + (5 << 16),    /* df, dr */
+        126,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        96,                          /* dm0 */
+        379,                         /* 2^c - (2^c mod N) */
+        9,                           /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_389R0,                   /* parameter-set id */
+        "chl-389r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        389,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (8 << 8) + (5 << 16),    /* df, dr */
+        130,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        99,                          /* dm0 */
+        8169,                        /* 2^c - (2^c mod N) */
+        13,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+    {
+        CHL_401R0,                   /* parameter-set id */
+        "chl-401r0",                 /* human readable param set name */
+        {0xFF, 0xFF, 0xFF},          /* OID */
+        0xFF,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        401,                         /* N */
+        32,                          /* (fake sec_strength, force SHA256 in keygen) */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        8 + (8 << 8) + (6 << 16),    /* df, dr */
+        134,                         /* dg */
+        0,                           /* maxMsgLenBytes - 0 to prevent use for encryption */
+        103,                         /* dm0 */
+        2005,                        /* 2^c - (2^c mod N) */
+        11,                          /* c */
+        0,                           /* lLen */
+        10,                          /* min. no. of hash calls for IGF-2 */
+        6,                           /* min. no. of hash calls for MGF-TP-1 */
+    },
+
+
+
+
+
+
+
+
+
+    {
         NTRU_EES401EP1,              /* parameter-set id */
         "ees401ep1",                 /* human readable param set name */
         {0x00, 0x02, 0x04},          /* OID */

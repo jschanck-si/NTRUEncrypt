@@ -22,14 +22,16 @@ else
 LDFLAGS  += -L$(LIBDIR) -Wl,-R,$(shell cd $(TOPDIR); pwd)/lib
 endif
 
-tgts:=test_poly_mul sanity
+tgts:=test_poly_mul sanity challenge
 
 # Source files.
 sanity_srcs  := sanity.c
+challenge_srcs  := challenge.c
 test_poly_mul_srcs  := test_poly_mul.c
 
 # Object files.
 sanity_objs  := $(addprefix $(OBJDIR)/, $(sanity_srcs:%.c=%.o))
+challenge_objs  := $(addprefix $(OBJDIR)/, $(challenge_srcs:%.c=%.o))
 test_poly_mul_objs  := $(addprefix $(OBJDIR)/, $(test_poly_mul_srcs:%.c=%.o))
 
 # Extra include dirs

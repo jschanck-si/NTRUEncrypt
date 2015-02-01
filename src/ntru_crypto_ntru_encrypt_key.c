@@ -169,8 +169,12 @@ ntru_crypto_ntru_encrypt_key_parse(
                 {
                     dF = (uint16_t)p->dF_r;
                 }
-                
-                privkey_packed_indices_len = ((dF << 1) * p->N_bits + 7) >> 3;
+
+                if(p->N_bits <= 8) {
+                    privkey_packed_indices_len = (dF << 1) * 8;
+                } else{
+                    privkey_packed_indices_len = ((dF << 1) * p->N_bits + 7) >> 3;
+                }
 
                 /* set private-key packing type if defaulted */
 
@@ -270,7 +274,11 @@ ntru_crypto_ntru_encrypt_key_get_blob_params(
             dF = (uint16_t)params->dF_r;
         }
         
-        privkey_packed_indices_len = ((dF << 1) * params->N_bits + 7) >> 3;
+        if(params->N_bits <= 8) {
+            privkey_packed_indices_len = (dF << 1) * 8;
+        } else{
+            privkey_packed_indices_len = ((dF << 1) * params->N_bits + 7) >> 3;
+        }
 
         if (params->is_product_form ||
                 (privkey_packed_indices_len <= privkey_packed_trits_len))
