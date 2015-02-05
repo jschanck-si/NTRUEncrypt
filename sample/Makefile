@@ -17,9 +17,11 @@ LDFLAGS  += -L$(LIBDIR) -Wl,-R,$(shell cd $(TOPDIR); pwd)/lib
 endif
 
 # Source files.
+challenge_srcs  := challenge.c
 sampleNTRUEncrypt_srcs  := sample_NTRUEncrypt.c
 
 # Object files.
+challenge_objs  := $(addprefix $(OBJDIR)/, $(challenge_srcs:.c=.o))
 sampleNTRUEncrypt_objs  := $(addprefix $(OBJDIR)/, $(sampleNTRUEncrypt_srcs:.c=.o))
 
 # Shared library files.
@@ -31,7 +33,7 @@ endif
 
 # Targets.
 .PHONY : all
-all : sampleNTRUEncrypt
+all : sampleNTRUEncrypt challenge
 
 # Directory rules.
 $(BINDIR) $(OBJDIR) :
@@ -40,6 +42,9 @@ $(BINDIR) $(OBJDIR) :
 # Executable rules.
 # Ensure BINDIR exists before building excutables in it.
 sampleNTRUEncrypt  : $(sampleNTRUEncrypt_objs) $(NTRUEncryptlib) | $(BINDIR)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BINDIR)/$@ $^
+
+challenge: $(challenge_objs) $(NTRUEncryptlib) | $(BINDIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BINDIR)/$@ $^
 
 # Shared library rules.

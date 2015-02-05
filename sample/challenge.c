@@ -10,6 +10,11 @@
 #include "ntru_crypto_drbg.h"
 
 
+/* Note: the ntru_crypto library is not designed to allow direct access to
+ * parameter sets, nor is it designed to let you use custom parameter sets,
+ * so all of this is a bit of a hack.
+ */
+
 typedef struct _NTRU_ENCRYPT_PARAM_SET {
     NTRU_ENCRYPT_PARAM_SET_ID id;                 /* parameter-set ID */
     const char*               name;                /* human readable param set name */
@@ -122,6 +127,7 @@ output_public_key(
       third = 2731;
     } else {
       fprintf(stderr, "q error\n");
+      return;
     }
 
     /* unpack */
