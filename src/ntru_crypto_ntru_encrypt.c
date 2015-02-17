@@ -1113,7 +1113,7 @@ ntru_crypto_ntru_encrypt_keygen(
                                                t, t);
                 for (i = 0; i < params->N; ++i)
                 {
-                    t[i] = ~((f_inv[i] + 3 * t[i]) & mod_q_mask);
+                    t[i] = -((f_inv[i] + 3 * t[i]) & mod_q_mask);
                 }
             }
             else
@@ -1121,7 +1121,7 @@ ntru_crypto_ntru_encrypt_keygen(
                 ntru_ring_mult_coefficients(f, f_inv, params->N, padN, params->q, t, t);
                 for (i = 0; i < params->N; ++i)
                 {
-                    t[i] = ~t[i];
+                    t[i] = -t[i];
                 }
             }
             t[0] = t[0] + 2;
