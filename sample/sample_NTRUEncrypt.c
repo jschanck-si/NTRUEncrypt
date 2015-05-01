@@ -129,7 +129,7 @@ main(void)
     uint16_t public_key_len;          /* no. of octets in public key */
     uint8_t private_key[607];         /* sized for EES401EP2 */
     uint16_t private_key_len;         /* no. of octets in private key */
-    uint8_t encoded_public_key[591];  /* sized for EES401EP2 */
+    uint8_t encoded_public_key[593];  /* sized for EES401EP2 */
     uint16_t encoded_public_key_len;  /* no. of octets in encoded public key */
     uint8_t ciphertext[552];          /* sized fof EES401EP2 */
     uint16_t ciphertext_len;          /* no. of octets in ciphertext */
