@@ -5,10 +5,10 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
 AM_CFLAGS += -Wall -Wshadow
 
-noinst_PROGRAMS = bin/sanity bin/test_poly_mul bin/sample_NTRUEncrypt
+noinst_PROGRAMS = bin/sanity bin/sample_NTRUEncrypt
 lib_LTLIBRARIES = libNTRUEncrypt.la
 
-TESTS = bin/test_poly_mul
+TESTS =
 
 pkginclude_HEADERS = \
 	include/ntru_crypto_error.h \
@@ -49,11 +49,6 @@ libNTRUEncrypt_la_CFLAGS = $(AM_CFLAGS) -Wno-parentheses
 # Sanity check
 bin_sanity_SOURCES = test/sanity.c
 bin_sanity_LDADD = libNTRUEncrypt.la
-
-# Check polynomial arithmetic correctness
-bin_test_poly_mul_SOURCES = test/test_poly_mul.c
-bin_test_poly_mul_CFLAGS = $(AM_CFLAGS) -DTEST_COMPARE_CONVOLUTIONS
-bin_test_poly_mul_LDADD = libNTRUEncrypt.la
 
 # Sample program
 bin_sample_NTRUEncrypt_SOURCES = sample/sample_NTRUEncrypt.c
