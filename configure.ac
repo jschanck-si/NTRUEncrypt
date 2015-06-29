@@ -18,8 +18,21 @@ fi
 AC_PROG_CC
 
 AC_ARG_ENABLE(simd,
-   AS_HELP_STRING([--enable-simd=yes|no], [Enable vectorized polynomial arithmetic (default=no)]),
-   [], [enable_simd=no])
+   AS_HELP_STRING([--enable-simd=yes|no],
+                  [Enable vectorized polynomial arithmetic (default=no)]),
+                  [], [enable_simd=no])
+
+
+simd_support=no
+if test x$enable_simd != xno; then
+  AC_CHECK_HEADERS([immintrin.h])
+  AC_MSG_CHECKING(whether we have SSSE3 instructions)
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([ #include <immintrin.h> ],
+                  [ __m128i a,b; _mm_alignr_epi8(a, b, 1); ])],
+                  [simd_support=yes; AC_MSG_RESULT(yes)], [AC_MSG_RESULT(no)])
+fi
+AM_CONDITIONAL(SIMD_ENABLED, test x$simd_support != xno)
+
 
 
 AC_CONFIG_FILES([Makefile])

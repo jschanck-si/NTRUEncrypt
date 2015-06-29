@@ -31,6 +31,17 @@ libNTRUEncrypt_la_SOURCES = \
 	src/ntru_crypto_sha256.c \
 	src/ntru_crypto_sha1.c \
 	src/ntru_crypto_sha2.c
+
+if SIMD_ENABLED
+libNTRUEncrypt_la_SOURCES += \
+	src/ntru_crypto_ntru_mult_indices_simd.c \
+	src/ntru_crypto_ntru_mult_coeffs_simd.c
+else
+libNTRUEncrypt_la_SOURCES += \
+	src/ntru_crypto_ntru_mult_indices.c \
+	src/ntru_crypto_ntru_mult_coeffs_karat.c
+endif
+
 libNTRUEncrypt_la_LDFLAGS = -export-symbols libNTRUEncrypt.sym
 libNTRUEncrypt_la_CFLAGS = $(AM_CFLAGS) -Wno-parentheses
 
