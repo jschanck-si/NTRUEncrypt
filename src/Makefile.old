@@ -17,7 +17,7 @@ CFLAGS?=-O3 -march=native -fomit-frame-pointer
 endif
 
 INCFLAGS = -I../include
-CFLAGS += -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)
+CFLAGS= "-O3 -march=native -fomit-frame-pointer -Wall -Wno-parentheses -Wshadow -fPIC $(INCFLAGS)"
 
 # Source files.
 NTRUEncrypt_srcs := $(wildcard *.c)
