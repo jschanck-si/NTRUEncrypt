@@ -17,9 +17,27 @@ pkginclude_HEADERS = \
 	include/ntru_crypto_drbg.h \
 	include/ntru_crypto.h
 
+noinst_HEADERS = \
+	src/ntru_crypto_hash_basics.h \
+	src/ntru_crypto_hash.h \
+	src/ntru_crypto_hmac.h \
+	src/ntru_crypto_msbyte_uint32.h \
+	src/ntru_crypto_ntru_convert.h \
+	src/ntru_crypto_ntru_encrypt_key.h \
+	src/ntru_crypto_ntru_encrypt_param_sets.h \
+	src/ntru_crypto_ntru_mgf1.h \
+	src/ntru_crypto_ntru_poly.h \
+	src/ntru_crypto_sha1.h \
+	src/ntru_crypto_sha256.h \
+	src/ntru_crypto_sha2.h \
+	src/ntru_crypto_sha.h \
+	test/test_common.h
+
+dist_pkgdata_DATA = libntruencrypt.sym
+
 # libntruencrypt.la
 libntruencrypt_la_CFLAGS = $(AM_CFLAGS) -Wno-parentheses
-libntruencrypt_la_LDFLAGS = -export-symbols libntruencrypt.sym
+libntruencrypt_la_LDFLAGS = -export-symbols $(top_srcdir)/libntruencrypt.sym
 libntruencrypt_la_SOURCES = \
 	src/ntru_crypto_drbg.c \
 	src/ntru_crypto_hash.c \
