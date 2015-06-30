@@ -5,7 +5,7 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
 AM_CFLAGS += -Wall -Wshadow
 
-noinst_PROGRAMS = bin/sanity bin/sample_NTRUEncrypt
+noinst_PROGRAMS = bin/sanity bin/bench bin/sample_NTRUEncrypt
 noinst_LTLIBRARIES = libntrutests.la
 lib_LTLIBRARIES = libntruencrypt.la
 
@@ -50,9 +50,13 @@ endif
 libntrutests_la_SOURCES = \
 	test/test_common.c
 
+
 # Sanity check
 bin_sanity_SOURCES = test/sanity.c
 bin_sanity_LDADD = libntruencrypt.la libntrutests.la
+
+bin_bench_SOURCES = test/bench.c
+bin_bench_LDADD = libntruencrypt.la libntrutests.la
 
 # Sample program
 bin_sample_NTRUEncrypt_SOURCES = sample/sample_NTRUEncrypt.c
