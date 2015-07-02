@@ -1526,7 +1526,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
     data_len -= packed_pubkey_len;
 
     /* check whether the buffer is empty and update *next */
-    if(*remaining_data_len > 0)
+    if(data_len > 0)
     {
         *next = data_ptr;
         *remaining_data_len = data_len;
