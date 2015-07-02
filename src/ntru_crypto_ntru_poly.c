@@ -367,10 +367,18 @@ ntru_ring_inv(
     /* f(X) = a(X) mod 2 */
 
     deg_f = 0;
+    j = 0;
     for (i = 0; i < N; i++)
     {
         f[i] = (uint8_t)(a[i] & 1);
+        j ^= f[i];
         if(f[i]) deg_f = i;
+    }
+
+    /* Parity is zero, not invertible */
+    if(j == 0)
+    {
+      return FALSE;
     }
 
     /* g(X) = X^N - 1 */
