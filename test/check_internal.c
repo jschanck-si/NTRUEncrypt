@@ -13,47 +13,49 @@
 
 /* TODO: Conditionally compile this memory checking code into test_common.o */
 typedef struct _NTRU_CK_MEM {
-    uint8_t   *alloc;
-    uint8_t   *mem;
+    uint8_t   *_alloc;
+    uint8_t   *ptr;
     size_t     len;
 } NTRU_CK_MEM;
 
-void
-ntru_ck_malloc(NTRU_CK_MEM *ptr, size_t size)
+uint8_t *
+ntru_ck_malloc(NTRU_CK_MEM *obj, size_t size)
 {
     uint32_t i;
-    ptr->alloc = (uint8_t *)malloc(size+32);
-    ck_assert_ptr_ne(ptr->alloc, NULL);
+    obj->_alloc = (uint8_t *)malloc(size+32);
+    ck_assert_ptr_ne(obj->_alloc, NULL);
     /* Fill first 16 bytes with random data */
-    randombytes(ptr->alloc, 16);
+    randombytes(obj->_alloc, 16);
     /* Fill last 16 bytes with bit-wise negation of first 16 */
     for(i=0; i<16; i++)
     {
-        ptr->alloc[16+size+i] = ~(ptr->alloc[i]);
+        obj->_alloc[16+size+i] = ~(obj->_alloc[i]);
     }
-    ptr->mem = ptr->alloc+16;
-    ptr->len = size;
+    obj->ptr = obj->_alloc+16;
+    obj->len = size;
+
+    return obj->ptr;
 }
 
 void
-ntru_ck_mem_ok(NTRU_CK_MEM *ptr)
+ntru_ck_mem_ok(NTRU_CK_MEM *obj)
 {
     uint32_t i;
     uint8_t r=0;
     /* check that xor of first 16 bytes with last 16 bytes gives all 1s */
     for(i=0; i<16; i++)
     {
-        r |= (ptr->alloc[i] ^ ptr->alloc[16 + ptr->len + i]) + 1;
+        r |= (obj->_alloc[i] ^ obj->_alloc[16 + obj->len + i]) + 1;
     }
     ck_assert_uint_eq(r, 0);
 }
 
 void
-ntru_ck_mem_free(NTRU_CK_MEM *ptr)
+ntru_ck_mem_free(NTRU_CK_MEM *obj)
 {
-    free(ptr->alloc);
-    ptr->mem = NULL;
-    ptr->len = 0;
+    free(obj->_alloc);
+    obj->ptr = NULL;
+    obj->len = 0;
 }
 
 
@@ -134,15 +136,12 @@ START_TEST(test_gen_poly)
         num_indices = 2 * params->dF_r;
     }
 
-    ntru_ck_malloc(&seed_buf, seed_len*sizeof(*seed_buf_p));
-    ntru_ck_malloc(&mgf_buf, mgf_buf_len*sizeof(*mgf_buf_p));
-    ntru_ck_malloc(&F_buf_1, num_indices*sizeof(F_buf_1_p));
-    ntru_ck_malloc(&F_buf_2, num_indices*sizeof(F_buf_2_p));
-
-    seed_buf_p = seed_buf.mem;
-    mgf_buf_p = mgf_buf.mem;
-    F_buf_1_p = (uint16_t*)F_buf_1.mem;
-    F_buf_2_p = (uint16_t*)F_buf_2.mem;
+    seed_buf_p = ntru_ck_malloc(&seed_buf, seed_len*sizeof(*seed_buf_p));
+    mgf_buf_p = ntru_ck_malloc(&mgf_buf, mgf_buf_len*sizeof(*mgf_buf_p));
+    F_buf_1_p = (uint16_t *) ntru_ck_malloc(&F_buf_1,
+            num_indices*sizeof(F_buf_1_p));
+    F_buf_2_p = (uint16_t *) ntru_ck_malloc(&F_buf_2,
+            num_indices*sizeof(F_buf_2_p));
 
     /* Generate a random seed */
     rc = ntru_crypto_drbg_generate(drbg, params->sec_strength_len << 3,
@@ -300,11 +299,11 @@ START_TEST(test_key_form)
                                          NULL, &privkey_blob_len, NULL);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
 
-    ntru_ck_malloc(&pubkey_blob, pubkey_blob_len*sizeof(*pubkey_blob_p));
-    pubkey_blob_p = pubkey_blob.mem;
+    pubkey_blob_p = ntru_ck_malloc(&pubkey_blob,
+            pubkey_blob_len*sizeof(*pubkey_blob_p));
 
-    ntru_ck_malloc(&privkey_blob, privkey_blob_len*sizeof(*privkey_blob_p));
-    privkey_blob_p = privkey_blob.mem;
+    privkey_blob_p = ntru_ck_malloc(&privkey_blob,
+            privkey_blob_len*sizeof(*privkey_blob_p));
 
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
                                          &pubkey_blob_len, pubkey_blob_p,
@@ -318,8 +317,7 @@ START_TEST(test_key_form)
                                             &pubkey_pack_p, &privkey_pack_p);
     ck_assert_int_eq(rc, TRUE);
 
-    ntru_ck_malloc(&h_poly, params->N*sizeof(*h_poly_p));
-    h_poly_p = (uint16_t*) h_poly.mem;
+    h_poly_p = (uint16_t*) ntru_ck_malloc(&h_poly, params->N*sizeof(*h_poly_p));
 
     /* Unpack public key, h */
     pubkey_pack_len = (params->N * params->q_bits + 7) >> 3;
@@ -342,8 +340,7 @@ START_TEST(test_key_form)
         dF = (dF + (dF >> 8) + (dF >> 16)) & 0xff;
     }
 
-    ntru_ck_malloc(&F_buf, 2*dF*sizeof(*F_buf_p));
-    F_buf_p = (uint16_t*)F_buf.mem;
+    F_buf_p = (uint16_t*)ntru_ck_malloc(&F_buf, 2*dF*sizeof(*F_buf_p));
 
     if (privkey_pack_type == NTRU_ENCRYPT_KEY_PACKED_TRITS)
     {
@@ -357,11 +354,10 @@ START_TEST(test_key_form)
                 privkey_pack_p, params->N_bits, F_buf_p);
     }
 
-    ntru_ck_malloc(&g_poly, params->N*sizeof(*g_poly_p));
-    g_poly_p = (uint16_t*) g_poly.mem;
+    g_poly_p = (uint16_t*) ntru_ck_malloc(&g_poly, params->N*sizeof(*g_poly_p));
 
-    ntru_ck_malloc(&scratch, 2*params->N*sizeof(*scratch_p));
-    scratch_p = (uint16_t*) scratch.mem;
+    scratch_p = (uint16_t*) ntru_ck_malloc(&scratch,
+            2*params->N*sizeof(*scratch_p));
 
     /* Check that (1 + p*F)*h = p*g */
     /* Our h = p*g/f when generated properly. f = 1 + pF */
@@ -387,7 +383,7 @@ START_TEST(test_key_form)
         g_poly_p[i] = (3*g_poly_p[i] + h_poly_p[i]) & mod_q_mask;
     }
 
-    /* Ensure g is of the right form: dg+1 coeffs = +3s and dg coeffs = -3 */
+    /* Ensure g is of the right form: dg+1 coeffs = +3 and dg coeffs = -3 */
     uint16_t g_p1 = 0;
     uint16_t g_m1 = 0;
     for(i=0; i<params->N; i++)
