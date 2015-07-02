@@ -470,7 +470,7 @@ ntruencrypt_public_test_suite(void)
     /* Test publicly accessible DRBG routines */
     tc_api_drbg = tcase_create("drbg");
     tcase_add_test(tc_api_drbg, test_api_drbg_external);
-    tcase_add_loop_test(tc_api_drbg, test_api_drbg_sha256_hmac, 0, 6);
+    tcase_add_loop_test(tc_api_drbg, test_api_drbg_sha256_hmac, 0, 4);
 
     /* Test publicly accessible crypto routines for each parameter set */
     tc_api_crypto = tcase_create("crypto");

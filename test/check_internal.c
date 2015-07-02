@@ -226,20 +226,37 @@ END_TEST
 
 START_TEST(test_inv_mod_2)
 {
-    uint16_t a[13] = {1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1};
-    uint16_t tmp[26];
-    uint16_t a_inv[13];
-    uint16_t test_a_inv[13] = {0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1};
+    uint16_t tmp[34];
+    uint16_t out[17];
 
-    randombytes((uint8_t*)tmp, sizeof(tmp));
-    randombytes((uint8_t*)a_inv, sizeof(a_inv));
+    uint16_t a[17] = {1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1};
+    uint16_t test_a[17] = {1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1};
 
-    ck_assert_int_eq(ntru_ring_inv(a, 13, tmp, a_inv), TRUE);
-    ck_assert_int_eq(memcmp(a_inv, test_a_inv, sizeof(a)), 0);
+    uint16_t b[17] = {1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    /* Replacing the constant term of a with 0 gives a non-invertible elt */
+    /* a is invertible with inverse equal to test_a */
+    ck_assert_int_eq(ntru_ring_inv(a, 17, tmp, out), TRUE);
+    ck_assert_int_eq(memcmp(out, test_a, sizeof(a)), 0);
+
+    /* Changing the parity of a makes it trivially non-invertible */
     a[0] = 0;
-    ck_assert_int_eq(ntru_ring_inv(a, 13, tmp, a_inv), FALSE);
+    ck_assert_int_eq(ntru_ring_inv(a, 17, tmp, out), FALSE);
+
+    /* b is a nontrivial factor of x^17 - 1 mod 2 */
+    ck_assert_int_eq(ntru_ring_inv(b, 17, tmp, out), FALSE);
+}
+END_TEST
+
+
+START_TEST(test_mult_indices)
+{
+}
+END_TEST
+
+
+START_TEST(test_mult_coefficients)
+{
+
 }
 END_TEST
 
@@ -396,10 +413,13 @@ START_TEST(test_key_form)
         {
             g_m1 += 1;
         }
+        else
+        {
+            ck_assert_uint_eq(g_poly_p[i], 0);
+        }
     }
     ck_assert_uint_eq(g_p1, params->dg + 1);
     ck_assert_uint_eq(g_m1, params->dg);
-
 
     ntru_ck_mem_ok(&scratch);
     ntru_ck_mem_ok(&g_poly);
