@@ -34,7 +34,8 @@
  *     (may be overridden on compiler command line)
  *   - has a maximum security strength of 256 bits
  *   - automatically uses SHA-256 for all security strengths
- *   - allows a personalization string of up to MAX_PERS_STR_BYTES bytes
+ *   - allows a personalization string of length up to
+ *     HMAC_DRBG_MAX_PERS_STR_BYTES bytes
  *   - implments reseeding
  *   - does not implement additional input for reseeding or generation
  *   - does not implement predictive resistance
@@ -375,13 +376,13 @@ sha256_hmac_drbg_instantiate(
         memset(entropy_nonce, 0, sizeof(entropy_nonce));
         return result;
     }
-    
+
     memset(entropy_nonce, 0, sizeof(entropy_nonce));
 
     /* init instantiation parameters */
 
     s->sec_strength = sec_strength_bits;
-    s->requests_left = HMAC_DRBG_MAX_REQUESTS;             
+    s->requests_left = HMAC_DRBG_MAX_REQUESTS;
     s->entropy_fn = entropy_fn;
     *state = s;
 
@@ -503,7 +504,7 @@ sha256_hmac_drbg_generate(
     {
         DRBG_RET(DRBG_BAD_LENGTH);
     }
-    
+
     /* check if drbg has adequate security strength */
 
     if (sec_strength_bits > s->sec_strength)
@@ -693,14 +694,14 @@ ntru_crypto_drbg_instantiate(
     {
         DRBG_RET(DRBG_BAD_PARAMETER);
     }
-    
+
     if (sec_strength_bits > DRBG_MAX_SEC_STRENGTH_BITS)
     {
         DRBG_RET(DRBG_BAD_LENGTH);
     }
-    
+
     if (pers_str && (pers_str_bytes == 0))
-    {    
+    {
         pers_str = NULL;
     }
 
@@ -781,6 +782,11 @@ ntru_crypto_external_drbg_instantiate(
 {
     DRBG_STATE             *drbg = NULL;
     EXTERNAL_DRBG_STATE    *state = NULL;
+
+    if (!randombytesfn || !handle)
+    {
+        DRBG_RET(DRBG_BAD_PARAMETER);
+    }
 
     /* get an uninstantiated drbg */
 
