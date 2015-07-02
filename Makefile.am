@@ -2,14 +2,19 @@ AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 
 ACLOCAL_AMFLAGS = -I m4
 
-AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
+AM_CFLAGS = -I$(top_srcdir)/include
 AM_CFLAGS += -Wall -Wshadow
 
-noinst_PROGRAMS = bin/sanity bin/bench bin/sample_NTRUEncrypt
+noinst_PROGRAMS = \
+	bin/sanity \
+	bin/bench \
+	bin/sample_NTRUEncrypt
+
+# Set conditionally below
+TESTS =
+
 noinst_LTLIBRARIES = libntrutests.la
 lib_LTLIBRARIES = libntruencrypt.la
-
-TESTS = bin/sanity
 
 pkginclude_HEADERS = \
 	include/ntru_crypto_error.h \
@@ -64,18 +69,55 @@ libntruencrypt_la_SOURCES += \
 endif
 
 
+# If we have the CHECK package then link an extra copy of the library
+# with all internal functions exposed and build unit tests
+if HAVE_CHECK
+TESTS += bin/check_public bin/check_internal
+noinst_PROGRAMS += bin/check_public bin/check_internal
+
+noinst_LTLIBRARIES += libntruencrypt_check.la
+
+libntruencrypt_check_la_CFLAGS = $(libntruencrypt_la_CFLAGS)
+libntruencrypt_check_la_LDFLAGS =
+libntruencrypt_check_la_SOURCES = $(libntruencrypt_la_SOURCES)
+else
+# If we don't have CHECK fall back to the basic sanity test
+TESTS += bin/sanity
+endif
+
+
 # Test helper library
 libntrutests_la_SOURCES = \
 	test/test_common.c
 
-
-# Sanity check
-bin_sanity_SOURCES = test/sanity.c
-bin_sanity_LDADD = libntruencrypt.la libntrutests.la
-
+# Crude benchmarking program
 bin_bench_SOURCES = test/bench.c
-bin_bench_LDADD = libntruencrypt.la libntrutests.la
+bin_bench_LDADD = \
+	$(top_builddir)/libntruencrypt.la \
+	$(top_builddir)/libntrutests.la
 
 # Sample program
 bin_sample_NTRUEncrypt_SOURCES = sample/sample_NTRUEncrypt.c
 bin_sample_NTRUEncrypt_LDADD = libntruencrypt.la
+
+# Sanity test for when CHECK package is not available
+bin_sanity_SOURCES = test/sanity.c
+bin_sanity_LDADD = \
+	$(top_builddir)/libntruencrypt.la \
+	$(top_builddir)/libntrutests.la
+
+# Tests using only the public API
+bin_check_public_SOURCES = test/check_public.c
+bin_check_public_CFLAGS = $(AM_CFLAGS) @CHECK_CFLAGS@
+bin_check_public_LDADD = \
+	$(top_builddir)/libntruencrypt.la \
+	$(top_builddir)/libntrutests.la \
+	@CHECK_LIBS@
+
+# Tests requiring access to internals
+bin_check_internal_SOURCES = test/check_internal.c
+bin_check_internal_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/src @CHECK_CFLAGS@
+bin_check_internal_LDADD = \
+	$(top_builddir)/libntruencrypt_check.la \
+	$(top_builddir)/libntrutests.la \
+	@CHECK_LIBS@

@@ -34,3 +34,48 @@ uint32_t randombytes(uint8_t *x,uint64_t xlen)
   DRBG_RET(DRBG_OK);
 }
 
+
+uint8_t
+drbg_sha256_hmac_get_entropy(
+    ENTROPY_CMD  cmd,
+    uint8_t     *out)
+{
+    /* 48 bytes of entropy are needed to instantiate a DRBG with a
+     * security strength of 256 bits.
+     */
+    static uint8_t seed[48];
+    static size_t index;
+
+    if (cmd == INIT)
+    {
+        /* Any initialization for a real entropy source goes here. */
+        index = 0;
+        randombytes(seed, sizeof(seed));
+        return 1;
+    }
+
+    if (out == NULL)
+        return 0;
+
+    if (cmd == GET_NUM_BYTES_PER_BYTE_OF_ENTROPY)
+    {
+        /* Here we return the number of bytes needed from the entropy
+         * source to obtain 8 bits of entropy.  Maximum is 8.
+         */
+        *out = 1;       /* treat this as a perfectly random source */
+        return 1;
+    }
+
+    if (cmd == GET_BYTE_OF_ENTROPY)
+    {
+        if (index >= sizeof(seed))
+        {
+            index = 0;
+            randombytes(seed, sizeof(seed));
+        }
+
+        *out = seed[index++];           /* deliver an entropy byte */
+        return 1;
+    }
+    return 0;
+}

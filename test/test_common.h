@@ -4,6 +4,8 @@
 #define RAND_LEN (4096)
 uint32_t randombytes(uint8_t *x,uint64_t xlen);
 
+uint8_t drbg_sha256_hmac_get_entropy(ENTROPY_CMD cmd, uint8_t *out);
+
 static const NTRU_ENCRYPT_PARAM_SET_ID PARAM_SET_IDS[] = {
   NTRU_EES401EP1, NTRU_EES449EP1, NTRU_EES677EP1, NTRU_EES1087EP2,
   NTRU_EES541EP1, NTRU_EES613EP1, NTRU_EES887EP1, NTRU_EES1171EP1,

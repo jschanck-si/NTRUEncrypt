@@ -23,6 +23,10 @@ AC_FUNC_ALLOCA
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([memmove memset])
 
+dnl Need check for unit tests
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.6], [have_check=yes], [have_check=no])
+AM_CONDITIONAL(HAVE_CHECK, test "x$have_check" = "xyes")
+
 dnl Compute the canonical host-system type variable, host, and its three individual
 dnl parts host_cpu, host_vendor, and host_os.
 AC_CANONICAL_HOST
@@ -45,7 +49,7 @@ AC_ARG_ENABLE(simd,
                   [enable_simd=yes], [enable_simd=no])
 
 
-if test x$enable_simd == xyes; then
+if test "x$enable_simd" = "xyes"; then
   AX_EXT
 fi
 AM_CONDITIONAL(SIMD_ENABLED,\
