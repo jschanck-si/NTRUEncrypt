@@ -1,4 +1,4 @@
-/*/******************************************************************************
+/******************************************************************************
  * NTRU Cryptography Reference Source Code
  * Copyright (c) 2009-2013, by Security Innovation, Inc. All rights reserved. 
  *
