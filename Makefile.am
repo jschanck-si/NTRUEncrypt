@@ -136,3 +136,14 @@ bin_check_internal_LDADD = \
 	$(top_builddir)/libntruencrypt_check.la \
 	$(top_builddir)/libntrutests.la \
 	@CHECK_LIBS@
+
+
+coverage-html:
+	mkdir -p coverage
+	lcov --capture --directory src --output-file coverage/coverage.info
+	genhtml coverage/coverage.info --output-directory coverage/
+
+
+mostlyclean-local:
+	rm -f src/*/*.gc{da,no}
+	test ! -d coverage || rm -rf coverage
