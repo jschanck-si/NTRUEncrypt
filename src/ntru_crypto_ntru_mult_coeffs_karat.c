@@ -1,10 +1,11 @@
 #include "ntru_crypto.h"
 #include "ntru_crypto_ntru_poly.h"
 
+#define PAD(N) ((N + 0x000f) & 0xfff0)
+
 static void
 grade_school_mul(
-    uint16_t        *res1,   /* out - a * b in Z[x], must be length 2N */
-    uint16_t        *tmp1,   /*  in - N coefficients of scratch space */
+    uint16_t        *res1,  /* out - a * b in Z[x], must be length 2N */
     uint16_t const  *a,     /*  in - polynomial */
     uint16_t const  *b,     /*  in - polynomial */
     uint16_t const   N)     /*  in - number of coefficients in a and b */
@@ -31,8 +32,8 @@ grade_school_mul(
 
 static void
 karatsuba(
-    uint16_t        *res1,   /* out - a * b in Z[x], must be length 2k */
-    uint16_t        *tmp1,   /*  in - k coefficients of scratch space */
+    uint16_t        *res1,  /* out - a * b in Z[x], must be length 2k */
+    uint16_t        *tmp1,  /*  in - k coefficients of scratch space */
     uint16_t const  *a,     /*  in - polynomial */
     uint16_t const  *b,     /*  in - polynomial */
     uint16_t const   k)     /*  in - number of coefficients in a and b */
@@ -42,7 +43,7 @@ karatsuba(
     /* Grade school multiplication for small / odd inputs */
     if(k <= 38 || (k & 1) != 0)
     {
-      grade_school_mul(res1,tmp1,a,b,k);
+      grade_school_mul(res1,a,b,k);
       return;
     }
 
@@ -89,13 +90,29 @@ karatsuba(
     return;
 }
 
+
+void
+ntru_ring_mult_coefficients_memreq(
+    uint16_t N,
+    uint16_t *tmp_polys,
+    uint16_t *poly_coeffs)
+{
+    if(tmp_polys)
+    {
+        *tmp_polys= 3;
+    }
+
+    if(poly_coeffs)
+    {
+        *poly_coeffs = PAD(N);
+    }
+}
+
 /* ntru_ring_mult_coefficients
  *
  * Multiplies ring element (polynomial) "a" by ring element (polynomial) "b"
  * to produce ring element (polynomial) "c" in (Z/qZ)[X]/(X^N - 1).
  * This is a convolution operation.
- *
- * Ring element "b" has coefficients in the range [0,N).
  *
  * This assumes q is 2^r where 8 < r < 16, so that overflow of the sum
  * beyond 16 bits does not matter.
@@ -106,7 +123,6 @@ ntru_ring_mult_coefficients(
     uint16_t const *a,          /*  in - pointer to polynomial a */
     uint16_t const *b,          /*  in - pointer to polynomial b */
     uint16_t        N,          /*  in - degree of (x^N - 1) */
-    uint16_t        padN,       /*  in - no. of coefficients in a, b, c */
     uint16_t        q,          /*  in - large modulus */
     uint16_t       *tmp,        /*  in - temp buffer of 3*padN elements */
     uint16_t       *c)          /* out - address for polynomial c */
@@ -114,12 +130,16 @@ ntru_ring_mult_coefficients(
     uint16_t i;
     uint16_t q_mask = q-1;
 
-    memset(tmp, 0, 3*padN*sizeof(uint16_t));
-    karatsuba(tmp, tmp+2*padN, a, b, N);
+    memset(tmp, 0, 3*PAD(N)*sizeof(uint16_t));
+    karatsuba(tmp, tmp+2*PAD(N), a, b, PAD(N));
 
     for(i=0; i<N; i++)
     {
         c[i] = (tmp[i] + tmp[i+N]) & q_mask;
+    }
+    for(; i<PAD(N); i++)
+    {
+        c[i] = 0;
     }
 
     return;

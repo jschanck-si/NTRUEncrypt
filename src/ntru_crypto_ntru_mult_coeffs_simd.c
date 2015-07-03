@@ -2,17 +2,17 @@
 #include "ntru_crypto_ntru_poly.h"
 #include <immintrin.h>
 
+#define PAD(N) ((N+0x0007) & 0xfff8)
+
 static void
 grade_school_mul(
     uint16_t        *res1,   /* out - a * b in Z[x], must be length 2N */
-    uint16_t        *tmp1,   /*  in - N coefficients of scratch space */
     uint16_t const  *a,     /*  in - polynomial */
     uint16_t const  *b,     /*  in - polynomial */
     uint16_t const   N)     /*  in - number of coefficients in a and b */
 {
-  uint16_t const padN = (N + 0x0007) & 0xfff8;
-  __m128i *T = alloca(2*padN*sizeof(uint16_t));
-  memset(T,0,2*padN*sizeof(uint16_t));
+  __m128i *T = (__m128i *)res1;
+  memset(T, 0, 2*PAD(N)*sizeof(uint16_t));
 
   uint16_t i;
   uint16_t j;
@@ -23,7 +23,7 @@ grade_school_mul(
   __m128i cur;
   __m128i next;
   __m128i x2;
-  for(i=0; i<padN/8; i++)
+  for(i=0; i<PAD(N)/8; i++)
   {
     /* Broadcast each of the uint16's at a[8*i] into 8
        copies of that value in a separate __m128i. */
@@ -45,7 +45,7 @@ grade_school_mul(
        low 128 bits by abroad[m]. Add all 8 of these
        values to T[i+j]. */
     cur = _mm_setzero_si128();
-    for(j=0; j<(padN/8); j++)
+    for(j=0; j<PAD(N)/8; j++)
     {
       next = _mm_load_si128((__m128i *) b+j);
 
@@ -74,12 +74,28 @@ grade_school_mul(
     _mm_store_si128(T+i+j, x2);
   }
 
-  memcpy(res1, T, 2*N*sizeof(uint16_t));
-
   return;
 }
 
 
+/* To multiply polynomials mod x^N - 1 this mult_coefficients implementation
+ * needs scratch space of size num_polys * num_coeffs * sizeof(uint16_t) */
+void
+ntru_ring_mult_coefficients_memreq(
+    uint16_t N,
+    uint16_t *num_polys,
+    uint16_t *num_coeffs)
+{
+    if(num_polys)
+    {
+        *num_polys = 2;
+    }
+
+    if(num_coeffs)
+    {
+        *num_coeffs = PAD(N);
+    }
+}
 
 /* ntru_ring_mult_coefficients
  *
@@ -98,19 +114,22 @@ ntru_ring_mult_coefficients(
     uint16_t const *a,          /*  in - pointer to polynomial a */
     uint16_t const *b,          /*  in - pointer to polynomial b */
     uint16_t        N,          /*  in - degree of (x^N - 1) */
-    uint16_t        padN,       /*  in - no. of coefficients in a, b, c */
     uint16_t        q,          /*  in - large modulus */
-    uint16_t       *tmp,        /*  in - temp buffer of 3*padN elements */
+    uint16_t       *tmp,        /*  in - temp buffer of 3*PAD(N) elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
     uint16_t i;
     uint16_t q_mask = q-1;
 
-    grade_school_mul(tmp, tmp+2*padN, a, b, N);
+    grade_school_mul(tmp, a, b, N);
 
     for(i=0; i<N; i++)
     {
         c[i] = (tmp[i] + tmp[i+N]) & q_mask;
+    }
+    for(; i<PAD(N); i++)
+    {
+        c[i] = 0;
     }
 
     return;

@@ -884,8 +884,9 @@ ntru_crypto_ntru_encrypt_keygen(
     uint32_t                dF1 = 0;
     uint32_t                dF2 = 0;
     uint32_t                dF3 = 0;
-    uint16_t                padN;
-    uint16_t                tmp_polys;
+    uint16_t                poly_coeffs;
+    uint16_t                total_polys;
+    uint16_t                scratch_polys;
     uint16_t               *scratch_buf = NULL;
     uint16_t               *ringel_buf1 = NULL;
     uint16_t               *ringel_buf2 = NULL;
@@ -943,38 +944,48 @@ ntru_crypto_ntru_encrypt_keygen(
         NTRU_RET(NTRU_BUFFER_TOO_SMALL);
     }
 
-    /* allocate memory for all operations:
-       6 (5 for product form) polynomials and 2*dF indices */
+    /* Allocate memory for all operations. We need:
+     *  - 2 polynomials for results: ringel_buf1 and ringel_buf2.
+     *  - scratch space for ntru_ring_mult_coefficients (which is
+     *    implementation dependent) plus one additional polynomial
+     *    of the same size for ntru_ring_lift_inv_pow2_x.
+     *  - 2*dF coefficients for F
+     */
+    ntru_ring_mult_coefficients_memreq(params->N,
+            &scratch_polys, &poly_coeffs);
+    scratch_polys += 1; /* ntru_ring_lift_... */
 
+    total_polys = scratch_polys;
     if (params->is_product_form)
     {
         dF1 =  params->dF_r & 0xff;
         dF2 = (params->dF_r >> 8) & 0xff;
         dF3 = (params->dF_r >> 16) & 0xff;
         dF = dF1 + dF2 + dF3;
-
-        tmp_polys = 3;
+        /* For product form keys we can overlap ringel_buf1
+         * and the scratch space since mult. by f uses F_buf.
+         * so only add room for ringel_buf2 */
+        scratch_polys -= 1;
+        total_polys += 1;
     }
     else
     {
         dF = params->dF_r;
-
-        tmp_polys = 4; /* Need to store expanded value of f
-                          for non-product form Newton iteration */
+        total_polys += 2; /* ringel_buf{1,2} */
     }
 
-    padN = (params->N + 0x000f) & 0xfff0; /* Karatsuba degree */
-    scratch_buf_len = ((tmp_polys+2)*padN + 2*dF)*sizeof(uint16_t);
+    scratch_buf_len = total_polys * poly_coeffs * sizeof(uint16_t);
+    scratch_buf_len += 2 * dF * sizeof(uint16_t);
     scratch_buf = MALLOC(scratch_buf_len);
     if (!scratch_buf)
     {
         NTRU_RET(NTRU_OUT_OF_MEMORY);
     }
-
     memset(scratch_buf, 0, scratch_buf_len);
-    ringel_buf1 = scratch_buf + tmp_polys*padN;
-    ringel_buf2 = ringel_buf1 + padN;
-    F_buf       = ringel_buf2 + padN;
+
+    ringel_buf1 = scratch_buf + scratch_polys*poly_coeffs;
+    ringel_buf2 = ringel_buf1 + poly_coeffs;
+    F_buf       = ringel_buf2 + poly_coeffs;
     tmp_buf     = (uint8_t *)scratch_buf;
 
     /* set hash algorithm and seed length based on security strength */

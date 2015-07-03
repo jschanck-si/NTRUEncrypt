@@ -250,13 +250,118 @@ END_TEST
 
 START_TEST(test_mult_indices)
 {
+    uint32_t i;
+    uint16_t a[17] = {36486, 20395, 8746, 16637, 26195, 1654, 24222, 13306,
+                    9573, 26946, 29106, 2401, 32146, 2871, 41930, 7902, 3398};
+    uint16_t b1l = 2;
+    uint16_t b2l = 2;
+    uint16_t b3l = 3;
+    uint16_t bi[14] = {7, 10, 9, 13, 1, 13, 6, 8, 4, 10, 11, 6, 9, 15};
+    uint16_t test[17] = {40787, 24792, 27808, 13989, 56309, 37625, 37436, 32307,
+                    15311, 59789, 32769, 65008, 3711, 54663, 25343, 55984, 6193};
+
+    uint16_t N = 17;
+    uint16_t q = 0;
+
+    NTRU_CK_MEM t;
+    NTRU_CK_MEM out;
+    uint16_t *t_p;
+    uint16_t *out_p;
+
+    t_p = (uint16_t*)ntru_ck_malloc(&t, 2*N*sizeof(*t_p));
+    out_p = (uint16_t*)ntru_ck_malloc(&out, N*sizeof(*out_p));
+
+    /* Should work with dirty scratch and output memory */
+    randombytes(t.ptr, t.len);
+    randombytes(out.ptr, out.len);
+
+    /* Multiply */
+    ntru_ring_mult_product_indices(a, b1l, b2l, b3l, bi, N, q, t_p, out_p);
+
+    /* Check result */
+    for(i=0; i<N; i++)
+    {
+        ck_assert_uint_eq(out_p[i], test[i]);
+    }
+
+    /* Check over/under runs */
+    ntru_ck_mem_ok(&t);
+    ntru_ck_mem_ok(&out);
+
+    ntru_ck_mem_free(&t);
+    ntru_ck_mem_free(&out);
 }
 END_TEST
 
 
 START_TEST(test_mult_coefficients)
 {
+    uint32_t i;
+    uint16_t a[17] = {36486, 20395, 8746, 16637, 26195, 1654, 24222, 13306,
+                9573, 26946, 29106, 2401, 32146, 2871, 41930, 7902, 3398};
+    uint16_t b[17] = {5266, 35261, 54826, 45380, 46459, 46509, 56767, 46916,
+                33670, 11921, 46519, 47628, 20388, 4167, 39405, 2712, 52748};
+    uint16_t test[17] = {30101, 45125, 62370, 2275, 34473, 7074, 62574, 57665,
+                5199, 4482, 49487, 17159, 33125, 11061, 19328, 22268, 46230};
 
+    uint16_t N = 17;
+    uint16_t q = 0;
+
+    /* Determine proper padding for our mult implementation */
+    uint16_t num_polys;
+    uint16_t num_coeffs;
+    ntru_ring_mult_coefficients_memreq(N, &num_polys, &num_coeffs);
+
+    /* Allocate memory */
+    NTRU_CK_MEM pol1;
+    NTRU_CK_MEM pol2;
+    NTRU_CK_MEM tmp;
+    NTRU_CK_MEM out;
+
+    uint16_t *a_p;
+    uint16_t *b_p;
+    uint16_t *tmp_p;
+    uint16_t *out_p;
+
+    a_p = (uint16_t*)ntru_ck_malloc(&pol1, num_coeffs*sizeof(uint16_t));
+    b_p = (uint16_t*)ntru_ck_malloc(&pol2, num_coeffs*sizeof(uint16_t));
+    tmp_p = (uint16_t*)ntru_ck_malloc(&tmp,
+            num_polys*num_coeffs*sizeof(uint16_t));
+    out_p = (uint16_t*)ntru_ck_malloc(&out, num_coeffs*sizeof(uint16_t));
+
+    /* Copy and pad the inputs */
+    memcpy(a_p, a, N*sizeof(uint16_t));
+    memcpy(b_p, b, N*sizeof(uint16_t));
+    memset(a_p+N, 0, (num_coeffs-N)*sizeof(uint16_t));
+    memset(b_p+N, 0, (num_coeffs-N)*sizeof(uint16_t));
+
+    /* Should work with dirty scratch and output memory */
+    randombytes(tmp.ptr+N, (num_coeffs-N)*sizeof(uint16_t));
+    randombytes(out.ptr, out.len);
+
+    /* Multiply */
+    ntru_ring_mult_coefficients(a_p, b_p, N, q, tmp_p, out_p);
+
+    /* Check result */
+    for(i=0; i<N; i++)
+    {
+        ck_assert_uint_eq(out_p[i], test[i]);
+    } /* Padding should be zero */
+    for(; i<num_coeffs; i++)
+    {
+        ck_assert_uint_eq(out_p[i], 0);
+    }
+
+    /* Check over/under runs */
+    ntru_ck_mem_ok(&pol1);
+    ntru_ck_mem_ok(&pol2);
+    ntru_ck_mem_ok(&tmp);
+    ntru_ck_mem_ok(&out);
+
+    ntru_ck_mem_free(&pol1);
+    ntru_ck_mem_free(&pol2);
+    ntru_ck_mem_free(&tmp);
+    ntru_ck_mem_free(&out);
 }
 END_TEST
 
@@ -445,6 +550,8 @@ ntruencrypt_internal_test_suite(void)
     tcase_add_loop_test(tc_poly, test_gen_poly, 0, NUM_PARAM_SETS);
     tcase_add_test(tc_poly, test_min_weight);
     tcase_add_test(tc_poly, test_inv_mod_2);
+    tcase_add_test(tc_poly, test_mult_indices);
+    tcase_add_test(tc_poly, test_mult_coefficients);
 
     tc_key = tcase_create("Key");
     tcase_add_unchecked_fixture(tc_key, test_drbg_setup, test_drbg_teardown);
