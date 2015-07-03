@@ -1468,7 +1468,7 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
          * unknown OID by comparing the first 18 octets
          */
 
-        if (memcmp(prefix_buf, der_prefix_template, 18))
+        if (memcmp(prefix_buf, der_prefix_template, 18) == 0)
         {
             NTRU_RET(NTRU_OID_NOT_RECOGNIZED);
         }
