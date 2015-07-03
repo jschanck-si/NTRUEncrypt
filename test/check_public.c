@@ -186,6 +186,14 @@ START_TEST(test_api_crypto)
     ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
     ciphertext[0] ^= 0xff;
 
+    /* Plaintext buffer too short */
+    plaintext_len -= 1;
+    rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
+                                  ciphertext_len, ciphertext,
+                                  &plaintext_len, plaintext);
+    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    plaintext_len += 1;
+
     /* Overwrite key pair */
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
                                          &public_key_len, public_key,
@@ -244,6 +252,23 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(next_len, 0);
     ck_assert_ptr_eq(next, NULL);
 
+    /* Manipulate the DER id, should fail with OID_NOT_RECOGNIZED */
+    tag = encoded_public_key[31];
+    encoded_public_key[31] = 0xff;
+    next = encoded_public_key;
+    next_len = encoded_public_key_len;
+    rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
+            &public_key2_len, public_key2, &next, &next_len);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OID_NOT_RECOGNIZED));
+    encoded_public_key[31] = tag;
+
+    /* Manipulate the template, should fail with BAD_ENCODING */
+    memset(encoded_public_key, 18, 0xff);
+    next = encoded_public_key;
+    next_len = encoded_public_key_len;
+    rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
+            &public_key2_len, public_key2, &next, &next_len);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_ENCODING));
 
     free(public_key2);
     free(encoded_public_key);
@@ -439,12 +464,24 @@ START_TEST(test_api_drbg_external)
 }
 END_TEST
 
+START_TEST(test_get_param_set_name)
+{
+    const char *name;
+    name = ntru_encrypt_get_param_set_name(NTRU_EES401EP2);
+    ck_assert_str_eq(name, "ees401ep2");
+    name = ntru_encrypt_get_param_set_name(-1);
+    ck_assert_ptr_eq(name, NULL);
+
+}
+END_TEST
+
 Suite *
 ntruencrypt_public_test_suite(void)
 {
     Suite *s;
     TCase *tc_api_crypto;
     TCase *tc_api_drbg;
+    TCase *tc_api_misc;
 
     s = suite_create("NTRUEncrypt.Public");
 
@@ -458,6 +495,10 @@ ntruencrypt_public_test_suite(void)
     tcase_add_unchecked_fixture(tc_api_crypto, test_drbg_setup, test_drbg_teardown);
     tcase_add_loop_test(tc_api_crypto, test_api_crypto, 0, NUM_PARAM_SETS);
 
+    tc_api_misc = tcase_create("misc");
+    tcase_add_test(tc_api_misc, test_get_param_set_name);
+
+    suite_add_tcase(s, tc_api_misc);
     suite_add_tcase(s, tc_api_drbg);
     suite_add_tcase(s, tc_api_crypto);
 
