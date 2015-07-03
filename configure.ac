@@ -46,6 +46,8 @@ AC_ARG_ENABLE(simd,
    AS_HELP_STRING([--enable-simd=yes|no],
                   [Enable vectorized polynomial arithmetic (default=no)]),
                   [enable_simd=yes], [enable_simd=no])
+AC_ARG_ENABLE(coverage,
+   AS_HELP_STRING(--enable-coverage, [Enable coverage reporting for tests]))
 
 
 if test "x$enable_simd" = "xyes"; then
@@ -53,6 +55,9 @@ if test "x$enable_simd" = "xyes"; then
 fi
 AM_CONDITIONAL(SIMD_ENABLED,\
                test x$enable_simd == xyes && test x$ax_cv_have_ssse3_ext == xyes)
+
+AM_CONDITIONAL(COVERAGE_ENABLED, test x$enable_coverage = xyes)
+
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

@@ -4,6 +4,14 @@ ACLOCAL_AMFLAGS = -I m4
 
 AM_CFLAGS = -I$(top_srcdir)/include
 AM_CFLAGS += -Wall -Wshadow
+if COVERAGE_ENABLED
+TEST_CFLAGS=-fno-inline -fprofile-arcs -ftest-coverage
+TEST_LFLAGS=-lgcov -coverage
+else
+TEST_CFLAGS=
+TEST_LFLAGS=
+endif
+
 
 noinst_PROGRAMS = \
 	bin/sanity \
@@ -44,8 +52,8 @@ noinst_HEADERS = \
 dist_pkgdata_DATA = libntruencrypt.sym
 
 # libntruencrypt.la
-libntruencrypt_la_CFLAGS = $(AM_CFLAGS) -Wno-parentheses
-libntruencrypt_la_LDFLAGS = -export-symbols $(top_srcdir)/libntruencrypt.sym
+libntruencrypt_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS) -Wno-parentheses
+libntruencrypt_la_LDFLAGS = $(TEST_LFLAGS) -export-symbols $(top_srcdir)/libntruencrypt.sym
 libntruencrypt_la_SOURCES = \
 	src/ntru_crypto_drbg.c \
 	src/ntru_crypto_hash.c \
@@ -85,7 +93,7 @@ check_PROGRAMS += bin/check_public bin/check_internal
 
 check_LTLIBRARIES += libntruencrypt_check.la
 libntruencrypt_check_la_CFLAGS = $(libntruencrypt_la_CFLAGS)
-libntruencrypt_check_la_LDFLAGS =
+libntruencrypt_check_la_LDFLAGS = $(TEST_LFLAGS)
 libntruencrypt_check_la_SOURCES = $(libntruencrypt_la_SOURCES)
 else
 # If we don't have CHECK fall back to the basic sanity test
