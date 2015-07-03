@@ -488,3 +488,100 @@ ntru_ring_inv(
 
     return TRUE;
 }
+
+/* ntru_ring_lift_inv_pow2_product
+ *
+ * Lifts an element of (Z/2)[x]/(x^N - 1) to (Z/q)[x]/(x^N - 1)
+ * where q is a power of 2 such that 256 < q <= 65536.
+ *
+ * inv must be padded with zeros to the degree used by
+ * ntru_ring_mult_coefficients.
+ *
+ * inv is assumed to be the inverse mod 2 of the product form element
+ * given by (1 + 3*(F1*F2 + F3)). The lift is performed in place --
+ * inv will be overwritten with the result.
+ *
+ * Requires scratch space for ntru_ring_mult_coefficients + one extra
+ * polynomial with the same padding.
+ */
+uint32_t
+ntru_ring_lift_inv_pow2_product(
+    uint16_t       *inv,
+    uint16_t const  dF1,
+    uint16_t const  dF2,
+    uint16_t const  dF3,
+    uint16_t const *F_buf,
+    uint16_t const  N,
+    uint16_t const  q,
+    uint16_t       *t)
+{
+    uint16_t i;
+    uint16_t j;
+    uint16_t mod_q_mask = q-1;
+    uint16_t padN;
+    ntru_ring_mult_coefficients_memreq(N, NULL, &padN);
+
+    for (j = 0; j < 4; ++j)   /* assumes 256 < q <= 65536 */
+    {
+        /* f^-1 = f^-1 * (2 - f * f^-1) mod q */
+        ntru_ring_mult_product_indices(inv, (uint16_t)dF1,
+                                       (uint16_t)dF2, (uint16_t)dF3,
+                                       F_buf, N, q,
+                                       t, t);
+        for (i = 0; i < N; ++i)
+        {
+            t[i] = -((inv[i] + 3 * t[i]) & mod_q_mask);
+        }
+        t[0] = t[0] + 2;
+        /* mult_indices works with degree N, mult_coefficients with padN */
+        memset(t+N, 0, (padN - N)*sizeof(uint16_t));
+
+        ntru_ring_mult_coefficients(inv, t, N, q, t+padN, inv);
+    }
+
+    NTRU_RET(NTRU_OK);
+}
+
+
+/* ntru_ring_lift_inv_pow2_product
+ *
+ * Lifts an element of (Z/2)[x]/(x^N - 1) to (Z/q)[x]/(x^N - 1)
+ * where q is a power of 2 such that 256 < q <= 65536.
+ *
+ * inv must be padded with zeros to the degree used by
+ * ntru_ring_mult_coefficients.
+ *
+ * inv is assumed to be the inverse mod 2 of the trinary element f.
+ * The lift is performed in place -- inv will be overwritten with the result.
+ *
+ * Requires scratch space for ntru_ring_mult_coefficients + one extra
+ * polynomial with the same padding.
+ */
+uint32_t
+ntru_ring_lift_inv_pow2_standard(
+    uint16_t       *inv,
+    uint16_t const *f,
+    uint16_t const  N,
+    uint16_t const  q,
+    uint16_t       *t)
+{
+    uint16_t i;
+    uint16_t j;
+    uint16_t padN;
+    ntru_ring_mult_coefficients_memreq(N, NULL, &padN);
+
+    for (j = 0; j < 4; ++j)   /* assumes 256 < q <= 65536 */
+    {
+        /* f^-1 = f^-1 * (2 - f * f^-1) mod q */
+        ntru_ring_mult_coefficients(f, inv, N, q, t, t);
+        for (i = 0; i < N; ++i)
+        {
+            t[i] = -t[i];
+        }
+        t[0] = t[0] + 2;
+
+        ntru_ring_mult_coefficients(inv, t, N, q, t+padN, inv);
+    }
+
+    NTRU_RET(NTRU_OK);
+}

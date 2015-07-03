@@ -253,7 +253,6 @@ ntru_ring_mult_coefficients(
     uint16_t const *a,          /*  in - pointer to polynomial a */
     uint16_t const *b,          /*  in - pointer to polynomial b */
     uint16_t        N,          /*  in - degree of (x^N - 1) */
-    uint16_t        padN,       /*  in - no. of coefficients in a, b, c */
     uint16_t        q,          /*  in - large modulus */
     uint16_t       *tmp,        /*  in - temp buffer of 3*padN elements */
     uint16_t       *c);         /* out - address for polynomial c */
@@ -274,5 +273,29 @@ ntru_ring_inv(
     uint16_t       *t,          /*  in - temp buffer of 2N elements */
     uint16_t       *a_inv);     /* out - address for polynomial a^-1 */
 
+uint32_t
+ntru_ring_lift_inv_pow2_standard(
+    uint16_t       *inv,
+    uint16_t const *f,
+    uint16_t const  N,
+    uint16_t const  q,
+    uint16_t       *t);
+
+uint32_t
+ntru_ring_lift_inv_pow2_product(
+    uint16_t       *inv,
+    uint16_t const  dF1,
+    uint16_t const  dF2,
+    uint16_t const  dF3,
+    uint16_t const *F_buf,
+    uint16_t const  N,
+    uint16_t const  q,
+    uint16_t       *t);
+
+void
+ntru_ring_mult_coefficients_memreq(
+    uint16_t  N,
+    uint16_t *num_polys,
+    uint16_t *num_coeffs);
 
 #endif /* NTRU_CRYPTO_NTRU_POLY_H */

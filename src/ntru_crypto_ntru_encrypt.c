@@ -1098,51 +1098,25 @@ ntru_crypto_ntru_encrypt_keygen(
 
         ringel_buf1[0] = (ringel_buf1[0] + 1) & mod_q_mask;
 
-        /* find f^-1 in (Z/qZ)[X]/(X^N - 1) */
+        /* find f^-1 in (Z/2Z)[X]/(X^N - 1) */
 
         if (!ntru_ring_inv(ringel_buf1, params->N, scratch_buf, ringel_buf2))
         {
-            result = NTRU_ERROR_BASE + NTRU_FAIL;
+            result = NTRU_RESULT(NTRU_FAIL);
         }
 
         /* lift f^-1 in (Z/2Z)[X]/(X^N - 1) to f^-1 in (Z/qZ)[X]/(X^N -1) */
-        uint16_t *t = scratch_buf;
-        uint16_t *t2 = scratch_buf + padN;
-        uint16_t *f = ringel_buf1;
-        uint16_t *f_inv = ringel_buf2;
-        uint16_t j;
-        for (j = 0; j < 4; ++j)   /* assumes 256 < q <= 65536 */
+        if(params->is_product_form)
         {
-
-            /* f^-1 = f^-1 * (2 - f * f^-1) mod q */
-
-            if(params->is_product_form)
-            {
-                ntru_ring_mult_product_indices(f_inv, (uint16_t)dF1,
-                                               (uint16_t)dF2, (uint16_t)dF3,
-                                               F_buf, params->N, params->q,
-                                               t, t);
-                for (i = 0; i < params->N; ++i)
-                {
-                    t[i] = -((f_inv[i] + 3 * t[i]) & mod_q_mask);
-                }
-            }
-            else
-            {
-                ntru_ring_mult_coefficients(f, f_inv, params->N, padN, params->q, t, t);
-                for (i = 0; i < params->N; ++i)
-                {
-                    t[i] = -t[i];
-                }
-            }
-            t[0] = t[0] + 2;
-            memset(t+params->N, 0, (padN - params->N)*sizeof(uint16_t));
-
-            ntru_ring_mult_coefficients(f_inv, t, params->N, padN, params->q, t2, t2);
-
-            memcpy(f_inv, t2, params->N * sizeof(uint16_t));
+            result = ntru_ring_lift_inv_pow2_product(ringel_buf2,
+                    (uint16_t)dF1, (uint16_t)dF2, (uint16_t)dF3,
+                    F_buf, params->N, params->q, scratch_buf);
         }
-
+        else
+        {
+            result = ntru_ring_lift_inv_pow2_standard(ringel_buf2,
+                    ringel_buf1, params->N, params->q, scratch_buf);
+        }
     }
 
     if (result == NTRU_OK)
