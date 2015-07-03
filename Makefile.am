@@ -12,6 +12,8 @@ noinst_PROGRAMS = \
 
 # Set conditionally below
 TESTS =
+check_PROGRAMS =
+check_LTLIBRARIES =
 
 noinst_LTLIBRARIES = libntrutests.la
 lib_LTLIBRARIES = libntruencrypt.la
@@ -72,18 +74,18 @@ endif
 # If we have the CHECK package then link an extra copy of the library
 # with all internal functions exposed and build unit tests
 if HAVE_CHECK
-TESTS += bin/check_public bin/check_internal
-noinst_PROGRAMS += bin/check_public bin/check_internal
+check_PROGRAMS += bin/check_public bin/check_internal
 
-noinst_LTLIBRARIES += libntruencrypt_check.la
-
+check_LTLIBRARIES += libntruencrypt_check.la
 libntruencrypt_check_la_CFLAGS = $(libntruencrypt_la_CFLAGS)
 libntruencrypt_check_la_LDFLAGS =
 libntruencrypt_check_la_SOURCES = $(libntruencrypt_la_SOURCES)
 else
 # If we don't have CHECK fall back to the basic sanity test
-TESTS += bin/sanity
+check_PROGRAMS += bin/sanity
 endif
+
+TESTS += $(check_PROGRAMS)
 
 
 # Test helper library
