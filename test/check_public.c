@@ -5,26 +5,7 @@
 #include "ntru_crypto.h"
 #include "ntru_crypto_drbg.h"
 #include "test_common.h"
-
-
-DRBG_HANDLE drbg;
-
-void
-test_drbg_setup(void)
-{
-    uint32_t rc;
-    rc = ntru_crypto_external_drbg_instantiate(
-                                    (RANDOM_BYTES_FN) &randombytes, &drbg);
-    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
-}
-
-void
-test_drbg_teardown(void)
-{
-    uint32_t rc;
-    rc = ntru_crypto_drbg_uninstantiate(drbg);
-    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
-}
+#include "check_common.h"
 
 
 START_TEST(test_api_crypto)

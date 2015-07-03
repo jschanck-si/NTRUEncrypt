@@ -1,6 +1,8 @@
 #ifndef NTRU_TEST_COMMON_H
 #define NTRU_TEST_COMMON_H
 
+/* Common components for all test programs */
+
 #define RAND_LEN (4096)
 uint32_t randombytes(uint8_t *x,uint64_t xlen);
 

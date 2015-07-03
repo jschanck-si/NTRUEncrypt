@@ -38,7 +38,8 @@ noinst_HEADERS = \
 	src/ntru_crypto_sha256.h \
 	src/ntru_crypto_sha2.h \
 	src/ntru_crypto_sha.h \
-	test/test_common.h
+	test/test_common.h \
+	test/check_common.h
 
 dist_pkgdata_DATA = libntruencrypt.sym
 
@@ -71,9 +72,15 @@ libntruencrypt_la_SOURCES += \
 endif
 
 
+
+# Test helper library
+libntrutests_la_SOURCES = test/test_common.c
+
 # If we have the CHECK package then link an extra copy of the library
-# with all internal functions exposed and build unit tests
+# with all internal functions exposed and build unit tests.
 if HAVE_CHECK
+libntrutests_la_SOURCES += test/check_common.c
+
 check_PROGRAMS += bin/check_public bin/check_internal
 
 check_LTLIBRARIES += libntruencrypt_check.la
@@ -87,10 +94,6 @@ endif
 
 TESTS += $(check_PROGRAMS)
 
-
-# Test helper library
-libntrutests_la_SOURCES = \
-	test/test_common.c
 
 # Crude benchmarking program
 bin_bench_SOURCES = test/bench.c
@@ -117,7 +120,9 @@ bin_check_public_LDADD = \
 	@CHECK_LIBS@
 
 # Tests requiring access to internals
-bin_check_internal_SOURCES = test/check_internal.c
+bin_check_internal_SOURCES = test/check_internal.c \
+	test/check_internal_key.c \
+	test/check_internal_poly.c
 bin_check_internal_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/src @CHECK_CFLAGS@
 bin_check_internal_LDADD = \
 	$(top_builddir)/libntruencrypt_check.la \
