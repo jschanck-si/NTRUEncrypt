@@ -57,6 +57,7 @@ ntru_ck_mem_free(NTRU_CK_MEM *obj)
     obj->ptr = NULL;
     obj->len = 0;
 }
+/* */
 
 
 DRBG_HANDLE drbg;
@@ -249,6 +250,93 @@ START_TEST(test_inv_mod_2)
 
     /* b is a nontrivial factor of x^17 - 1 mod 2 */
     ck_assert_int_eq(ntru_ring_inv(b, 17, tmp, out), FALSE);
+}
+END_TEST
+
+
+/* test_lift_inv_mod_pow2
+ */
+START_TEST(test_lift_inv_mod_pow2)
+{
+    uint32_t i;
+    uint16_t f_inv2[17] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1};
+
+    uint16_t f1l = 2;
+    uint16_t f2l = 2;
+    uint16_t f3l = 3;
+    uint16_t fprod[14] = {7, 10, 9, 13, 1, 13, 6, 8, 4, 10, 11, 6, 9, 15};
+    uint16_t f[17] = {4, 65533, 3, 3, 6, 65533, 0, 0, 3, 65530, 0, 6, 0,
+        65533, 65533, 65533, 65533};
+
+    uint16_t inv_test[17] = {7319, 52697, 32987, 43221, 48819, 42807, 18160,
+        1250, 48426, 16935, 30796, 41596, 5768, 33264, 16639, 54271, 29334};
+
+    uint16_t N = 17;
+    uint16_t q = 0;
+
+    NTRU_CK_MEM scratch;
+    uint16_t * scratch_p;
+
+    NTRU_CK_MEM pol1;
+    NTRU_CK_MEM pol2;
+    uint16_t * pol1_p;
+    uint16_t * pol2_p;
+
+    uint16_t scratch_polys;
+    uint16_t pad_deg;
+    ntru_ring_mult_coefficients_memreq(N, &scratch_polys, &pad_deg);
+    ck_assert_uint_ge(scratch_polys, 1);
+    ck_assert_uint_ge(pad_deg, N);
+
+    /* Allocate memory */
+    scratch_p = (uint16_t*)ntru_ck_malloc(&scratch,
+            (1+scratch_polys) * pad_deg * sizeof(uint16_t));
+    pol1_p = (uint16_t*)ntru_ck_malloc(&pol1, pad_deg * sizeof(uint16_t));
+    pol2_p = (uint16_t*)ntru_ck_malloc(&pol2, pad_deg * sizeof(uint16_t));
+
+    /* We should be able to work with dirty scratch space */
+    randombytes(scratch.ptr, scratch.len);
+
+    /* Copy and pad the inputs */
+    memset(pol1.ptr, 0, pol1.len);
+    memset(pol2.ptr, 0, pol2.len);
+    memcpy(pol1_p, f_inv2, N*sizeof(uint16_t));
+    memcpy(pol2_p, f, N*sizeof(uint16_t));
+
+    /* Lift the inverse with f in coefficient form and check */
+    ntru_ring_lift_inv_pow2_standard(pol1_p, pol2_p, N, q, scratch_p);
+    for(i=0; i<N; i++)
+    {
+        ck_assert_uint_eq(pol1_p[i], inv_test[i]);
+    }
+    for(; i<pad_deg; i++)
+    {
+        ck_assert_uint_eq(pol1_p[i], 0);
+    }
+
+
+    randombytes(scratch.ptr, scratch.len);
+    memset(pol1.ptr, 0, pol1.len);
+    memcpy(pol1_p, f_inv2, N*sizeof(uint16_t));
+
+    /* Lift the inverse with f in product form and check */
+    ntru_ring_lift_inv_pow2_product(pol1_p, f1l, f2l, f3l, fprod, N, q, scratch_p);
+    for(i=0; i<N; i++)
+    {
+        ck_assert_uint_eq(pol1_p[i], inv_test[i]);
+    }
+    for(; i<pad_deg; i++)
+    {
+        ck_assert_uint_eq(pol1_p[i], 0);
+    }
+
+    ntru_ck_mem_ok(&scratch);
+    ntru_ck_mem_ok(&pol1);
+    ntru_ck_mem_ok(&pol2);
+
+    ntru_ck_mem_free(&scratch);
+    ntru_ck_mem_free(&pol1);
+    ntru_ck_mem_free(&pol2);
 }
 END_TEST
 
@@ -614,6 +702,7 @@ ntruencrypt_internal_test_suite(void)
     tcase_add_loop_test(tc_poly, test_gen_poly, 0, NUM_PARAM_SETS);
     tcase_add_test(tc_poly, test_min_weight);
     tcase_add_test(tc_poly, test_inv_mod_2);
+    tcase_add_test(tc_poly, test_lift_inv_mod_pow2);
     tcase_add_test(tc_poly, test_mult_indices);
     tcase_add_test(tc_poly, test_mult_coefficients);
 
