@@ -292,10 +292,14 @@ ntru_ring_mult_product_indices(
     uint16_t       *t,          /*  in - temp buffer of 2N elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
-    uint16_t *t2 = t + N;
+    uint16_t scratch_polys;
+    uint16_t poly_coeffs;
+    ntru_ring_mult_indices_memreq(N, &scratch_polys, &poly_coeffs);
+
+    uint16_t *t2 = t + scratch_polys*poly_coeffs;
     uint16_t  mod_q_mask = q - 1;
     uint16_t  i;
-    
+
     /* t2 = a * b1 */
 
     ntru_ring_mult_indices(a, b1i_len, b1i_len, bi, N, q, t, t2);
@@ -316,7 +320,11 @@ ntru_ring_mult_product_indices(
     {
         c[i] = (t2[i] + t[i]) & mod_q_mask;
     }
-    
+    for(; i<poly_coeffs; i++)
+    {
+        c[i] = 0;
+    }
+
     return;
 }
 
@@ -543,7 +551,7 @@ ntru_ring_lift_inv_pow2_product(
 }
 
 
-/* ntru_ring_lift_inv_pow2_product
+/* ntru_ring_lift_inv_pow2_standard
  *
  * Lifts an element of (Z/2)[x]/(x^N - 1) to (Z/q)[x]/(x^N - 1)
  * where q is a power of 2 such that 256 < q <= 65536.

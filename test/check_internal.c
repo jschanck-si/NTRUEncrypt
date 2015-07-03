@@ -223,7 +223,12 @@ START_TEST(test_min_weight)
 }
 END_TEST
 
-
+/* test_inv_mod_2
+ *
+ * Compares the result of ntru_ring_inv to a fixed value precomputed
+ * with Pari/GP. Also checks that non-trivial non-invertible elements (factors
+ * of x^N - 1 mod 2) are recognized as such.
+ */
 START_TEST(test_inv_mod_2)
 {
     uint16_t tmp[34];
@@ -248,6 +253,11 @@ START_TEST(test_inv_mod_2)
 END_TEST
 
 
+/* test_mult_indices
+ *
+ * Performs both ntru_ring_mult_indices and ntru_ring_mult_product_indices
+ * and compares the result with a fixed example generated with Pari/GP.
+ */
 START_TEST(test_mult_indices)
 {
     uint32_t i;
@@ -257,37 +267,80 @@ START_TEST(test_mult_indices)
     uint16_t b2l = 2;
     uint16_t b3l = 3;
     uint16_t bi[14] = {7, 10, 9, 13, 1, 13, 6, 8, 4, 10, 11, 6, 9, 15};
-    uint16_t test[17] = {40787, 24792, 27808, 13989, 56309, 37625, 37436, 32307,
-                    15311, 59789, 32769, 65008, 3711, 54663, 25343, 55984, 6193};
+    uint16_t test_single[17] = {6644, 48910, 5764, 16270, 2612, 10231, 769,
+        2577, 58289, 38323, 56334, 29942, 55901, 43714, 17452, 43795, 21225};
+    uint16_t test_prod[17] = {40787, 24792, 27808, 13989, 56309, 37625, 37436,
+        32307, 15311, 59789, 32769, 65008, 3711, 54663, 25343, 55984, 6193};
 
     uint16_t N = 17;
     uint16_t q = 0;
 
+    NTRU_CK_MEM pol1;
     NTRU_CK_MEM t;
     NTRU_CK_MEM out;
+
+    uint16_t *pol1_p;
     uint16_t *t_p;
     uint16_t *out_p;
 
-    t_p = (uint16_t*)ntru_ck_malloc(&t, 2*N*sizeof(*t_p));
-    out_p = (uint16_t*)ntru_ck_malloc(&out, N*sizeof(*out_p));
+    uint16_t scratch_polys;
+    uint16_t pad_deg;
+    ntru_ring_mult_indices_memreq(N, &scratch_polys, &pad_deg);
+    ck_assert_uint_ge(scratch_polys, 1);
+    ck_assert_uint_ge(pad_deg, N);
 
-    /* Should work with dirty scratch and output memory */
+    pol1_p = (uint16_t*)ntru_ck_malloc(&pol1, pad_deg*sizeof(*pol1_p));
+    t_p = (uint16_t*)ntru_ck_malloc(&t, (scratch_polys+1)*pad_deg*sizeof(*t_p));
+    out_p = (uint16_t*)ntru_ck_malloc(&out, pad_deg*sizeof(*out_p));
+
+    /* Copy and pad the input */
+    memset(pol1.ptr, 0, pol1.len);
+    memcpy(pol1_p, a, N*sizeof(uint16_t));
+
+    /* We should be able to work with dirty scratch and output memory */
+    randombytes(t.ptr, t.len);
+    randombytes(out.ptr, out.len);
+
+    /* Test a single mult_indices first */
+    ntru_ring_mult_indices(pol1_p, b1l, b1l, bi, N, q, t_p, out_p);
+    /* Check result */
+    for(i=0; i<N; i++)
+    {
+        ck_assert_uint_eq(out_p[i], test_single[i]);
+    } /* Check padding is zero */
+    for(; i<pad_deg; i++)
+    {
+        ck_assert_uint_eq(out_p[i], 0);
+    }
+
+    /* Check over/under runs */
+    ntru_ck_mem_ok(&pol1);
+    ntru_ck_mem_ok(&t);
+    ntru_ck_mem_ok(&out);
+
+    /* Now try a full product form multiplication */
     randombytes(t.ptr, t.len);
     randombytes(out.ptr, out.len);
 
     /* Multiply */
-    ntru_ring_mult_product_indices(a, b1l, b2l, b3l, bi, N, q, t_p, out_p);
+    ntru_ring_mult_product_indices(pol1_p, b1l, b2l, b3l, bi, N, q, t_p, out_p);
 
     /* Check result */
     for(i=0; i<N; i++)
     {
-        ck_assert_uint_eq(out_p[i], test[i]);
+        ck_assert_uint_eq(out_p[i], test_prod[i]);
+    } /* Check padding is zero */
+    for(; i<pad_deg; i++)
+    {
+        ck_assert_uint_eq(out_p[i], 0);
     }
 
     /* Check over/under runs */
+    ntru_ck_mem_ok(&pol1);
     ntru_ck_mem_ok(&t);
     ntru_ck_mem_ok(&out);
 
+    ntru_ck_mem_free(&pol1);
     ntru_ck_mem_free(&t);
     ntru_ck_mem_free(&out);
 }
@@ -407,6 +460,9 @@ START_TEST(test_key_form)
     uint16_t h1;
     uint32_t dF;
 
+    uint16_t scratch_polys;
+    uint16_t pad_deg;
+
     NTRU_ENCRYPT_PARAM_SET *params = NULL;
     NTRU_ENCRYPT_PARAM_SET_ID param_set_id;
 
@@ -415,6 +471,14 @@ START_TEST(test_key_form)
     ck_assert_ptr_ne(params, NULL);
 
     mod_q_mask = params->q - 1;
+    ntru_ring_mult_indices_memreq(params->N, &scratch_polys, &pad_deg);
+    ck_assert_uint_ge(scratch_polys, 1);
+    ck_assert_uint_ge(pad_deg, params->N);
+
+    if(params->is_product_form)
+    {
+        scratch_polys += 1;
+    }
 
     /* Generate a key */
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id, &pubkey_blob_len,
@@ -439,7 +503,7 @@ START_TEST(test_key_form)
                                             &pubkey_pack_p, &privkey_pack_p);
     ck_assert_int_eq(rc, TRUE);
 
-    h_poly_p = (uint16_t*) ntru_ck_malloc(&h_poly, params->N*sizeof(*h_poly_p));
+    h_poly_p = (uint16_t*) ntru_ck_malloc(&h_poly, pad_deg*sizeof(*h_poly_p));
 
     /* Unpack public key, h */
     pubkey_pack_len = (params->N * params->q_bits + 7) >> 3;
@@ -476,10 +540,10 @@ START_TEST(test_key_form)
                 privkey_pack_p, params->N_bits, F_buf_p);
     }
 
-    g_poly_p = (uint16_t*) ntru_ck_malloc(&g_poly, params->N*sizeof(*g_poly_p));
+    g_poly_p = (uint16_t*) ntru_ck_malloc(&g_poly, pad_deg*sizeof(*g_poly_p));
 
     scratch_p = (uint16_t*) ntru_ck_malloc(&scratch,
-            2*params->N*sizeof(*scratch_p));
+            scratch_polys*pad_deg*sizeof(*scratch_p));
 
     /* Check that (1 + p*F)*h = p*g */
     /* Our h = p*g/f when generated properly. f = 1 + pF */

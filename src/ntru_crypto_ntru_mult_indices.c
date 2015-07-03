@@ -1,6 +1,24 @@
 #include "ntru_crypto.h"
 #include "ntru_crypto_ntru_poly.h"
 
+
+void
+ntru_ring_mult_indices_memreq(
+    uint16_t N,
+    uint16_t *tmp_polys,
+    uint16_t *poly_coeffs)
+{
+    if(tmp_polys)
+    {
+        *tmp_polys= 1;
+    }
+
+    if(poly_coeffs)
+    {
+        *poly_coeffs = N;
+    }
+}
+
 /* ntru_ring_mult_indices
  *
  * Multiplies ring element (polynomial) "a" by ring element (polynomial) "b"

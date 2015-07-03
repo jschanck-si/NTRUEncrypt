@@ -129,73 +129,8 @@ ntru_ring_mult_indices(
                                          indices for -1 coefficients */
     uint16_t const  N,          /*  in - no. of coefficients in a, b, c */
     uint16_t const  q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of N elements */
-    uint16_t       *c);         /* out - address for polynomial c */
-
-/* original implementation */
-extern void
-ntru_ring_mult_indices_orig(
-    uint16_t const *a,          /*  in - pointer to ring element a */
-    uint16_t const  bi_P1_len,  /*  in - no. of +1 coefficients in b */
-    uint16_t const  bi_M1_len,  /*  in - no. of -1 coefficients in b */
-    uint16_t const *bi,         /*  in - pointer to the list of nonzero
-                                         indices of ring element b,
-                                         containing indices for the +1
-                                         coefficients followed by the
-                                         indices for -1 coefficients */
-    uint16_t const  N,          /*  in - no. of coefficients in a, b, c */
-    uint16_t const  q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of N elements */
-    uint16_t       *c);         /* out - address for polynomial c */
-
-/* original implementation */
-extern void
-ntru_ring_mult_indices_sse3(
-    uint16_t const *a,          /*  in - pointer to ring element a */
-    uint16_t const  bi_P1_len,  /*  in - no. of +1 coefficients in b */
-    uint16_t const  bi_M1_len,  /*  in - no. of -1 coefficients in b */
-    uint16_t const *bi,         /*  in - pointer to the list of nonzero
-                                         indices of ring element b,
-                                         containing indices for the +1
-                                         coefficients followed by the
-                                         indices for -1 coefficients */
-    uint16_t const  N,          /*  in - no. of coefficients in a, b, c */
-    uint16_t const  q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of N elements */
-    uint16_t       *c);         /* out - address for polynomial c */
-
-
-/* fits two coefficients into a uint32_t */
-extern void
-ntru_ring_mult_indices_double_width_conv(
-    uint16_t const *a,          /*  in - pointer to ring element a */
-    uint16_t const  bi_P1_len,  /*  in - no. of +1 coefficients in b */
-    uint16_t const  bi_M1_len,  /*  in - no. of -1 coefficients in b */
-    uint16_t const *bi,         /*  in - pointer to the list of nonzero
-                                         indices of ring element b,
-                                         containing indices for the +1
-                                         coefficients followed by the
-                                         indices for -1 coefficients */
-    uint16_t const  N,          /*  in - no. of coefficients in a, b, c */
-    uint16_t const  q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of N elements */
-    uint16_t       *c);         /* out - address for polynomial c */
-
-
-/* fits four coefficients into a uint64_t */
-void
-ntru_ring_mult_indices_quadruple_width_conv(
-    uint16_t const *a,          /*  in - pointer to ring element a */
-    uint16_t const  bi_P1_len,  /*  in - no. of +1 coefficients in b */
-    uint16_t const  bi_M1_len,  /*  in - no. of -1 coefficients in b */
-    uint16_t const *bi,         /*  in - pointer to the list of nonzero
-                                         indices of ring element b,
-                                         containing indices for the +1
-                                         coefficients followed by the
-                                         indices for -1 coefficients */
-    uint16_t const  N,          /*  in - no. of coefficients in a, b, c */
-    uint16_t const  q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of N elements */
+    uint16_t       *t,          /*  in - temp buffer. Size is impl dependent.
+                                         see ntru_ring_mult_indices_memreq */
     uint16_t       *c);         /* out - address for polynomial c */
 
 /* ntru_ring_mult_product_indices
@@ -232,7 +167,8 @@ ntru_ring_mult_product_indices(
                                          each polynomial */
     uint16_t const  N,          /*  in - no. of coefficients in a, b, c */
     uint16_t const  q,          /*  in - large modulus */
-    uint16_t       *t,          /*  in - temp buffer of 2N elements */
+    uint16_t       *t,          /*  in - temp buffer. Size is impl dependent.
+                                         see ntru_ring_mult_indices_memreq */
     uint16_t       *c);         /* out - address for polynomial c */
 
 
@@ -241,8 +177,6 @@ ntru_ring_mult_product_indices(
  * Multiplies ring element (polynomial) "a" by ring element (polynomial) "b"
  * to produce ring element (polynomial) "c" in (Z/qZ)[X]/(X^N - 1).
  * This is a convolution operation.
- *
- * Ring element "b" has coefficients in the range [0,N).
  *
  * This assumes q is 2^r where 8 < r < 16, so that overflow of the sum
  * beyond 16 bits does not matter.
@@ -254,7 +188,8 @@ ntru_ring_mult_coefficients(
     uint16_t const *b,          /*  in - pointer to polynomial b */
     uint16_t        N,          /*  in - degree of (x^N - 1) */
     uint16_t        q,          /*  in - large modulus */
-    uint16_t       *tmp,        /*  in - temp buffer of 3*padN elements */
+    uint16_t       *tmp,        /*  in - temp buffer. Size is impl dependent.
+                                       see ntru_ring_mult_coefficients_memreq */
     uint16_t       *c);         /* out - address for polynomial c */
 
 
@@ -273,6 +208,21 @@ ntru_ring_inv(
     uint16_t       *t,          /*  in - temp buffer of 2N elements */
     uint16_t       *a_inv);     /* out - address for polynomial a^-1 */
 
+
+/* ntru_ring_lift_inv_pow2_standard
+ *
+ * Lifts an element of (Z/2)[x]/(x^N - 1) to (Z/q)[x]/(x^N - 1)
+ * where q is a power of 2 such that 256 < q <= 65536.
+ *
+ * inv must be padded with zeros to the degree used by
+ * ntru_ring_mult_coefficients.
+ *
+ * inv is assumed to be the inverse mod 2 of the trinary element f.
+ * The lift is performed in place -- inv will be overwritten with the result.
+ *
+ * Requires scratch space for ntru_ring_mult_coefficients + one extra
+ * polynomial with the same padding.
+ */
 uint32_t
 ntru_ring_lift_inv_pow2_standard(
     uint16_t       *inv,
@@ -281,6 +231,21 @@ ntru_ring_lift_inv_pow2_standard(
     uint16_t const  q,
     uint16_t       *t);
 
+/* ntru_ring_lift_inv_pow2_product
+ *
+ * Lifts an element of (Z/2)[x]/(x^N - 1) to (Z/q)[x]/(x^N - 1)
+ * where q is a power of 2 such that 256 < q <= 65536.
+ *
+ * inv must be padded with zeros to the degree used by
+ * ntru_ring_mult_coefficients.
+ *
+ * inv is assumed to be the inverse mod 2 of the product form element
+ * given by (1 + 3*(F1*F2 + F3)). The lift is performed in place --
+ * inv will be overwritten with the result.
+ *
+ * Requires scratch space for ntru_ring_mult_coefficients + one extra
+ * polynomial with the same padding.
+ */
 uint32_t
 ntru_ring_lift_inv_pow2_product(
     uint16_t       *inv,
@@ -292,10 +257,38 @@ ntru_ring_lift_inv_pow2_product(
     uint16_t const  q,
     uint16_t       *t);
 
+/* ntru_ring_mult_coefficients_memreq
+ *
+ * Different implementations of ntru_ring_mult_coefficients may
+ * have different memory requirements.
+ *
+ * This gets the memory requirements of ntru_ring_mult_coefficients as
+ * a number of scratch polynomials and the number of coefficients needed
+ * per polynomial.
+ */
 void
 ntru_ring_mult_coefficients_memreq(
     uint16_t  N,
-    uint16_t *num_polys,
-    uint16_t *num_coeffs);
+    uint16_t *num_scratch_polys,
+    uint16_t *pad_deg);
+
+
+/* ntru_ring_mult_indices_memreq
+ *
+ * Different implementations of ntru_ring_mult_indices may
+ * have different memory requirements.
+ *
+ * This gets the memory requirements of ntru_ring_mult_indices as
+ * a number of scratch polynomials (num_scratch_polys) and the number
+ * of coefficients needed per polynomial (pad_deg).
+ *
+ * Note that ntru_ring_mult_prod_indices requires one additional polynomial
+ * of degree pad_deg for holding a temporary result.
+ */
+void
+ntru_ring_mult_indices_memreq(
+    uint16_t  N,
+    uint16_t *num_scratch_polys,
+    uint16_t *pad_deg);
 
 #endif /* NTRU_CRYPTO_NTRU_POLY_H */

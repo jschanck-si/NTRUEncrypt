@@ -2,6 +2,25 @@
 #include "ntru_crypto_ntru_poly.h"
 #include <immintrin.h>
 
+#define PAD(N) ((N + 0x0007) & 0xfff8)
+
+void
+ntru_ring_mult_indices_memreq(
+    uint16_t N,
+    uint16_t *tmp_polys,
+    uint16_t *poly_coeffs)
+{
+    if(tmp_polys)
+    {
+        *tmp_polys= 2;
+    }
+
+    if(poly_coeffs)
+    {
+        *poly_coeffs = PAD(N);
+    }
+}
+
 /* ntru_ring_mult_indices
  *
  * Multiplies ring element (polynomial) "a" by ring element (polynomial) "b"
@@ -35,9 +54,8 @@ ntru_ring_mult_indices(
     uint16_t       *t,          /*  in - temp buffer of N elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
-  uint16_t const padN = (N + 0x0007) & 0xfff8;
-  __m128i *T = alloca(2*padN*sizeof(uint16_t));
-  memset(T,0,2*padN*sizeof(uint16_t));
+  __m128i *T = (__m128i*)t;
+  memset(T,0,2*PAD(N)*sizeof(uint16_t));
   __m128i *Tp;
 
   uint16_t i;
@@ -80,7 +98,7 @@ ntru_ring_mult_indices(
   __m128i neg = _mm_setzero_si128();
   neg = _mm_cmpeq_epi8(neg,neg);
   Tp = T;
-  for(i=0; i<(2*padN)/8; i++)
+  for(i=0; i<(2*PAD(N))/8; i++)
   {
     __m128i x1 = _mm_sign_epi16(*Tp,neg);
     _mm_store_si128(Tp, x1);
@@ -121,7 +139,11 @@ ntru_ring_mult_indices(
     Ti++;
     Tp++;
   }
-  memcpy(c, T, N*sizeof(uint16_t));
+  memmove(c, T, N*sizeof(uint16_t));
+  for(j=N; j<PAD(N); j++)
+  {
+    c[j] = 0;
+  }
 
   return;
 }
