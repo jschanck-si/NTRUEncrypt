@@ -69,7 +69,6 @@ typedef uint32_t NTRU_CRYPTO_HASH_ERROR;
 #define HASH_DATA_ONLY      0
 #define HASH_INIT           (1 << 0)
 #define HASH_FINISH         (1 << 1)
-#define HASH_ZERO_PAD       (1 << 2)
 
 
 #endif /* NTRU_CRYPTO_HASH_BASICS_H */

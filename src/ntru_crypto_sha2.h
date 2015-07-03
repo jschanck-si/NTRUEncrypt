@@ -75,12 +75,6 @@ typedef struct {
  * The hash operation can be updated with any number of input bytes, including
  * zero.
  *
- * The hash operation can be completed with normal padding or with zero
- * padding as required for parts of DSA parameter generation, and is indicated
- * by setting the SHA_FINISH flag.  Using zero padding, indicated by setting
- * the SHA_ZERO_PAD flag, never creates an extra input block because the
- * bit count is not included in the hashed data.
- *
  * Returns SHA_OK on success.
  * Returns SHA_FAIL with corrupted context.
  * Returns SHA_BAD_PARAMETER if inappropriate NULL pointers are passed.
@@ -96,7 +90,7 @@ ntru_crypto_sha2(
     uint8_t const          *in,     /*     in - pointer to input data -
                                                 may be NULL if in_len == 0 */
     uint32_t                in_len, /*     in - number of input data bytes */
-    uint32_t                flags,  /*     in - INIT, FINISH, zero-pad flags */
+    uint32_t                flags,  /*     in - INIT, FINISH */
     uint8_t                *md);    /*    out - address for message digest -
                                                 may be NULL if not FINISH */
 

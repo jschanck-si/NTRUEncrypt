@@ -272,12 +272,6 @@ sha1_blk(
  * The hash operation can be updated with any number of input bytes, including
  * zero.
  *
- * The hash operation can be completed with normal padding or with zero
- * padding as required for parts of DSA parameter generation, and is indicated
- * by setting the SHA_FINISH flag.  Using zero padding, indicated by setting
- * the SHA_ZERO_PAD flag, never creates an extra input block because the
- * bit count is not included in the hashed data.
- *
  * Returns SHA_OK on success.
  * Returns SHA_FAIL with corrupted context.
  * Returns SHA_BAD_PARAMETER if  inappropriate NULL pointers are passed.
@@ -292,7 +286,7 @@ ntru_crypto_sha1(
     uint8_t const        *in,       /*     in - pointer to input data -
                                                 may be NULL if in_len == 0 */
     uint32_t              in_len,   /*     in - number of input data bytes */
-    uint32_t              flags,    /*     in - INIT, FINISH, zero-pad flags */
+    uint32_t              flags,    /*     in - INIT, FINISH flags */
     uint8_t              *md)       /*    out - address for message digest -
                                                 may be NULL if not FINISH */
 {
@@ -324,11 +318,8 @@ ntru_crypto_sha1(
         }
         else
         {
-            c->state[0] = init[0];              // alternate initialization
-            c->state[1] = init[1];
-            c->state[2] = init[2];
-            c->state[3] = init[3];
-            c->state[4] = init[4];
+            /* Non standard initialization values are not supported */
+            SHA_RET(SHA_BAD_PARAMETER);
         }
 
         /* init bit count and number of unhashed data bytes */
@@ -430,72 +421,54 @@ ntru_crypto_sha1(
     {
         space = 64 - c->unhashed_len;
 
-        /* check padding type */
+        /* add 0x80 padding byte to the unhashed data buffer
+         * (there is always space since the buffer can't be full)
+         */
 
-        if (!(flags & SHA_ZERO_PAD))
+        d = c->unhashed + c->unhashed_len;
+        *d++ = 0x80;
+        space--;
+
+        /* check for space for bit count */
+
+        if (space < 8)
         {
 
-            /* add 0x80 padding byte to the unhashed data buffer
-             * (there is always space since the buffer can't be full)
+            /* no space for count:
+             *  fill remainder of unhashed data buffer with zeros,
+             *  convert to input block,
+             *  process block,
+             *  fill all but 8 bytes of unhashed data buffer with zeros
              */
 
-            d = c->unhashed + c->unhashed_len;
-            *d++ = 0x80;
-            space--;
-
-            /* check for space for bit count */
-
-            if (space < 8)
-            {
-
-                /* no space for count:
-                 *  fill remainder of unhashed data buffer with zeros,
-                 *  convert to input block,
-                 *  process block,
-                 *  fill all but 8 bytes of unhashed data buffer with zeros
-                 */
-
-                memset(d, 0, space);
-                ntru_crypto_msbyte_2_uint32(in_blk,
-                                            (uint8_t const *) c->unhashed, 16);
-                sha1_blk((uint32_t const *) in_blk, c->state);
-                memset(c->unhashed, 0, 56);
-
-            }
-            else
-            {
-
-                /* fill unhashed data buffer with zeros,
-                 *  leaving space for bit count
-                 */
-
-                for (space -= 8; space; space--)
-                {
-                    *d++ = 0;
-                }
-            }
-
-            /* convert partially filled unhashed data buffer to input block and
-             *  add bit count to input block
-             */
-
-            ntru_crypto_msbyte_2_uint32(in_blk, (uint8_t const *) c->unhashed,
-                                        14);
-            in_blk[14] = c->num_bits_hashed[1];
-            in_blk[15] = c->num_bits_hashed[0];
+            memset(d, 0, space);
+            ntru_crypto_msbyte_2_uint32(in_blk,
+                                        (uint8_t const *) c->unhashed, 16);
+            sha1_blk((uint32_t const *) in_blk, c->state);
+            memset(c->unhashed, 0, 56);
 
         }
         else
         {
 
-            /* pad unhashed data buffer with zeros and no bit count and
-             *  convert to input block
+            /* fill unhashed data buffer with zeros,
+             *  leaving space for bit count
              */
 
-            memset(c->unhashed + c->unhashed_len, 0, space);
-            ntru_crypto_msbyte_2_uint32(in_blk, (uint8_t const *) c->unhashed,
-                                        16);
+            for (space -= 8; space; space--)
+            {
+                *d++ = 0;
+            }
         }
+
+        /* convert partially filled unhashed data buffer to input block and
+         *  add bit count to input block
+         */
+
+        ntru_crypto_msbyte_2_uint32(in_blk, (uint8_t const *) c->unhashed,
+                                    14);
+        in_blk[14] = c->num_bits_hashed[1];
+        in_blk[15] = c->num_bits_hashed[0];
 
         /* process last block */
 
@@ -571,27 +544,6 @@ ntru_crypto_sha1_final(
 {
     return ntru_crypto_sha1(c, NULL, NULL, 0, SHA_FINISH, md);
 }
-
-
-/* ntru_crypto_sha1_final_zero_pad
- *
- * This routine completes the SHA-1 hash calculation using zero padding
- * and returns the message digest.
- *
- * Returns SHA_OK on success.
- * Returns SHA_FAIL with corrupted context.
- * Returns SHA_BAD_PARAMETER if inappropriate NULL pointers are passed.
- * Returns SHA_OVERFLOW if more than 2^64 - 1 bytes are hashed.
- */
-
-uint32_t
-ntru_crypto_sha1_final_zero_pad(
-    NTRU_CRYPTO_SHA1_CTX *c,        /* in/out - pointer to SHA-1 context */
-    uint8_t              *md)       /*   out - address for message digest */
-{
-    return ntru_crypto_sha1(c, NULL, NULL, 0, SHA_FINISH | SHA_ZERO_PAD, md);
-}
-
 
 /* ntru_crypto_sha1_digest
  *

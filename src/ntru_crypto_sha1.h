@@ -51,10 +51,6 @@
 #define SHA_1_INIT_FN       &ntru_crypto_sha1_init   /* init function */
 #define SHA_1_UPDATE_FN     &ntru_crypto_sha1_update /* update function */
 #define SHA_1_FINAL_FN      &ntru_crypto_sha1_final  /* final function */
-#define SHA_1_FINAL_ZERO_PAD_FN                                             \
-                            &ntru_crypto_sha1_final_zero_pad
-                                                     /* final function using
-                                                        zero padding */
 #define SHA_1_DIGEST_FN     &ntru_crypto_sha1_digest /* digest function */
 
 
@@ -95,12 +91,6 @@ typedef struct {
  * The hash operation can be updated with any number of input bytes, including
  * zero.
  *
- * The hash operation can be completed with normal padding or with zero
- * padding as required for parts of DSA parameter generation, and is indicated
- * by setting the SHA_FINISH flag.  Using zero padding, indicated by setting
- * the SHA_ZERO_PAD flag, never creates an extra input block because the
- * bit count is not included in the hashed data.
- *
  * Returns SHA_OK on success.
  * Returns SHA_FAIL with corrupted context.
  * Returns SHA_BAD_PARAMETER if inappropriate NULL pointers are passed.
@@ -115,7 +105,7 @@ ntru_crypto_sha1(
     uint8_t const        *in,       /*     in - pointer to input data -
                                                 may be NULL if in_len == 0 */
     uint32_t              in_len,   /*     in - number of input data bytes */
-    uint32_t              flags,    /*     in - INIT, FINISH, zero-pad flags */
+    uint32_t              flags,    /*     in - INIT, FINISH */
     uint8_t              *md);      /*    out - address for message digest -
                                                 may be NULL if not FINISH */
 
@@ -164,23 +154,6 @@ ntru_crypto_sha1_update(
 
 extern uint32_t
 ntru_crypto_sha1_final(
-    NTRU_CRYPTO_SHA1_CTX *c,        /* in/out - pointer to SHA-1 context */
-    uint8_t              *md);      /*   out - address for message digest */
-
-
-/* ntru_crypto_sha1_final_zero_pad
- *
- * This routine completes the SHA-1 hash calculation using zero padding
- * and returns the message digest.
- *
- * Returns SHA_OK on success.
- * Returns SHA_FAIL with corrupted context.
- * Returns SHA_BAD_PARAMETER if inappropriate NULL pointers are passed.
- * Returns SHA_OVERFLOW if more than 2^64 - 1 bytes are hashed.
- */
-
-extern uint32_t
-ntru_crypto_sha1_final_zero_pad(
     NTRU_CRYPTO_SHA1_CTX *c,        /* in/out - pointer to SHA-1 context */
     uint8_t              *md);      /*   out - address for message digest */
 

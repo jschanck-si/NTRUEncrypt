@@ -93,27 +93,6 @@ ntru_crypto_sha256_final(
 }
 
 
-/* ntru_crypto_sha256_final_zero_pad
- *
- * This routine completes the SHA-256 hash calculation using zero padding
- * and returns the message digest.
- * 
- * Returns SHA_OK on success.
- * Returns SHA_FAIL with corrupted context.
- * Returns SHA_BAD_PARAMETER if inappropriate NULL pointers are passed.
- * Returns SHA_OVERFLOW if more than 2^64 - 1 bytes are hashed.
- */
-
-uint32_t
-ntru_crypto_sha256_final_zero_pad(
-    NTRU_CRYPTO_SHA2_CTX *c,        /* in/out - pointer to SHA-2 context */
-    uint8_t              *md)       /*    out - address for message digest */
-{
-    return ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, c, NULL, NULL, 0,
-                            SHA_FINISH | SHA_ZERO_PAD, md);
-}
-
-
 /* ntru_crypto_sha256_digest
  *
  * This routine computes a SHA-256 message digest.

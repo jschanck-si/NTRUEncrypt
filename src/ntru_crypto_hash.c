@@ -54,7 +54,6 @@ typedef struct _NTRU_CRYPTO_HASH_ALG_PARAMS {
     NTRU_CRYPTO_HASH_INIT_FN    init;
     NTRU_CRYPTO_HASH_UPDATE_FN  update;
     NTRU_CRYPTO_HASH_FINAL_FN   final;
-    NTRU_CRYPTO_HASH_FINAL_FN   final_zero_pad;
     NTRU_CRYPTO_HASH_DIGEST_FN  digest;
 } NTRU_CRYPTO_HASH_ALG_PARAMS;
 
@@ -66,7 +65,6 @@ static NTRU_CRYPTO_HASH_ALG_PARAMS const algs_params[] = {
         (NTRU_CRYPTO_HASH_INIT_FN) SHA_1_INIT_FN,
         (NTRU_CRYPTO_HASH_UPDATE_FN) SHA_1_UPDATE_FN,
         (NTRU_CRYPTO_HASH_FINAL_FN) SHA_1_FINAL_FN,
-        (NTRU_CRYPTO_HASH_FINAL_FN) SHA_1_FINAL_ZERO_PAD_FN,
         (NTRU_CRYPTO_HASH_DIGEST_FN) SHA_1_DIGEST_FN,
     },
     {
@@ -76,7 +74,6 @@ static NTRU_CRYPTO_HASH_ALG_PARAMS const algs_params[] = {
         (NTRU_CRYPTO_HASH_INIT_FN) SHA_256_INIT_FN,
         (NTRU_CRYPTO_HASH_UPDATE_FN) SHA_256_UPDATE_FN,
         (NTRU_CRYPTO_HASH_FINAL_FN) SHA_256_FINAL_FN,
-        (NTRU_CRYPTO_HASH_FINAL_FN) SHA_256_FINAL_ZERO_PAD_FN,
         (NTRU_CRYPTO_HASH_DIGEST_FN) SHA_256_DIGEST_FN,
     },
 };
@@ -295,37 +292,6 @@ ntru_crypto_hash_final(
     }
     
     return c->alg_params->final(&c->alg_ctx, md);
-}
-
-
-/* ntru_crypto_hash_final_zero_pad
- *
- * This routine completes the hash calculation using zero padding and
- * returns the message digest.
- * 
- * Returns NTRU_CRYPTO_HASH_OK on success.
- * Returns NTRU_CRYPTO_HASH_FAIL with corrupted context.
- * Returns NTRU_CRYPTO_HASH_BAD_PARAMETER if inappropriate NULL pointers are
- * passed.
- * Returns NTRU_CRYPTO_HASH_BAD_ALG if the algorithm has not been set.
- */
-
-uint32_t
-ntru_crypto_hash_final_zero_pad(
-   NTRU_CRYPTO_HASH_CTX *c,         // in/out - pointer to hash context
-   uint8_t              *md)        //   out  - address for message digest
-{
-    if (!c || !md)
-    {
-        HASH_RET(NTRU_CRYPTO_HASH_BAD_PARAMETER);
-    }
-    
-    if (!c->alg_params)
-    {
-        HASH_RET(NTRU_CRYPTO_HASH_BAD_ALG);
-    }
-    
-    return c->alg_params->final_zero_pad(&c->alg_ctx, md);
 }
 
 

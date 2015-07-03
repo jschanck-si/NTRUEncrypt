@@ -58,7 +58,6 @@
 #define SHA_DATA_ONLY       HASH_DATA_ONLY
 #define SHA_INIT            HASH_INIT
 #define SHA_FINISH          HASH_FINISH
-#define SHA_ZERO_PAD        HASH_ZERO_PAD
 
 
 #endif /* NTRU_CRYPTO_SHA_H */

@@ -189,24 +189,6 @@ ntru_crypto_hash_final(
    uint8_t              *md);       //   out  - address for message digest
 
 
-/* ntru_crypto_hash_final_zero_pad
- *
- * This routine completes the hash calculation using zero padding and
- * returns the message digest.
- * 
- * Returns NTRU_CRYPTO_HASH_OK on success.
- * Returns NTRU_CRYPTO_HASH_FAIL with corrupted context.
- * Returns NTRU_CRYPTO_HASH_BAD_PARAMETER if inappropriate NULL pointers are
- * passed.
- * Returns NTRU_CRYPTO_HASH_BAD_ALG if the algorithm has not been set.
- */
-
-extern uint32_t
-ntru_crypto_hash_final_zero_pad(
-   NTRU_CRYPTO_HASH_CTX *c,         // in/out - pointer to hash context
-   uint8_t              *md);       //   out  - address for message digest
-
-
 /* ntru_crypto_hash_digest
  *
  * This routine computes a message digest. It is assumed that the
