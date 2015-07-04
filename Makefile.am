@@ -139,12 +139,15 @@ bin_check_internal_LDADD = \
 	@CHECK_LIBS@
 
 
+COVER_DIR=./coverage
 coverage-html:
-	mkdir -p coverage
-	lcov --capture --directory src --output-file coverage/coverage.info
-	genhtml coverage/coverage.info --output-directory coverage/
+	test -d "$(COVER_DIR)" || mkdir -p "$(COVER_DIR)"
+	lcov --rc lcov_branch_coverage=1 --directory ./src --zerocounters
+	$(MAKE) check
+	lcov --capture --rc lcov_branch_coverage=1 --no-external --directory . --output-file "$(COVER_DIR)/lcov.info"
+	genhtml --branch-coverage -o "coverage" "$(COVER_DIR)/lcov.info"
 
 
 mostlyclean-local:
-	rm -f src/*/*.gc{da,no}
+	rm -f src/*.gc{da,no}
 	test ! -d coverage || rm -rf coverage
