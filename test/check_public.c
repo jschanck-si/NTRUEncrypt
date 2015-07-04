@@ -50,6 +50,7 @@ START_TEST(test_api_crypto)
     private_key = (uint8_t *)malloc(private_key_len * sizeof(uint8_t));
     ck_assert_ptr_ne(private_key, NULL);
 
+
     /* Generate key */
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
                                          &public_key_len, public_key,
@@ -97,22 +98,64 @@ START_TEST(test_api_crypto)
       ck_assert_int_eq(memcmp(plaintext,message,mlen), 0);
     }
 
-    /* Begin checking error cases */
     randombytes(message, 1+max_msg_len);
     memset(ciphertext, 0, ciphertext_len);
     memset(plaintext, 0, plaintext_len);
 
+    /* Begin checking error cases */
+
+    /*
+     * KeyGen Error Cases
+     */
+    /* Generate a key with unknown parameter set */
+    rc = ntru_crypto_ntru_encrypt_keygen(drbg, -1,
+                                         &public_key_len, public_key,
+                                         &private_key_len, private_key);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_INVALID_PARAMETER_SET));
+
+    /* Public key buffer length not provided */
+    rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
+                                         NULL, public_key,
+                                         NULL, private_key);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
+
+    /* Public key buffer is too short */
+    public_key_len -= 1;
+    rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
+                                         &public_key_len, public_key,
+                                         &private_key_len, private_key);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BUFFER_TOO_SMALL));
+    public_key_len += 1;
+
+    /* Private key buffer is too short */
+    private_key_len -= 1;
+    rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
+                                         &public_key_len, public_key,
+                                         &private_key_len, private_key);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BUFFER_TOO_SMALL));
+    private_key_len += 1;
+
+
+    /*
+     * Encrypt Error Cases
+     */
     /* Public key not provided */
     rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, NULL,
                                   max_msg_len, message,
                                   &ciphertext_len, ciphertext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
+
+    /* Public key length zero */
+    rc = ntru_crypto_ntru_encrypt(drbg, 0, public_key,
+                                  max_msg_len, message,
+                                  &ciphertext_len, ciphertext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
 
     /* Public key truncated */
     rc = ntru_crypto_ntru_encrypt(drbg, public_key_len-10, public_key,
                                   max_msg_len, message,
                                   &ciphertext_len, ciphertext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
 
     /* Public key has private key tag */
     tag = public_key[0];
@@ -120,21 +163,27 @@ START_TEST(test_api_crypto)
     rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                                   max_msg_len, message,
                                   &ciphertext_len, ciphertext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
     public_key[0] = tag;
 
-    /* Message that is too long */
+    /* Plaintext not provided */
+    rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
+                                  max_msg_len, NULL,
+                                  &ciphertext_len, ciphertext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
+
+    /* Plaintext that is too long */
     rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                                   1+max_msg_len, message,
                                   &ciphertext_len, ciphertext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
 
     /* Ciphertext buffer that is too short */
     ciphertext_len -= 1;
     rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                                   max_msg_len, message,
                                   &ciphertext_len, ciphertext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BUFFER_TOO_SMALL));
     ciphertext_len += 1;
 
     /* Perform a good encryption before testing decryption */
@@ -143,17 +192,26 @@ START_TEST(test_api_crypto)
                                   max_msg_len, message, &ciphertext_len, ciphertext);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
 
+    /*
+     * Decrypt Error Cases
+     */
     /* Private key not provided */
     rc = ntru_crypto_ntru_decrypt(private_key_len, NULL,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
+
+    /* Private key length zero */
+    rc = ntru_crypto_ntru_decrypt(0, private_key,
+                                  ciphertext_len, ciphertext,
+                                  &plaintext_len, plaintext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
 
     /* Private key truncated */
     rc = ntru_crypto_ntru_decrypt(private_key_len-10, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PRIVATE_KEY));
 
     /* Private key has public key tag */
     tag = private_key[0];
@@ -161,7 +219,7 @@ START_TEST(test_api_crypto)
     rc = ntru_crypto_ntru_decrypt(private_key_len-10, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PRIVATE_KEY));
     private_key[0] = tag;
 
     /* Private key has bad OID */
@@ -169,21 +227,27 @@ START_TEST(test_api_crypto)
     rc = ntru_crypto_ntru_decrypt(private_key_len-10, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PRIVATE_KEY));
     private_key[3] ^= 0xff;
+
+    /* Ciphertext not provided */
+    rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
+                                  ciphertext_len, NULL,
+                                  &plaintext_len, plaintext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
 
     /* Ciphertext truncated */
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len-10, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
 
     /* Ciphertext manipulated */
     ciphertext[0] ^= 0xff;
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_FAIL));
     ciphertext[0] ^= 0xff;
 
     /* Plaintext buffer too short */
@@ -191,27 +255,26 @@ START_TEST(test_api_crypto)
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BUFFER_TOO_SMALL));
     plaintext_len += 1;
 
-    /* Overwrite key pair */
+    /* Overwrite key pair and try decrypt with wrong key */
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
                                          &public_key_len, public_key,
                                          &private_key_len, private_key);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
 
-    /* Decrypt with wrong key */
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_FAIL));
 
     /* Try decrypting junk */
     randombytes(ciphertext, ciphertext_len);
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
-    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_FAIL));
 
 
     /* Check x509 encoding/decoding */
@@ -252,6 +315,63 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(next_len, 0);
     ck_assert_ptr_eq(next, NULL);
 
+    /* Test error cases */
+
+    next = encoded_public_key;
+    next_len = encoded_public_key_len;
+    /* Public key to be encoded is not provided */
+    rc = ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
+            public_key_len, NULL, &encoded_public_key_len, next);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
+
+    /* Public key to be encoded is length zero */
+    rc = ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
+            0, public_key, &encoded_public_key_len, next);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
+
+    /* Public key is corrupted */
+    public_key[0] ^= 0xff;
+    rc = ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
+            public_key_len, public_key, &encoded_public_key_len, next);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
+    public_key[0] ^= 0xff;
+
+    /* Encoded public key buffer too short */
+    encoded_public_key_len -= 1;
+    rc = ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
+            public_key_len, public_key, &encoded_public_key_len,
+            encoded_public_key);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BUFFER_TOO_SMALL));
+    encoded_public_key_len += 1;
+
+    /* Encoded data not provided */
+    rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(NULL,
+            &public_key2_len, public_key2, &next, &next_len);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PARAMETER));
+
+    /* Encoded data truncated */
+    next_len = encoded_public_key_len-1;
+    rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
+            &public_key2_len, public_key2, &next, &next_len);
+    printf("%x\n", rc);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
+    next_len = encoded_public_key_len;
+
+    /* Encoded data of length less than prefix */
+    next_len = 17;
+    rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
+            &public_key2_len, public_key2, &next, &next_len);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
+    next_len = encoded_public_key_len;
+
+    /* Buffer for decoded key too short */
+    public_key2_len -= 1;
+    rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
+            &public_key2_len, public_key2, &next, &next_len);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BUFFER_TOO_SMALL));
+    public_key2_len += 1;
+
+
     /* Manipulate the DER id, should fail with OID_NOT_RECOGNIZED */
     tag = encoded_public_key[31];
     encoded_public_key[31] = 0xff;
@@ -269,6 +389,7 @@ START_TEST(test_api_crypto)
     rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
             &public_key2_len, public_key2, &next, &next_len);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_ENCODING));
+
 
     free(public_key2);
     free(encoded_public_key);
@@ -301,20 +422,20 @@ START_TEST(test_api_drbg_sha256_hmac)
     /* Bad parameters */
     rc = ntru_crypto_drbg_instantiate(s_bits, NULL, pers_str_bytes,
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, handles+0);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     rc = ntru_crypto_drbg_instantiate(s_bits, pers_str,
             HMAC_DRBG_MAX_PERS_STR_BYTES+1,
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, handles+0);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
     rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
             NULL, handles+0);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, NULL);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Instantiate as many external DRBGs as we are allowed */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
@@ -334,9 +455,9 @@ START_TEST(test_api_drbg_sha256_hmac)
     }
 
     /* Instantiate too many DRBGs */
-    rc = ntru_crypto_external_drbg_instantiate(
-            (RANDOM_BYTES_FN) &randombytes, &extra);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
+            (ENTROPY_FN) drbg_sha256_hmac_get_entropy, &extra);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_NOT_AVAILABLE));
 
     /* Use a DRBG */
     rc = ntru_crypto_drbg_generate(handles[0], s_bits, sizeof(pool), pool);
@@ -355,17 +476,17 @@ START_TEST(test_api_drbg_sha256_hmac)
 
     /* Try to get zero bytes */
     rc = ntru_crypto_drbg_generate(handles[0], s_bits, 0, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
     /* Try to exceed security level */
     rc = ntru_crypto_drbg_generate(handles[0], 2*DRBG_MAX_SEC_STRENGTH_BITS,
                                    sizeof(pool), pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
     /* Request too many bytes */
     rc = ntru_crypto_drbg_generate(handles[0], s_bits,
                                    1+HMAC_DRBG_MAX_BYTES_PER_REQUEST, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
     /* Uninstantiate DRBGs */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
@@ -376,12 +497,12 @@ START_TEST(test_api_drbg_sha256_hmac)
 
     /* Use an uninstantiated DRBG */
     rc = ntru_crypto_drbg_generate(handles[0], 0, 10, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Use a DRBG that never existed */
     handles[0] = 0xaabbccdd;
     rc = ntru_crypto_drbg_generate(handles[0], 0, 10, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 }
 END_TEST
 
@@ -399,10 +520,10 @@ START_TEST(test_api_drbg_external)
     /* Bad parameters */
     rc = ntru_crypto_external_drbg_instantiate(
             (RANDOM_BYTES_FN) &randombytes, NULL);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     rc = ntru_crypto_external_drbg_instantiate(NULL, handles);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Instantiate as many external DRBGs as we are allowed */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
@@ -421,6 +542,11 @@ START_TEST(test_api_drbg_external)
         }
     }
 
+    /* Instantiate too many DRBGs */
+    rc = ntru_crypto_external_drbg_instantiate(
+            (RANDOM_BYTES_FN) &randombytes, &extra);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_NOT_AVAILABLE));
+
     /* Use a DRBG */
     rc = ntru_crypto_drbg_generate(handles[0], 0, sizeof(pool), pool);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
@@ -434,16 +560,16 @@ START_TEST(test_api_drbg_external)
 
     /* Reseed an external DRBG (not implemented, should fail) */
     rc = ntru_crypto_drbg_reseed(handles[0]);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Try to get zero bytes */
     rc = ntru_crypto_drbg_generate(handles[0], 0, 0, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
     /* Instantiate too many DRBGs */
     rc = ntru_crypto_external_drbg_instantiate(
             (RANDOM_BYTES_FN) &randombytes, &extra);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_NOT_AVAILABLE));
 
     /* Uninstantiate DRBGs */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
@@ -454,12 +580,12 @@ START_TEST(test_api_drbg_external)
 
     /* Use an uninstantiated DRBG */
     rc = ntru_crypto_drbg_generate(handles[0], 0, 10, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Use a DRBG that never existed */
     handles[0] = 0xaabbccdd;
     rc = ntru_crypto_drbg_generate(handles[0], 0, 10, pool);
-    ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 }
 END_TEST
 
