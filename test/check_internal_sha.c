@@ -191,6 +191,154 @@ START_TEST(test_hmac_sha256_tv7)
 END_TEST
 
 
+START_TEST(test_sha1)
+{
+    uint32_t rc;
+    uint32_t i;
+
+    uint16_t blk_len;
+    uint16_t md_len;
+
+    NTRU_CRYPTO_HASH_CTX ctx;
+
+    uint8_t md[20];
+    uint8_t data1[3] = "abc";
+    uint8_t data2[56] = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+    uint8_t data3[64] =
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+    uint8_t test1[20] = "\xa9\x99\x3e\x36\x47\x06\x81\x6a\xba\x3e"\
+                        "\x25\x71\x78\x50\xc2\x6c\x9c\xd0\xd8\x9d";
+    uint8_t test2[20] = "\x84\x98\x3e\x44\x1c\x3b\xd2\x6e\xba\xae"\
+                        "\x4a\xa1\xf9\x51\x29\xe5\xe5\x46\x70\xf1";
+    uint8_t test3[20] = "\x34\xaa\x97\x3c\xd4\xc4\xda\xa4\xf6\x1e"\
+                        "\xeb\x2b\xdb\xad\x27\x31\x65\x34\x01\x6f";
+
+    rc = ntru_crypto_hash_digest(
+            NTRU_CRYPTO_HASH_ALGID_SHA1, data1, sizeof(data1), md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+    ck_assert_int_eq(memcmp(md, test1, 20), 0);
+
+    rc = ntru_crypto_hash_digest(
+            NTRU_CRYPTO_HASH_ALGID_SHA1, data2, sizeof(data2), md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+    ck_assert_int_eq(memcmp(md, test2, 20), 0);
+
+    rc = ntru_crypto_hash_set_alg(NTRU_CRYPTO_HASH_ALGID_SHA1, &ctx);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_OK));
+
+    rc = ntru_crypto_hash_block_length(&ctx, &blk_len);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_OK));
+    ck_assert_uint_eq(blk_len, 64);
+
+    rc = ntru_crypto_hash_digest_length(&ctx, &md_len);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_OK));
+    ck_assert_uint_eq(md_len, 20);
+
+    rc = ntru_crypto_hash_init(&ctx);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+
+    for(i=0; i < 15625; i++)
+    {
+        rc = ntru_crypto_hash_update(&ctx, data3, sizeof(data3));
+        ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+    }
+
+    rc = ntru_crypto_hash_final(&ctx, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+
+    ck_assert_int_eq(memcmp(md, test3, 20), 0);
+
+    /* Test overflow */
+    rc = ntru_crypto_hash_init(&ctx);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+
+    ctx.alg_ctx.sha1.num_bits_hashed[0] = 0xffffffff;
+    ctx.alg_ctx.sha1.num_bits_hashed[1] = 0xffffffff;
+    rc = ntru_crypto_hash_update(&ctx, data3, sizeof(data3));
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OVERFLOW));
+
+    rc = ntru_crypto_hash_final(&ctx, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+}
+END_TEST
+
+
+START_TEST(test_sha256)
+{
+    uint32_t rc;
+    uint32_t i;
+
+    uint16_t blk_len;
+    uint16_t md_len;
+
+    NTRU_CRYPTO_HASH_CTX ctx;
+
+    uint8_t md[20];
+    uint8_t data1[3] = "abc";
+    uint8_t data2[56] = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+    uint8_t data3[64] =
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+    uint8_t test1[32] =
+        "\xba\x78\x16\xbf\x8f\x01\xcf\xea\x41\x41\x40\xde\x5d\xae\x22\x23"\
+        "\xb0\x03\x61\xa3\x96\x17\x7a\x9c\xb4\x10\xff\x61\xf2\x00\x15\xad";
+    uint8_t test2[32] =
+        "\x24\x8d\x6a\x61\xd2\x06\x38\xb8\xe5\xc0\x26\x93\x0c\x3e\x60\x39"\
+        "\xa3\x3c\xe4\x59\x64\xff\x21\x67\xf6\xec\xed\xd4\x19\xdb\x06\xc1";
+    uint8_t test3[32] =
+        "\xcd\xc7\x6e\x5c\x99\x14\xfb\x92\x81\xa1\xc7\xe2\x84\xd7\x3e\x67"\
+        "\xf1\x80\x9a\x48\xa4\x97\x20\x0e\x04\x6d\x39\xcc\xc7\x11\x2c\xd0";
+
+    rc = ntru_crypto_hash_digest(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, data1, sizeof(data1), md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+    ck_assert_int_eq(memcmp(md, test1, sizeof(test1)), 0);
+
+    rc = ntru_crypto_hash_digest(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, data2, sizeof(data2), md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+    ck_assert_int_eq(memcmp(md, test2, sizeof(test2)), 0);
+
+    rc = ntru_crypto_hash_set_alg(NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_OK));
+
+    rc = ntru_crypto_hash_block_length(&ctx, &blk_len);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_OK));
+    ck_assert_uint_eq(blk_len, 64);
+
+    rc = ntru_crypto_hash_digest_length(&ctx, &md_len);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_OK));
+    ck_assert_uint_eq(md_len, 32);
+
+    rc = ntru_crypto_hash_init(&ctx);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+
+    /* Hash "a" repeated 64*15625 = 1000000 times */
+    for(i=0; i < 15625; i++)
+    {
+        rc = ntru_crypto_hash_update(&ctx, data3, sizeof(data3));
+        ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+    }
+
+    rc = ntru_crypto_hash_final(&ctx, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+
+    ck_assert_int_eq(memcmp(md, test3, sizeof(test3)), 0);
+
+    /* Test overflow */
+    rc = ntru_crypto_hash_init(&ctx);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+
+    ctx.alg_ctx.sha256.num_bits_hashed[0] = 0xffffffff;
+    ctx.alg_ctx.sha256.num_bits_hashed[1] = 0xffffffff;
+    rc = ntru_crypto_hash_update(&ctx, data3, sizeof(data3));
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OVERFLOW));
+
+    rc = ntru_crypto_hash_final(&ctx, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+}
+END_TEST
 
 Suite *
 ntruencrypt_internal_sha_suite(void)
@@ -211,7 +359,8 @@ ntruencrypt_internal_sha_suite(void)
     tcase_add_test(tc_sha, test_hmac_sha256_tv5);
     tcase_add_test(tc_sha, test_hmac_sha256_tv6);
     tcase_add_test(tc_sha, test_hmac_sha256_tv7);
+    tcase_add_test(tc_sha, test_sha1);
+    tcase_add_test(tc_sha, test_sha256);
 
     return s;
 }
-

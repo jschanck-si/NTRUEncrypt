@@ -297,7 +297,7 @@ START_TEST(test_api_drbg_sha256_hmac)
     uint8_t pool[10];
     uint8_t pool2[sizeof(pool)];
 
-    /* External DRBG type */
+    /* Internal SHA256 DRBG type */
     /* Bad parameters */
     rc = ntru_crypto_drbg_instantiate(s_bits, NULL, pers_str_bytes,
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, handles+0);
@@ -315,7 +315,6 @@ START_TEST(test_api_drbg_sha256_hmac)
     rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, NULL);
     ck_assert_uint_ne(rc, DRBG_RESULT(DRBG_OK));
-
 
     /* Instantiate as many external DRBGs as we are allowed */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
