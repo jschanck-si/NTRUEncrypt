@@ -1172,17 +1172,16 @@ ntru_crypto_ntru_encrypt_keygen(
 
         /* create public key blob */
 
-        ntru_crypto_ntru_encrypt_key_create_pubkey_blob(params, ringel_buf2,
-                                                        pubkey_pack_type,
-                                                        pubkey_blob);
+        result = ntru_crypto_ntru_encrypt_key_create_pubkey_blob(params,
+                ringel_buf2, pubkey_pack_type, pubkey_blob);
         *pubkey_blob_len = public_key_blob_len;
+    }
 
+    if (result == NTRU_OK)
+    {
         /* create private key blob */
-
-        ntru_crypto_ntru_encrypt_key_create_privkey_blob(params, ringel_buf2,
-                                                         F_buf,
-                                                         privkey_pack_type,
-                                                         tmp_buf, privkey_blob);
+        result = ntru_crypto_ntru_encrypt_key_create_privkey_blob(params,
+                ringel_buf2, F_buf, privkey_pack_type, tmp_buf, privkey_blob);
         *privkey_blob_len = private_key_blob_len;
     }
 
@@ -1510,8 +1509,13 @@ ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(
         NTRU_RET(NTRU_BAD_LENGTH);
     }
 
-    /* create the public-key blob */
+    /* check that the public key pack type is supported */
+    if(pubkey_pack_type != NTRU_ENCRYPT_KEY_PACKED_COEFFICIENTS)
+    {
+        NTRU_RET(NTRU_BAD_PUBLIC_KEY);
+    }
 
+    /* create the public-key blob */
     ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(params, packed_pubkey_len,
                                      data_ptr, pubkey_pack_type, pubkey_blob);
     *pubkey_blob_len = public_key_blob_len;

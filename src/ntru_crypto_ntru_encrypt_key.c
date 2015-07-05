@@ -296,7 +296,7 @@ ntru_crypto_ntru_encrypt_key_get_blob_params(
  * Returns a public key blob, packed according to the packing type provided.
  */
 
-void
+uint32_t
 ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
     NTRU_ENCRYPT_PARAM_SET const *params,             /*  in - pointer to
                                                                param set
@@ -322,11 +322,10 @@ ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
             break;
 
         default:
-            ASSERT(FALSE);
-            break;
+            NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
-    return;
+    NTRU_RET(NTRU_OK);
 }
 
 
@@ -335,7 +334,7 @@ ntru_crypto_ntru_encrypt_key_create_pubkey_blob(
  * Returns a public key blob, recreated from an already-packed public key.
  */
 
-void
+uint32_t
 ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
     NTRU_ENCRYPT_PARAM_SET const *params,             /*  in - pointer to
                                                                param set
@@ -361,11 +360,10 @@ ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
             break;
 
         default:
-            ASSERT(FALSE);
-            break;
+            NTRU_RET(NTRU_BAD_PARAMETER);
     }
 
-    return;
+    NTRU_RET(NTRU_OK);
 }
 
 
@@ -374,7 +372,7 @@ ntru_crypto_ntru_encrypt_key_recreate_pubkey_blob(
  * Returns a private key blob, packed according to the packing type provided.
  */
 
-void
+uint32_t
 ntru_crypto_ntru_encrypt_key_create_privkey_blob(
     NTRU_ENCRYPT_PARAM_SET const *params,             /*  in - pointer to
                                                                param set
@@ -435,11 +433,10 @@ ntru_crypto_ntru_encrypt_key_create_privkey_blob(
             break;
             
         default:
-            ASSERT(FALSE);
-            break;
+            NTRU_RET(NTRU_BAD_PARAMETER);
     }
     
-    return;
+    NTRU_RET(NTRU_OK);
 }
 
 
