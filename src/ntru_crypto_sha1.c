@@ -359,7 +359,6 @@ ntru_crypto_sha1(
             if ((c->num_bits_hashed[1] += bits1) < bits1)
             {
                 memset((uint8_t *) c, 0, sizeof(NTRU_CRYPTO_SHA1_CTX));
-                space = 0;
                 memset((char *) in_blk, 0, sizeof(in_blk));
                 SHA_RET(SHA_OVERFLOW)
             }
@@ -481,7 +480,6 @@ ntru_crypto_sha1(
         /* clear context and stack variables */
 
         memset((uint8_t *) c, 0, sizeof(NTRU_CRYPTO_SHA1_CTX));
-        space = 0;
         memset((char *) in_blk, 0, sizeof(in_blk));
     }
 

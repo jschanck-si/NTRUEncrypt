@@ -32,9 +32,11 @@ do_hmac_sha256_test(
     ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_OK));
 
     rc = ntru_crypto_hmac_final(ctx, md);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_OK));
     ck_assert_int_eq(memcmp(md, test, test_len), 0);
 
     rc = ntru_crypto_hmac_destroy_ctx(ctx);
+    ck_assert_int_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_OK));
 }
 
 START_TEST(test_hmac_sha256_tv1)
@@ -232,9 +234,6 @@ START_TEST(test_hmac)
     /* hmac_destroy_ctx: Context not provided */
     rc = ntru_crypto_hmac_destroy_ctx(NULL);
     ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
-
-    /* hmac_destroy_ctx: Key freed */
-    rc = ntru_crypto_hmac_destroy_ctx(ctx);
 }
 END_TEST
 
@@ -247,6 +246,7 @@ START_TEST(test_sha1)
     uint16_t md_len;
 
     NTRU_CRYPTO_HASH_CTX ctx;
+    NTRU_CRYPTO_SHA1_CTX sha1ctx;
 
     uint8_t md[20];
     uint8_t data1[3] = "abc";
@@ -303,24 +303,24 @@ START_TEST(test_sha1)
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha1: Input not not provided */
-    rc = ntru_crypto_sha1(&ctx.alg_ctx.sha1, NULL, NULL, sizeof(data1), SHA_INIT, md);
+    rc = ntru_crypto_sha1(&sha1ctx, NULL, NULL, sizeof(data1), SHA_INIT, md);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha1: Digest not provided */
     rc = ntru_crypto_sha1(
-            &ctx.alg_ctx.sha1, NULL, data1, sizeof(data1), SHA_FINISH, NULL);
+            &sha1ctx, NULL, data1, sizeof(data1), SHA_FINISH, NULL);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha1: Alternate initialization (not allowed, should fail) */
     uint32_t init[4] = {0, 0, 0, 0};
     rc = ntru_crypto_sha1(
-            &ctx.alg_ctx.sha1, init, data1, sizeof(data1), SHA_INIT, NULL);
+            &sha1ctx, init, data1, sizeof(data1), SHA_INIT, NULL);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha1: Try to update a ctx with > 63 bytes in its unhashed data buffer */
-    ctx.alg_ctx.sha1.unhashed_len = 64;
+    sha1ctx.unhashed_len = 64;
     rc = ntru_crypto_sha1(
-            &ctx.alg_ctx.sha1, init, data1, sizeof(data1), 0, NULL);
+            &sha1ctx, init, data1, sizeof(data1), 0, NULL);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_FAIL));
 
     /* Test overflow */
@@ -347,6 +347,7 @@ START_TEST(test_sha256)
     uint16_t md_len;
 
     NTRU_CRYPTO_HASH_CTX ctx;
+    NTRU_CRYPTO_SHA2_CTX sha2ctx;
 
     uint8_t md[20];
     uint8_t data1[3] = "abc";
@@ -403,7 +404,7 @@ START_TEST(test_sha256)
     /* Test error cases */
 
     /* sha2: Algorithm other than SHA256 */
-    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA1, NULL,
+    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, NULL,
             NULL, data1, sizeof(data1), SHA_INIT, md);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
@@ -413,27 +414,27 @@ START_TEST(test_sha256)
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha2: Input not not provided */
-    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, &sha2ctx,
             NULL, NULL, sizeof(data1), SHA_INIT, md);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha2: Digest not provided */
     rc = ntru_crypto_sha2(
-            NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            NTRU_CRYPTO_HASH_ALGID_SHA256, &sha2ctx,
             NULL, data1, sizeof(data1), SHA_FINISH, NULL);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha2: Alternate initialization (not allowed, should fail) */
     uint32_t init[4] = {0, 0, 0, 0};
     rc = ntru_crypto_sha2(
-            NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            NTRU_CRYPTO_HASH_ALGID_SHA256, &sha2ctx,
             init, data1, sizeof(data1), SHA_INIT, NULL);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
     /* sha2: Try to update a ctx with > 63 bytes in its unhashed data buffer */
-    ctx.alg_ctx.sha256.unhashed_len = 64;
+    sha2ctx.unhashed_len = 64;
     rc = ntru_crypto_sha2(
-            NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            NTRU_CRYPTO_HASH_ALGID_SHA256, &sha2ctx,
             init, data1, sizeof(data1), 0, NULL);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_FAIL));
 

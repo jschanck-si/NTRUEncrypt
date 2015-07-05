@@ -43,9 +43,9 @@ fi
 AC_PROG_CC
 
 AC_ARG_ENABLE(simd,
-   AS_HELP_STRING([--enable-simd=yes|no],
+   AS_HELP_STRING([--enable-simd],
                   [Enable vectorized polynomial arithmetic (default=no)]),
-                  [enable_simd=yes], [enable_simd=no])
+                  [], [enable_simd=no])
 AC_ARG_ENABLE(coverage,
    AS_HELP_STRING(--enable-coverage, [Enable coverage reporting for tests]))
 

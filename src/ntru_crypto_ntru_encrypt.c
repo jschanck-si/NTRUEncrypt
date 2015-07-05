@@ -1113,7 +1113,10 @@ ntru_crypto_ntru_encrypt_keygen(
         {
             result = NTRU_RESULT(NTRU_FAIL);
         }
+    }
 
+    if (result == NTRU_OK)
+    {
         /* lift f^-1 in (Z/2Z)[X]/(X^N - 1) to f^-1 in (Z/qZ)[X]/(X^N -1) */
         if(params->is_product_form)
         {

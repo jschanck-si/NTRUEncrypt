@@ -69,7 +69,7 @@ START_TEST(test_api_crypto)
 
     /* Allocate memory for plaintexts/ciphertexts */
     message = (uint8_t *) malloc((1 + max_msg_len) * sizeof(uint8_t));
-    ck_assert_ptr_ne(public_key, NULL);
+    ck_assert_ptr_ne(message, NULL);
 
     ciphertext = (uint8_t *) malloc(ciphertext_len * sizeof(uint8_t));
     ck_assert_ptr_ne(ciphertext, NULL);
@@ -353,7 +353,6 @@ START_TEST(test_api_crypto)
     next_len = encoded_public_key_len-1;
     rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
             &public_key2_len, public_key2, &next, &next_len);
-    printf("%x\n", rc);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
     next_len = encoded_public_key_len;
 
@@ -595,8 +594,7 @@ START_TEST(test_get_param_set_name)
     name = ntru_encrypt_get_param_set_name(NTRU_EES401EP2);
     ck_assert_str_eq(name, "ees401ep2");
     name = ntru_encrypt_get_param_set_name(-1);
-    ck_assert_ptr_eq(name, NULL);
-
+    ck_assert_ptr_eq((void *)name, NULL);
 }
 END_TEST
 
