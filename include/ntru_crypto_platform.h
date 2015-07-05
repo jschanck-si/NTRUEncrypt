@@ -70,7 +70,6 @@ typedef UINT64              uint64_t;
 #   include  <linux/string.h>
 #   define   MALLOC(size) (kmalloc(size, GFP_KERNEL))
 #   define   FREE(x) (kfree(x))
-#   define   ASSERT(positive_condition) BUG_ON(!(positive_condition))
 
 #else
 
@@ -79,7 +78,6 @@ typedef UINT64              uint64_t;
 #   include  <string.h>
 #   define   MALLOC(size) (malloc(size))
 #   define   FREE(x) (free(x))
-#   define   ASSERT(positive_condition) assert(positive_condition)
 
 #endif
 
