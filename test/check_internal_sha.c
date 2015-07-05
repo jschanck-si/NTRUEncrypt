@@ -191,6 +191,53 @@ START_TEST(test_hmac_sha256_tv7)
 END_TEST
 
 
+START_TEST(test_hmac)
+{
+    uint32_t rc;
+    uint8_t const key[1] = "a";
+    uint16_t md_len;
+
+    NTRU_CRYPTO_HMAC_CTX *ctx;
+
+    /* hmac_create_ctx: Context not provided */
+    rc = ntru_crypto_hmac_create_ctx(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, key, 1, NULL);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_create_ctx: Key not provided */
+    rc = ntru_crypto_hmac_create_ctx(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, NULL, 1, &ctx);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_create_ctx: Algorithm does not exist */
+    rc = ntru_crypto_hmac_create_ctx(-1, key, 1, &ctx);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_ALG));
+
+    /* hmac_get_md_len: Context not provided */
+    rc = ntru_crypto_hmac_get_md_len(NULL, &md_len);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_get_md_len: Output pointer not provided */
+    rc = ntru_crypto_hmac_get_md_len(ctx, NULL);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_set_key: Context not provided */
+    rc = ntru_crypto_hmac_set_key(NULL, (const uint8_t *)"key");
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_set_key: Key not provided */
+    rc = ntru_crypto_hmac_get_md_len(ctx, NULL);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_destroy_ctx: Context not provided */
+    rc = ntru_crypto_hmac_destroy_ctx(NULL);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_destroy_ctx: Key freed */
+    rc = ntru_crypto_hmac_destroy_ctx(ctx);
+}
+END_TEST
+
 START_TEST(test_sha1)
 {
     uint32_t rc;
@@ -248,6 +295,33 @@ START_TEST(test_sha1)
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
 
     ck_assert_int_eq(memcmp(md, test3, 20), 0);
+
+    /* Test error cases */
+
+    /* sha1: Context not provided */
+    rc = ntru_crypto_sha1(NULL, NULL, data1, sizeof(data1), SHA_INIT, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha1: Input not not provided */
+    rc = ntru_crypto_sha1(&ctx.alg_ctx.sha1, NULL, NULL, sizeof(data1), SHA_INIT, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha1: Digest not provided */
+    rc = ntru_crypto_sha1(
+            &ctx.alg_ctx.sha1, NULL, data1, sizeof(data1), SHA_FINISH, NULL);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha1: Alternate initialization (not allowed, should fail) */
+    uint32_t init[4] = {0, 0, 0, 0};
+    rc = ntru_crypto_sha1(
+            &ctx.alg_ctx.sha1, init, data1, sizeof(data1), SHA_INIT, NULL);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha1: Try to update a ctx with > 63 bytes in its unhashed data buffer */
+    ctx.alg_ctx.sha1.unhashed_len = 64;
+    rc = ntru_crypto_sha1(
+            &ctx.alg_ctx.sha1, init, data1, sizeof(data1), 0, NULL);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_FAIL));
 
     /* Test overflow */
     rc = ntru_crypto_hash_init(&ctx);
@@ -326,6 +400,43 @@ START_TEST(test_sha256)
 
     ck_assert_int_eq(memcmp(md, test3, sizeof(test3)), 0);
 
+    /* Test error cases */
+
+    /* sha2: Algorithm other than SHA256 */
+    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA1, NULL,
+            NULL, data1, sizeof(data1), SHA_INIT, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha2: Context not provided */
+    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, NULL,
+            NULL, data1, sizeof(data1), SHA_INIT, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha2: Input not not provided */
+    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            NULL, NULL, sizeof(data1), SHA_INIT, md);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha2: Digest not provided */
+    rc = ntru_crypto_sha2(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            NULL, data1, sizeof(data1), SHA_FINISH, NULL);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha2: Alternate initialization (not allowed, should fail) */
+    uint32_t init[4] = {0, 0, 0, 0};
+    rc = ntru_crypto_sha2(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            init, data1, sizeof(data1), SHA_INIT, NULL);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
+
+    /* sha2: Try to update a ctx with > 63 bytes in its unhashed data buffer */
+    ctx.alg_ctx.sha256.unhashed_len = 64;
+    rc = ntru_crypto_sha2(
+            NTRU_CRYPTO_HASH_ALGID_SHA256, &ctx.alg_ctx.sha256,
+            init, data1, sizeof(data1), 0, NULL);
+    ck_assert_uint_eq(rc, SHA_RESULT(SHA_FAIL));
+
     /* Test overflow */
     rc = ntru_crypto_hash_init(&ctx);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
@@ -337,6 +448,96 @@ START_TEST(test_sha256)
 
     rc = ntru_crypto_hash_final(&ctx, md);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_OK));
+}
+END_TEST
+
+START_TEST(test_hash)
+{
+    uint32_t rc;
+
+    NTRU_CRYPTO_HASH_CTX ctx;
+    uint16_t blen;
+    uint16_t dlen;
+
+    uint8_t const data[1] = "a";
+    uint8_t md[32];
+
+    /* Context not provided */
+    rc = ntru_crypto_hash_set_alg(NTRU_CRYPTO_HASH_ALGID_SHA256, NULL);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* Algorithm doesn't exist */
+    rc = ntru_crypto_hash_set_alg(-1, &ctx);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* block_length: Context not provided */
+    rc = ntru_crypto_hash_block_length(NULL, &blen);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* block_length: Result pointer not provided */
+    rc = ntru_crypto_hash_block_length(&ctx, NULL);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* block_length: A call to set_alg hasn't succeeded */
+    rc = ntru_crypto_hash_block_length(&ctx, &blen);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* digest_lengt: Context not provided */
+    rc = ntru_crypto_hash_digest_length(NULL, &dlen);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* digest_length: result pointer not provided */
+    rc = ntru_crypto_hash_digest_length(&ctx, NULL);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* digest_length: A call to set_alg hasn't succeeded */
+    rc = ntru_crypto_hash_digest_length(&ctx, &dlen);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* init: Context not provided */
+    rc = ntru_crypto_hash_init(NULL);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* init: A call to set_alg hasn't succeeded */
+    rc = ntru_crypto_hash_init(&ctx);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* update: Context not provided */
+    rc = ntru_crypto_hash_update(NULL, data, 1);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* update: Data not provided, non-zero length */
+    rc = ntru_crypto_hash_update(&ctx, NULL, 1);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* update: A call to set_alg hasn't succeeded */
+    rc = ntru_crypto_hash_update(&ctx, data, 1);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* final: Context not provided */
+    rc = ntru_crypto_hash_final(NULL, md);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* final: Digest buffer not provided */
+    rc = ntru_crypto_hash_final(&ctx, NULL);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* final: A call to set_alg hasn't succeeded */
+    rc = ntru_crypto_hash_final(&ctx, md);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* digest: Algorithm doesn't exist */
+    rc = ntru_crypto_hash_digest(-1, data, 1, md);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
+
+    /* digest: Data not provided, non-zero length */
+    rc = ntru_crypto_hash_digest(NTRU_CRYPTO_HASH_ALGID_SHA256, NULL, 1, md);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
+    /* digest: output buffer not provided*/
+    rc = ntru_crypto_hash_digest(NTRU_CRYPTO_HASH_ALGID_SHA256, data, 1, NULL);
+    ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
+
 }
 END_TEST
 
@@ -352,6 +553,7 @@ ntruencrypt_internal_sha_suite(void)
     suite_add_tcase(s, tc_sha);
 
     /* Test HMAC SHA256 vectors from https://www.ietf.org/rfc/rfc4231.txt */
+    tcase_add_test(tc_sha, test_hmac);
     tcase_add_test(tc_sha, test_hmac_sha256_tv1);
     tcase_add_test(tc_sha, test_hmac_sha256_tv2);
     tcase_add_test(tc_sha, test_hmac_sha256_tv3);
@@ -359,6 +561,7 @@ ntruencrypt_internal_sha_suite(void)
     tcase_add_test(tc_sha, test_hmac_sha256_tv5);
     tcase_add_test(tc_sha, test_hmac_sha256_tv6);
     tcase_add_test(tc_sha, test_hmac_sha256_tv7);
+    tcase_add_test(tc_sha, test_hash);
     tcase_add_test(tc_sha, test_sha1);
     tcase_add_test(tc_sha, test_sha256);
 

@@ -131,6 +131,17 @@ START_TEST(test_gen_poly)
     ck_assert_int_eq(
             memcmp(F_buf_1_p, F_buf_2_p, num_indices*sizeof(uint16_t)), 0);
 
+    /* Check some failure cases */
+    /* Trigger an mgf failure with an unknown hash_algid */
+    rc = ntru_gen_poly(-1, md_len,
+                       params->min_IGF_hash_calls,
+                       seed_len, seed_buf_p, mgf_buf_p,
+                       params->N, params->c_bits,
+                       params->no_bias_limit,
+                       params->is_product_form,
+                       params->dF_r << 1, F_buf_2_p);
+    ck_assert_uint_ne(rc, NTRU_RESULT(NTRU_OK));
+
 
     ntru_ck_mem_ok(&F_buf_2);
     ntru_ck_mem_ok(&F_buf_1);
@@ -173,12 +184,18 @@ START_TEST(test_inv_mod_2)
     ck_assert_int_eq(ntru_ring_inv(a, 17, tmp, out), TRUE);
     ck_assert_int_eq(memcmp(out, test_a, sizeof(a)), 0);
 
+    /* Test error cases */
     /* Changing the parity of a makes it trivially non-invertible */
     a[0] = 0;
     ck_assert_int_eq(ntru_ring_inv(a, 17, tmp, out), FALSE);
 
     /* b is a nontrivial factor of x^17 - 1 mod 2 */
     ck_assert_int_eq(ntru_ring_inv(b, 17, tmp, out), FALSE);
+
+    /* Input not provided */
+    ck_assert_int_eq(ntru_ring_inv(NULL, 17, tmp, out), FALSE);
+    ck_assert_int_eq(ntru_ring_inv(a, 17, NULL, out), FALSE);
+    ck_assert_int_eq(ntru_ring_inv(a, 17, tmp, NULL), FALSE);
 }
 END_TEST
 /* test_lift_inv_mod_pow2
