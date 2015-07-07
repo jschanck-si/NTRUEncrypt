@@ -49,7 +49,7 @@ noinst_HEADERS = \
 	test/test_common.h \
 	test/check_common.h
 
-dist_pkgdata_DATA = libntruencrypt.sym
+EXTRA_DIST = libntruencrypt.sym
 
 # libntruencrypt.la
 libntruencrypt_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS) -Wno-parentheses
