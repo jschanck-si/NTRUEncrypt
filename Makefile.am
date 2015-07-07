@@ -1,5 +1,4 @@
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
-
 ACLOCAL_AMFLAGS = -I m4
 
 AM_CFLAGS = -I$(top_srcdir)/include
@@ -11,7 +10,6 @@ else
 TEST_CFLAGS=
 TEST_LFLAGS=
 endif
-
 
 noinst_PROGRAMS = \
 	bin/sanity \
@@ -53,7 +51,10 @@ EXTRA_DIST = libntruencrypt.sym
 
 # libntruencrypt.la
 libntruencrypt_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS) -Wno-parentheses
-libntruencrypt_la_LDFLAGS = $(TEST_LFLAGS) -export-symbols $(top_srcdir)/libntruencrypt.sym
+libntruencrypt_la_LDFLAGS = \
+	$(TEST_LFLAGS) \
+	-version-info $(LIBNTRUENCRYPT_SO_VERSION) \
+	-export-symbols $(top_srcdir)/libntruencrypt.sym
 libntruencrypt_la_SOURCES = \
 	src/ntru_crypto_drbg.c \
 	src/ntru_crypto_hash.c \

@@ -30,11 +30,15 @@ dnl Compute the canonical host-system type variable, host, and its three individ
 dnl parts host_cpu, host_vendor, and host_os.
 AC_CANONICAL_HOST
 
-
 AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 LT_INIT
+
+# Using libtool library versioning, current:revision:age
+# http://gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+LIBNTRUENCRYPT_SO_VERSION=0:0:0
+AC_SUBST([LIBNTRUENCRYPT_SO_VERSION])
 
 dnl Suggest -O3 without debugging symbols if there are no user-specified CFLAGS
 if test "x$CFLAGS" = "x"; then
