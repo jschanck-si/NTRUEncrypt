@@ -152,14 +152,35 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
 
     /* Public key truncated */
-    rc = ntru_crypto_ntru_encrypt(drbg, public_key_len-10, public_key,
+    rc = ntru_crypto_ntru_encrypt(drbg, public_key_len-1, public_key,
                                   max_msg_len, message,
                                   &ciphertext_len, ciphertext);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
 
+    /* Public key severely truncated */
+    rc = ntru_crypto_ntru_encrypt(drbg, 4, public_key,
+                                  max_msg_len, message,
+                                  &ciphertext_len, ciphertext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
+
+    /* Public key has OID field of length != 3 */
+    public_key[1] = 255;
+    rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
+                                  max_msg_len, message,
+                                  &ciphertext_len, ciphertext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
+    public_key[1] = 3;
+
     /* Public key has private key tag */
     tag = public_key[0];
     public_key[0] = 0x02;
+    rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
+                                  max_msg_len, message,
+                                  &ciphertext_len, ciphertext);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PUBLIC_KEY));
+
+    /* Public key has unrecognized tag */
+    public_key[0] = 0xaa;
     rc = ntru_crypto_ntru_encrypt(drbg, public_key_len, public_key,
                                   max_msg_len, message,
                                   &ciphertext_len, ciphertext);
@@ -216,7 +237,7 @@ START_TEST(test_api_crypto)
     /* Private key has public key tag */
     tag = private_key[0];
     private_key[0] = 0x01;
-    rc = ntru_crypto_ntru_decrypt(private_key_len-10, private_key,
+    rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PRIVATE_KEY));
@@ -224,7 +245,7 @@ START_TEST(test_api_crypto)
 
     /* Private key has bad OID */
     private_key[3] ^= 0xff;
-    rc = ntru_crypto_ntru_decrypt(private_key_len-10, private_key,
+    rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_PRIVATE_KEY));
@@ -243,12 +264,12 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_LENGTH));
 
     /* Ciphertext manipulated */
-    ciphertext[0] ^= 0xff;
+    ciphertext[ciphertext_len>>1] ^= 0xff;
     rc = ntru_crypto_ntru_decrypt(private_key_len, private_key,
                                   ciphertext_len, ciphertext,
                                   &plaintext_len, plaintext);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_FAIL));
-    ciphertext[0] ^= 0xff;
+    ciphertext[ciphertext_len>>1] ^= 0xff;
 
     /* Plaintext buffer too short */
     plaintext_len -= 1;
@@ -309,12 +330,14 @@ START_TEST(test_api_crypto)
     rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
             &public_key2_len, public_key2, &next, &next_len);
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
-    ck_assert_int_eq(memcmp(public_key,public_key2,public_key_len), 0);
     ck_assert_uint_eq(next_len, 0);
     ck_assert_ptr_eq(next, NULL);
 
-    /* Test error cases */
+    /* Check decoded key matches original */
+    ck_assert_uint_eq(public_key_len, public_key2_len);
+    ck_assert_int_eq(memcmp(public_key,public_key2,public_key_len), 0);
 
+    /* Test error cases */
     next = encoded_public_key;
     next_len = encoded_public_key_len;
     /* Public key to be encoded is not provided */
@@ -425,6 +448,10 @@ START_TEST(test_api_drbg_sha256_hmac)
 
     /* Internal SHA256 DRBG type */
     /* Bad parameters */
+    rc = ntru_crypto_drbg_instantiate(-1, pers_str, pers_str_bytes,
+            (ENTROPY_FN) drbg_sha256_hmac_get_entropy, handles+0);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
+
     rc = ntru_crypto_drbg_instantiate(s_bits, NULL, pers_str_bytes,
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, handles+0);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
@@ -486,6 +513,13 @@ START_TEST(test_api_drbg_sha256_hmac)
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, &extra);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_NOT_AVAILABLE));
 
+    /* drbg_generate input checks */
+    rc = ntru_crypto_drbg_generate(handles[0], s_bits, sizeof(pool), NULL);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
+
+    rc = ntru_crypto_drbg_generate(handles[0], s_bits, 0, pool);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
+
     /* Use a DRBG */
     rc = ntru_crypto_drbg_generate(handles[0], s_bits, sizeof(pool), pool);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
@@ -505,7 +539,7 @@ START_TEST(test_api_drbg_sha256_hmac)
     rc = ntru_crypto_drbg_generate(handles[0], s_bits, 0, pool);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
-    /* Try to exceed security level */
+    /* Request too high of a security level */
     rc = ntru_crypto_drbg_generate(handles[0], 2*DRBG_MAX_SEC_STRENGTH_BITS,
                                    sizeof(pool), pool);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
@@ -521,6 +555,14 @@ START_TEST(test_api_drbg_sha256_hmac)
         rc = ntru_crypto_drbg_uninstantiate(handles[i]);
         ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
     }
+
+    /* Reseed a uninstantiated DRBG */
+    rc = ntru_crypto_drbg_reseed(handles[0]);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
+
+    /* Double uninstantiate */
+    rc = ntru_crypto_drbg_uninstantiate(handles[0]);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Use an uninstantiated DRBG */
     rc = ntru_crypto_drbg_generate(handles[0], 0, 10, pool);
