@@ -186,9 +186,104 @@ START_TEST(test_key_form)
     ntru_ck_mem_ok(&F_buf);
     ntru_ck_mem_ok(&privkey_blob);
     ntru_ck_mem_ok(&pubkey_blob);
+
+    ntru_ck_mem_free(&scratch);
+    ntru_ck_mem_free(&g_poly);
+    ntru_ck_mem_free(&h_poly);
+    ntru_ck_mem_free(&F_buf);
+    ntru_ck_mem_free(&privkey_blob);
+    ntru_ck_mem_free(&pubkey_blob);
 }
 END_TEST
 
+
+START_TEST(test_key_encoding)
+{
+    uint32_t rc;
+
+    NTRU_CK_MEM pubkey_mem;
+    NTRU_CK_MEM privkey_mem;
+
+    uint8_t *pubkey_blob = NULL;
+    uint8_t *privkey_blob = NULL;
+
+    uint16_t pubkey_blob_len = 0;
+    uint16_t privkey_blob_len = 0;
+
+    uint8_t tag = 0;
+    uint8_t pubkey_pack_type;
+    uint8_t privkey_pack_type;
+
+    uint8_t const *pubkey_packed;
+    uint8_t const *privkey_packed;
+
+    NTRU_ENCRYPT_PARAM_SET *params = NULL;
+    NTRU_ENCRYPT_PARAM_SET_ID param_set_id;
+
+    param_set_id = PARAM_SET_IDS[_i];
+    params = ntru_encrypt_get_params_with_id(param_set_id);
+
+    /* Generate a key */
+    rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id, &pubkey_blob_len,
+                                         NULL, &privkey_blob_len, NULL);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
+    ck_assert_uint_gt(pubkey_blob_len, 0);
+    ck_assert_uint_gt(privkey_blob_len, 0);
+
+    pubkey_blob = (uint8_t *)ntru_ck_malloc(&pubkey_mem, pubkey_blob_len);
+    privkey_blob = (uint8_t *)ntru_ck_malloc(&privkey_mem, privkey_blob_len);
+
+    rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
+                                         &pubkey_blob_len, pubkey_blob,
+                                         &privkey_blob_len, privkey_blob);
+    ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
+
+    /* Mangle private key tag */
+    if(params->is_product_form)
+    {
+        /* Product form with trits encoding is not allowed */
+        tag = privkey_blob[0];
+        privkey_blob[0] = NTRU_ENCRYPT_PRIVKEY_TRITS_TAG;
+        rc = ntru_crypto_ntru_encrypt_key_parse(FALSE,
+             privkey_blob_len, privkey_blob, &pubkey_pack_type,
+             &privkey_pack_type, &params, &pubkey_packed, &privkey_packed);
+        ck_assert_uint_eq(rc, FALSE);
+
+        privkey_blob[0] = tag;
+    }
+    else
+    {
+        /* Tag doesn't match encoding type */
+        tag = privkey_blob[0];
+        uint16_t packed_trits_len = (params->N + 4) / 5;
+        uint16_t packed_indices_len;
+        packed_indices_len = ((params->dF_r << 1) * params->N_bits + 7) >> 3;
+        /* TODO: add test parameter suite violating the following constraint */
+        ck_assert_uint_ne(packed_trits_len, packed_indices_len);
+
+        if(packed_indices_len <= packed_trits_len)
+        {
+            /* Would normally use trits encoding */
+            privkey_blob[0] = NTRU_ENCRYPT_PRIVKEY_TRITS_TAG;
+        }
+        else /* Would normally use indices encoding */
+        {
+            privkey_blob[0] = NTRU_ENCRYPT_PRIVKEY_INDICES_TAG;
+        }
+        rc = ntru_crypto_ntru_encrypt_key_parse(FALSE,
+             privkey_blob_len, privkey_blob, &pubkey_pack_type,
+             &privkey_pack_type, &params, &pubkey_packed, &privkey_packed);
+        ck_assert_uint_eq(rc, FALSE);
+        privkey_blob[0] = tag;
+    }
+
+    ntru_ck_mem_ok(&pubkey_mem);
+    ntru_ck_mem_ok(&privkey_mem);
+
+    ntru_ck_mem_free(&pubkey_mem);
+    ntru_ck_mem_free(&privkey_mem);
+}
+END_TEST
 
 Suite *
 ntruencrypt_internal_key_suite(void)
@@ -201,6 +296,7 @@ ntruencrypt_internal_key_suite(void)
     tc_key = tcase_create("Key");
     tcase_add_unchecked_fixture(tc_key, test_drbg_setup, test_drbg_teardown);
     tcase_add_loop_test(tc_key, test_key_form, 0, NUM_PARAM_SETS);
+    tcase_add_loop_test(tc_key, test_key_encoding, 0, NUM_PARAM_SETS);
 
     suite_add_tcase(s, tc_key);
 
