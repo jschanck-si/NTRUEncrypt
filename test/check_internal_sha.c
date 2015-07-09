@@ -197,9 +197,28 @@ START_TEST(test_hmac)
 {
     uint32_t rc;
     uint8_t const key[1] = "a";
+    uint8_t md = 0;
     uint16_t md_len;
 
     NTRU_CRYPTO_HMAC_CTX *ctx;
+
+    /* hmac_init: Null input */
+    rc = ntru_crypto_hmac_init(NULL);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_update: Null input */
+    rc = ntru_crypto_hmac_update(NULL, key, 1);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    rc = ntru_crypto_hmac_update(ctx, NULL, 1);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    /* hmac_final: Null input */
+    rc = ntru_crypto_hmac_final(NULL, &md);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
+
+    rc = ntru_crypto_hmac_final(ctx, NULL);
+    ck_assert_uint_eq(rc, HMAC_RESULT(NTRU_CRYPTO_HMAC_BAD_PARAMETER));
 
     /* hmac_create_ctx: Context not provided */
     rc = ntru_crypto_hmac_create_ctx(
@@ -404,7 +423,7 @@ START_TEST(test_sha256)
     /* Test error cases */
 
     /* sha2: Algorithm other than SHA256 */
-    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA256, NULL,
+    rc = ntru_crypto_sha2(NTRU_CRYPTO_HASH_ALGID_SHA1, &sha2ctx,
             NULL, data1, sizeof(data1), SHA_INIT, md);
     ck_assert_uint_eq(rc, SHA_RESULT(SHA_BAD_PARAMETER));
 
