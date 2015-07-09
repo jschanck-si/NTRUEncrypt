@@ -132,7 +132,8 @@ bin_check_public_LDADD = \
 bin_check_internal_SOURCES = test/check_internal.c \
 	test/check_internal_key.c \
 	test/check_internal_poly.c \
-	test/check_internal_sha.c
+	test/check_internal_sha.c \
+	test/check_internal_mgf.c
 bin_check_internal_CFLAGS = $(AM_CFLAGS) -I$(top_srcdir)/src @CHECK_CFLAGS@
 bin_check_internal_LDADD = \
 	$(top_builddir)/libntruencrypt_check.la \

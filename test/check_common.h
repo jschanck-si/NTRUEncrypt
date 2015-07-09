@@ -21,5 +21,6 @@ void ntru_ck_mem_free(NTRU_CK_MEM *obj);
 Suite * ntruencrypt_internal_poly_suite(void);
 Suite * ntruencrypt_internal_key_suite(void);
 Suite * ntruencrypt_internal_sha_suite(void);
+Suite * ntruencrypt_internal_mgf_suite(void);
 
 #endif

@@ -12,6 +12,7 @@ main(void)
     sr = srunner_create(ntruencrypt_internal_poly_suite());
     srunner_add_suite(sr, ntruencrypt_internal_key_suite());
     srunner_add_suite(sr, ntruencrypt_internal_sha_suite());
+    srunner_add_suite(sr, ntruencrypt_internal_mgf_suite());
 
     srunner_run_all(sr, CK_NORMAL);
     number_failed = srunner_ntests_failed(sr);
