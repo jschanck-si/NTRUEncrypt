@@ -31,8 +31,8 @@
  *
  *****************************************************************************/
 
-#ifndef CRYPTO_SHA256_H
-#define CRYPTO_SHA256_H
+#ifndef NTRU_CRYPTO_SHA256_H
+#define NTRU_CRYPTO_SHA256_H
 
 
 #include "ntru_crypto_platform.h"
@@ -125,4 +125,4 @@ ntru_crypto_sha256_digest(
     uint8_t        *md);            // out - address for message digest
 
 
-#endif /* CRYPTO_SHA256_H */
+#endif /* NTRU_CRYPTO_SHA256_H */
