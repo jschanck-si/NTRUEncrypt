@@ -12,6 +12,15 @@ START_TEST(test_api_crypto)
 {
     uint32_t rc;
 
+
+    NTRU_CK_MEM public_key_mem;
+    NTRU_CK_MEM public_key2_mem;
+    NTRU_CK_MEM private_key_mem;
+    NTRU_CK_MEM message_mem;
+    NTRU_CK_MEM ciphertext_mem;
+    NTRU_CK_MEM plaintext_mem;
+    NTRU_CK_MEM encoded_public_key_mem;
+
     uint8_t *public_key = NULL;
     uint8_t *public_key2 = NULL;
     uint8_t *private_key = NULL;
@@ -43,13 +52,9 @@ START_TEST(test_api_crypto)
     ck_assert_uint_gt(public_key_len, 0);
     ck_assert_uint_gt(private_key_len, 0);
 
-    /* Allocate storage for key */
-    public_key = (uint8_t *)malloc(public_key_len * sizeof(uint8_t));
-    ck_assert_ptr_ne(public_key, NULL);
-
-    private_key = (uint8_t *)malloc(private_key_len * sizeof(uint8_t));
-    ck_assert_ptr_ne(private_key, NULL);
-
+    /* Allocate storage for keys */
+    public_key = ntru_ck_malloc(&public_key_mem, public_key_len);
+    private_key = ntru_ck_malloc(&private_key_mem, private_key_len);
 
     /* Generate key */
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, param_set_id,
@@ -68,14 +73,9 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
 
     /* Allocate memory for plaintexts/ciphertexts */
-    message = (uint8_t *) malloc((1 + max_msg_len) * sizeof(uint8_t));
-    ck_assert_ptr_ne(message, NULL);
-
-    ciphertext = (uint8_t *) malloc(ciphertext_len * sizeof(uint8_t));
-    ck_assert_ptr_ne(ciphertext, NULL);
-
-    plaintext = (uint8_t *) malloc(max_msg_len * sizeof(uint8_t));
-    ck_assert_ptr_ne(plaintext, NULL);
+    message = ntru_ck_malloc(&message_mem, (1 + max_msg_len));
+    ciphertext = ntru_ck_malloc(&ciphertext_mem, ciphertext_len);
+    plaintext = ntru_ck_malloc(&plaintext_mem, max_msg_len);
 
     /* Encrypt/decrypt at every valid message length */
     for(mlen=0; mlen<=max_msg_len; mlen++)
@@ -285,9 +285,8 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_OK));
 
     /* Perform the encoding */
-    encoded_public_key = (uint8_t *)malloc(
-            encoded_public_key_len * sizeof(uint8_t));
-    ck_assert_ptr_ne(encoded_public_key, NULL);
+    encoded_public_key = ntru_ck_malloc(&encoded_public_key_mem,
+            encoded_public_key_len);
 
     rc = ntru_crypto_ntru_encrypt_publicKey2SubjectPublicKeyInfo(
             public_key_len, public_key, &encoded_public_key_len,
@@ -305,8 +304,7 @@ START_TEST(test_api_crypto)
     ck_assert_ptr_eq(next, encoded_public_key);
 
     /* Perform the decoding */
-    public_key2 = (uint8_t *)malloc(public_key2_len * sizeof(uint8_t));
-    ck_assert_ptr_ne(public_key2, NULL);
+    public_key2 = ntru_ck_malloc(&public_key2_mem, public_key2_len);
 
     rc = ntru_crypto_ntru_encrypt_subjectPublicKeyInfo2PublicKey(next,
             &public_key2_len, public_key2, &next, &next_len);
@@ -390,13 +388,21 @@ START_TEST(test_api_crypto)
     ck_assert_uint_eq(rc, NTRU_RESULT(NTRU_BAD_ENCODING));
 
 
-    free(public_key2);
-    free(encoded_public_key);
-    free(message);
-    free(public_key);
-    free(private_key);
-    free(plaintext);
-    free(ciphertext);
+    ntru_ck_mem_ok(&public_key2_mem);
+    ntru_ck_mem_ok(&encoded_public_key_mem);
+    ntru_ck_mem_ok(&message_mem);
+    ntru_ck_mem_ok(&public_key_mem);
+    ntru_ck_mem_ok(&private_key_mem);
+    ntru_ck_mem_ok(&plaintext_mem);
+    ntru_ck_mem_ok(&ciphertext_mem);
+
+    ntru_ck_mem_free(&public_key2_mem);
+    ntru_ck_mem_free(&encoded_public_key_mem);
+    ntru_ck_mem_free(&message_mem);
+    ntru_ck_mem_free(&public_key_mem);
+    ntru_ck_mem_free(&private_key_mem);
+    ntru_ck_mem_free(&plaintext_mem);
+    ntru_ck_mem_free(&ciphertext_mem);
 }
 END_TEST
 
