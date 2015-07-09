@@ -79,3 +79,56 @@ drbg_sha256_hmac_get_entropy(
     }
     return 0;
 }
+
+uint8_t
+drbg_sha256_hmac_get_entropy_err_init(
+    ENTROPY_CMD  cmd,
+    uint8_t     *out)
+{
+    if (cmd == INIT)
+    {
+        return 0;
+    }
+
+    return drbg_sha256_hmac_get_entropy(cmd, out);
+}
+
+uint8_t
+drbg_sha256_hmac_get_entropy_err_get_num(
+    ENTROPY_CMD  cmd,
+    uint8_t     *out)
+{
+    if (cmd == GET_BYTE_OF_ENTROPY)
+    {
+        return 0;
+    }
+
+    return drbg_sha256_hmac_get_entropy(cmd, out);
+}
+
+uint8_t
+drbg_sha256_hmac_get_entropy_err_num_eq_zero(
+    ENTROPY_CMD  cmd,
+    uint8_t     *out)
+{
+    if (cmd == GET_NUM_BYTES_PER_BYTE_OF_ENTROPY)
+    {
+        *out = 0;
+        return 1;
+    }
+
+    return drbg_sha256_hmac_get_entropy(cmd, out);
+}
+
+uint8_t
+drbg_sha256_hmac_get_entropy_err_get_byte(
+    ENTROPY_CMD  cmd,
+    uint8_t     *out)
+{
+    if (cmd == GET_NUM_BYTES_PER_BYTE_OF_ENTROPY)
+    {
+        return 0;
+    }
+
+    return drbg_sha256_hmac_get_entropy(cmd, out);
+}

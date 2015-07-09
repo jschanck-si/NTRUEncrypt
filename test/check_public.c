@@ -436,6 +436,28 @@ START_TEST(test_api_drbg_sha256_hmac)
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy, NULL);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
+    /* Bad entropy functions */
+    /* Error in init */
+    rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
+            (ENTROPY_FN) drbg_sha256_hmac_get_entropy_err_init, handles+0);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_ENTROPY_FAIL));
+
+    /* Error in get_num */
+    rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
+            (ENTROPY_FN) drbg_sha256_hmac_get_entropy_err_get_num, handles+0);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_ENTROPY_FAIL));
+
+    /* get_num reports that source is perfectly predictable */
+    rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
+            (ENTROPY_FN) drbg_sha256_hmac_get_entropy_err_num_eq_zero,
+            handles+0);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_ENTROPY_FAIL));
+
+    /* Error in get_byte */
+    rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
+            (ENTROPY_FN) drbg_sha256_hmac_get_entropy_err_get_byte, handles+0);
+    ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_ENTROPY_FAIL));
+
     /* Instantiate as many external DRBGs as we are allowed */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
     {
