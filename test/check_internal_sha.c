@@ -502,7 +502,7 @@ START_TEST(test_hash)
     rc = ntru_crypto_hash_block_length(&ctx, &blen);
     ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_ALG));
 
-    /* digest_lengt: Context not provided */
+    /* digest_length: Context not provided */
     rc = ntru_crypto_hash_digest_length(NULL, &dlen);
     ck_assert_uint_eq(rc, HASH_RESULT(NTRU_CRYPTO_HASH_BAD_PARAMETER));
 

@@ -491,7 +491,7 @@ START_TEST(test_api_drbg_sha256_hmac)
             (ENTROPY_FN) drbg_sha256_hmac_get_entropy_err_get_byte, handles+0);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_ENTROPY_FAIL));
 
-    /* Instantiate as many external DRBGs as we are allowed */
+    /* Instantiate as many HMAC DRBGs as we are allowed */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
     {
         rc = ntru_crypto_drbg_instantiate(s_bits, pers_str, pers_str_bytes,
@@ -587,17 +587,17 @@ START_TEST(test_api_drbg_external)
 
     /* External DRBG type */
     /* Bad parameters */
-    rc = ntru_crypto_external_drbg_instantiate(
+    rc = ntru_crypto_drbg_external_instantiate(
             (RANDOM_BYTES_FN) &randombytes, NULL);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
-    rc = ntru_crypto_external_drbg_instantiate(NULL, handles);
+    rc = ntru_crypto_drbg_external_instantiate(NULL, handles);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_PARAMETER));
 
     /* Instantiate as many external DRBGs as we are allowed */
     for(i=0; i<DRBG_MAX_INSTANTIATIONS; i++)
     {
-        rc = ntru_crypto_external_drbg_instantiate(
+        rc = ntru_crypto_drbg_external_instantiate(
                 (RANDOM_BYTES_FN) &randombytes, handles+i);
         ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
     }
@@ -612,7 +612,7 @@ START_TEST(test_api_drbg_external)
     }
 
     /* Instantiate too many DRBGs */
-    rc = ntru_crypto_external_drbg_instantiate(
+    rc = ntru_crypto_drbg_external_instantiate(
             (RANDOM_BYTES_FN) &randombytes, &extra);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_NOT_AVAILABLE));
 
@@ -636,7 +636,7 @@ START_TEST(test_api_drbg_external)
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_BAD_LENGTH));
 
     /* Instantiate too many DRBGs */
-    rc = ntru_crypto_external_drbg_instantiate(
+    rc = ntru_crypto_drbg_external_instantiate(
             (RANDOM_BYTES_FN) &randombytes, &extra);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_NOT_AVAILABLE));
 

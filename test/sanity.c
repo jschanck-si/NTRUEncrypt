@@ -44,7 +44,7 @@ main(int argc, char **argv)
           ntru_encrypt_get_param_set_name(param_set_id));
       fflush (stderr);
 
-      rc = ntru_crypto_external_drbg_instantiate(
+      rc = ntru_crypto_drbg_external_instantiate(
                                         (RANDOM_BYTES_FN) &randombytes, &drbg);
 
       if (rc != DRBG_OK)

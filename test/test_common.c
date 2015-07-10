@@ -6,7 +6,7 @@
 #include "ntru_crypto_drbg.h"
 #include "test_common.h"
 
-uint32_t randombytes(uint8_t *x,uint64_t xlen)
+uint32_t randombytes(uint8_t *x, uint32_t xlen)
 {
   static int fd = -1;
   int i;

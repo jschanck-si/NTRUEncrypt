@@ -3,8 +3,7 @@
 
 /* Common components for all test programs */
 
-#define RAND_LEN (4096)
-uint32_t randombytes(uint8_t *x,uint64_t xlen);
+uint32_t randombytes(uint8_t *x,uint32_t xlen);
 
 /* HMAC SHA256 entropy functions */
 uint8_t

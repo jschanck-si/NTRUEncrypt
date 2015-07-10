@@ -97,9 +97,9 @@ typedef uint8_t (*ENTROPY_FN)(              /* get entropy function */
 
 
 /* Type for external PRNG functions. Must return DRBG_OK on success */
-typedef uint32_t (*RANDOM_BYTES_FN)(                /* random bytes function */
-                    unsigned char *out,             /* output buffer */
-                    unsigned long long num_bytes);  /* number of bytes */
+typedef uint32_t (*RANDOM_BYTES_FN)(        /* random bytes function */
+                    uint8_t *out,           /* output buffer */
+                    uint32_t num_bytes);    /* number of bytes */
 
 
 /***************
@@ -146,7 +146,7 @@ ntru_crypto_drbg_instantiate(
     ENTROPY_FN     entropy_fn,        /*  in - pointer to entropy function */
     DRBG_HANDLE   *handle);           /* out - address for drbg handle */
 
-/* ntru_crypto_external_drbg_instantiate
+/* ntru_crypto_drbg_external_instantiate
  *
  * This routine instruments an external DRBG so that ntru_crypto routines
  * can call it. randombytesfn must be of type
@@ -161,7 +161,7 @@ ntru_crypto_drbg_instantiate(
  */
 
 NTRUCALL
-ntru_crypto_external_drbg_instantiate(
+ntru_crypto_drbg_external_instantiate(
     RANDOM_BYTES_FN  randombytesfn, /*  in - pointer to random bytes function */
     DRBG_HANDLE     *handle);       /* out - address for drbg handle */
 

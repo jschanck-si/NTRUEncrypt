@@ -10,7 +10,7 @@ void
 test_drbg_setup(void)
 {
     uint32_t rc;
-    rc = ntru_crypto_external_drbg_instantiate(
+    rc = ntru_crypto_drbg_external_instantiate(
                                     (RANDOM_BYTES_FN) &randombytes, &drbg);
     ck_assert_uint_eq(rc, DRBG_RESULT(DRBG_OK));
 }
