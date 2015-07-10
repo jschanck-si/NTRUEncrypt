@@ -171,6 +171,9 @@ main(int argc, char **argv)
       free(private_key);
       free(plaintext);
       free(ciphertext);
+
+      fprintf(stderr, "\t pk %d, sk %d, ct %d bytes",
+              public_key_len, private_key_len-public_key_len, ciphertext_len);
       fprintf(stderr, "\n");
     }
 
