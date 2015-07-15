@@ -3,7 +3,7 @@ libntruencrypt.so.0 libntruencrypt0 #MINVER#
  ntru_crypto_drbg_instantiate@Base 1.0.0
  ntru_crypto_drbg_reseed@Base 1.0.0
  ntru_crypto_drbg_uninstantiate@Base 1.0.0
- ntru_crypto_external_drbg_instantiate@Base 1.0.0
+ ntru_crypto_drbg_external_instantiate@Base 1.0.0
  ntru_crypto_ntru_decrypt@Base 1.0.0
  ntru_crypto_ntru_encrypt@Base 1.0.0
  ntru_crypto_ntru_encrypt_keygen@Base 1.0.0
