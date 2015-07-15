@@ -1,0 +1,50 @@
+Source: libntruencrypt0
+Section: libs
+Priority: optional
+Maintainer: John M. Schanck <jschanck@securityinnovation.com>
+Build-Depends: debhelper (>= 9), pkg-config [linux-any], dh-autoreconf
+Build-Conflicts:
+Standards-Version: 3.9.6
+Homepage: http://ntru.com
+Vcs-Git: https://github.com/NTRUOpenSourceProject/NTRUEncrypt.git
+Vcs-Browser: https://github.com/NTRUOpenSourceProject/NTRUEncrypt
+
+Package: libntruencrypt0
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: C implementation of the NTRUEncrypt public key encryption scheme
+ NTRUEncrypt is a public key encryption scheme that is widely believed to be
+ secure against quantum adversaries. Combined with its high performance, this
+ makes it an excellent alternative to ECC or RSA in scenarios that require
+ long-term security.
+ .
+ libntruencrypt provides a complete implementation of NTRUEncrypt as specified
+ in the IEEE P1363.1 standard. The library is primarily intended as a reference
+ implementation - and is not performance tuned - however it is suitable for use
+ in production environments. The source package contains several platform
+ specific routines that can be enabled at compile time for better performance.
+ .
+ This package contains the shared object file for linking against
+ libntruencrypt.
+
+Package: libntruencrypt0-dev
+Section: libdevel
+Architecture: all
+Depends:  ${misc:Depends}, ${shlibs:Depends}
+Provides: libntruencrypt-dev
+Conflicts: libntruencrypt-dev
+Suggests: libntruencrypt0 (= ${binary:Version})
+Description: libntruencrypt development libraries and header files
+ NTRUEncrypt is a public key encryption scheme that is widely believed to be
+ secure against quantum adversaries. Combined with its high performance, this
+ makes it an excellent alternative to ECC or RSA in scenarios that require
+ long-term security.
+ .
+ libntruencrypt provides a complete implementation of NTRUEncrypt as specified
+ in the IEEE P1363.1 standard. The library is primarily intended as a reference
+ implementation - and is not performance tuned - however it is suitable for use
+ in production environments. The source package contains several platform
+ specific routines that can be enabled at compile time for better performance.
+ .
+ This package contains the header and static library files for building software
+ that uses libntruencrypt0.

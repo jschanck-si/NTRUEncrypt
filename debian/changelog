@@ -1,0 +1,5 @@
+libntruencrypt0 (1.0.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- John M. Schanck <jschanck@securityinnovation.com>  Tue, 07 Jul 2015 10:51:10 -0400
