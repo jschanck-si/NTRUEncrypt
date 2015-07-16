@@ -47,7 +47,14 @@ noinst_HEADERS = \
 	test/test_common.h \
 	test/check_common.h
 
-EXTRA_DIST = libntruencrypt.sym
+EXTRA_DIST = \
+	autogen.sh \
+	libntruencrypt.sym \
+	src/ntru_crypto_ntru_mult_indices_32.c \
+	src/ntru_crypto_ntru_mult_indices_64.c\
+	doc \
+	driver_test \
+	vs2012
 
 # libntruencrypt.la
 libntruencrypt_la_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS) -Wno-parentheses
