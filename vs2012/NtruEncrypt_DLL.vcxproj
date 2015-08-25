@@ -171,6 +171,8 @@
     <ClCompile Include="..\src\ntru_crypto_ntru_encrypt_key.c" />
     <ClCompile Include="..\src\ntru_crypto_ntru_encrypt_param_sets.c" />
     <ClCompile Include="..\src\ntru_crypto_ntru_mgf1.c" />
+    <ClCompile Include="..\src\ntru_crypto_ntru_mult_coeffs_simd.c" />
+    <ClCompile Include="..\src\ntru_crypto_ntru_mult_indices_simd.c" />
     <ClCompile Include="..\src\ntru_crypto_ntru_poly.c" />
     <ClCompile Include="..\src\ntru_crypto_sha1.c" />
     <ClCompile Include="..\src\ntru_crypto_sha2.c" />
