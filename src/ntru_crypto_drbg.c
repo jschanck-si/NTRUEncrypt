@@ -62,9 +62,10 @@
  * HMAC_DRBG parameters *
  ************************/
 
-/* Note: nonce size is sec_strength_bits/2 */
+/* Note: Combined entropy input and nonce are a total of 2 * sec_strength_bits
+ * of randomness to provide quantum resistance */
 #define HMAC_DRBG_MAX_MIN_ENTROPY_NONCE_BYTES                                 \
-    (DRBG_MAX_SEC_STRENGTH_BITS + DRBG_MAX_SEC_STRENGTH_BITS/2)/8
+    (2 * DRBG_MAX_SEC_STRENGTH_BITS)/8
 #define HMAC_DRBG_MAX_ENTROPY_NONCE_BYTES                                     \
     HMAC_DRBG_MAX_MIN_ENTROPY_NONCE_BYTES * DRBG_MAX_BYTES_PER_BYTE_OF_ENTROPY
 #define HMAC_DRBG_MAX_REQUESTS            0xffffffff
@@ -335,7 +336,7 @@ sha256_hmac_drbg_instantiate(
         DRBG_RET(DRBG_ENTROPY_FAIL);
     }
     
-    min_bytes_of_entropy = (sec_strength_bits + sec_strength_bits/2) / 8;
+    min_bytes_of_entropy = (2 * sec_strength_bits) / 8;
     entropy_nonce_bytes = min_bytes_of_entropy * num_bytes_per_byte_of_entropy;
     
     for (i = 0; i < entropy_nonce_bytes; i++)
@@ -452,7 +453,9 @@ sha256_hmac_drbg_reseed(
         DRBG_RET(DRBG_ENTROPY_FAIL);
     }
     
-    min_bytes_of_entropy = s->sec_strength / 8;
+    /* note: factor of 2 here is probably unnecessary, but ensures quantum
+     * resistance even if internal state is leaked prior to reseed */
+    min_bytes_of_entropy = (2 * s->sec_strength) / 8;
     entropy_bytes = min_bytes_of_entropy * num_bytes_per_byte_of_entropy;
     
     for (i = 0; i < entropy_bytes; i++)
