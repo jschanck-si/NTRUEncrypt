@@ -54,7 +54,7 @@ START_TEST(test_gen_poly)
         ck_assert(0);
     }
 
-    seed_len = params->sec_strength_len + 8;
+    seed_len = 2 * params->sec_strength_len;
     mgf_buf_len = 4 + params->N + md_len * (1+params->min_IGF_hash_calls);
 
     if(params->is_product_form)

@@ -1025,7 +1025,7 @@ ntru_crypto_ntru_encrypt_keygen(
         NTRU_RET(NTRU_UNSUPPORTED_PARAM_SET);
     }
 
-    seed_len = params->sec_strength_len + 8;
+    seed_len = 2 * params->sec_strength_len;
 
     /* set constants */
 
