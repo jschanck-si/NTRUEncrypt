@@ -209,17 +209,22 @@ ntru_crypto_ntru_encrypt(
     b_buf = (uint8_t *)(r_buf + (dr << 1));
     tmp_buf = (uint8_t *)scratch_buf;
 
-    /* set hash algorithm based on security strength */
+    /* set hash algorithm and seed length based on security strength */
 
-    if (params->sec_strength_len <= 20)
+    if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA1)
     {
         hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA1;
-        md_len = 20;
+        md_len = SHA_1_MD_LEN;
+    }
+    else if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA256)
+    {
+        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
+        md_len = SHA_256_MD_LEN;
     }
     else
     {
-        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
-        md_len = 32;
+        FREE(scratch_buf);
+        NTRU_RET(NTRU_UNSUPPORTED_PARAM_SET);
     }
 
     /* set constants */
@@ -563,17 +568,22 @@ ntru_crypto_ntru_decrypt(
     Mtrin_buf = (uint8_t *)ringel_buf1;
     M_buf = Mtrin_buf + params->N;
 
-    /* set hash algorithm based on security strength */
+    /* set hash algorithm and seed length based on security strength */
 
-    if (params->sec_strength_len <= 20)
+    if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA1)
     {
         hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA1;
-        md_len = 20;
+        md_len = SHA_1_MD_LEN;
+    }
+    else if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA256)
+    {
+        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
+        md_len = SHA_256_MD_LEN;
     }
     else
     {
-        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
-        md_len = 32;
+        FREE(scratch_buf);
+        NTRU_RET(NTRU_UNSUPPORTED_PARAM_SET);
     }
 
     /* set constants */
@@ -999,15 +1009,20 @@ ntru_crypto_ntru_encrypt_keygen(
 
     /* set hash algorithm and seed length based on security strength */
 
-    if (params->sec_strength_len <= 20)
+    if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA1)
     {
         hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA1;
-        md_len = 20;
+        md_len = SHA_1_MD_LEN;
+    }
+    else if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA256)
+    {
+        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
+        md_len = SHA_256_MD_LEN;
     }
     else
     {
-        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
-        md_len = 32;
+        FREE(scratch_buf);
+        NTRU_RET(NTRU_UNSUPPORTED_PARAM_SET);
     }
 
     seed_len = params->sec_strength_len + 8;

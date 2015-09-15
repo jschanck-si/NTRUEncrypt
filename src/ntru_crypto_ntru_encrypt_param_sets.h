@@ -73,6 +73,8 @@ typedef struct _NTRU_ENCRYPT_PARAM_SET {
                                                      IGF-2 */
     uint8_t                   min_MGF_hash_calls; /* min. no. of hash calls for
                                                      MGF-TP-1 */
+    NTRU_CRYPTO_HASH_ALGID    hash_algid;         /* hash function for MGF-TP-1,
+                                                     HMAC-DRBG, etc. */
 } NTRU_ENCRYPT_PARAM_SET;
 
 
