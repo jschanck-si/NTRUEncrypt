@@ -2,6 +2,7 @@
 
 #include "ntru_crypto.h"
 #include "ntru_crypto_ntru_encrypt_param_sets.h"
+#include "ntru_crypto_ntru_mgf1.h"
 #include "ntru_crypto_ntru_poly.h"
 
 #include "test_common.h"
@@ -38,15 +39,19 @@ START_TEST(test_gen_poly)
     params = ntru_encrypt_get_params_with_id(param_set_id);
     ck_assert_ptr_ne(params, NULL);
 
-    if (params->sec_strength_len <= 20)
+    if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA1)
     {
         hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA1;
-        md_len = 20;
+        md_len = SHA_1_MD_LEN;
+    }
+    else if (params->hash_algid == NTRU_CRYPTO_HASH_ALGID_SHA256)
+    {
+        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
+        md_len = SHA_256_MD_LEN;
     }
     else
     {
-        hash_algid = NTRU_CRYPTO_HASH_ALGID_SHA256;
-        md_len = 32;
+        ck_assert(0);
     }
 
     seed_len = params->sec_strength_len + 8;
