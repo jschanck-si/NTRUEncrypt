@@ -24,6 +24,12 @@ Providing a source of randomness
     ntru_crypto_drbg_uninstantiate(&handle);
 
 
+  Note: If you use NTRU for quantum resistance and use an external DRBG, make sure
+  it is instantiated with sufficient entropy! For security of k bits you should
+  instantiate your DRBG with 2*k bits of entropy from the external source. The
+  internal DRBG does this for you.
+
+
 HMAC-DRBG
 =========
 
