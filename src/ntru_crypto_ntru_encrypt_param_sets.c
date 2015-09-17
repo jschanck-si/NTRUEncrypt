@@ -438,6 +438,55 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
                                         HMAC-DRBG, etc. */
     },
 
+    {
+        NTRU_EES443EP1,              /* parameter-set id */
+        "ees443ep1",                 /* human readable param set name */
+        {0x00, 0x03, 0x11},          /* OID */
+        0x32,                        /* DER id */
+        9,                           /* no. of bits in N (i.e., in an index) */
+        443,                         /* N */
+        16,                          /* security strength in octets */
+        32,                          /* no. of octets for random string b */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        9 + (8 << 8) + (5 << 16),    /* df, dr */
+        148,                         /* dg */
+        49,                          /* maxMsgLenBytes */
+        115,                         /* dm0 */
+        443,                         /* 2^c - (2^c mod N) */
+        9,                           /* c */
+        1,                           /* lLen */
+        8,                           /* min. no. of hash calls for IGF-2 */
+        5,                           /* min. no. of hash calls for MGF-TP-1 */
+        NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
+                                        HMAC-DRBG, etc. */
+    },
+
+    {
+        NTRU_EES587EP1,              /* parameter-set id */
+        "ees587ep1",                 /* human readable param set name */
+        {0x00, 0x05, 0x11},          /* OID */
+        0x33,                        /* DER id */
+        10,                          /* no. of bits in N (i.e., in an index) */
+        587,                         /* N */
+        24,                          /* security strength in octets */
+        32,                          /* no. of octets for random string b  */
+        2048,                        /* q */
+        11,                          /* no. of bits in q (i.e., in a coeff) */
+        TRUE,                        /* product form */
+        10 + (10 << 8) + (8 << 16),  /* df, dr */
+        196,                         /* dg */
+        76,                          /* maxMsgLenBytes */
+        157,                         /* dm0 */
+        1761,                        /* 2^c - (2^c mod N) */
+        11,                          /* c */
+        1,                           /* lLen */
+        13,                          /* min. no. of hash calls for IGF-2 */
+        7,                           /* min. no. of hash calls for MGF-TP-1 */
+        NTRU_CRYPTO_HASH_ALGID_SHA256,  /* hash function for MGF-TP-1,
+                                           HMAC-DRBG, etc. */
+    },
 };
 
 static size_t numParamSets =
