@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([libntruencrypt],[1.0.0])
+AC_INIT([libntruencrypt],[1.1.0])
 AC_CONFIG_SRCDIR([src/ntru_crypto_drbg.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([config])
@@ -37,7 +37,7 @@ LT_INIT
 
 # Using libtool library versioning, current:revision:age
 # http://gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-LIBNTRUENCRYPT_SO_VERSION=0:0:0
+LIBNTRUENCRYPT_SO_VERSION=1:0:1
 AC_SUBST([LIBNTRUENCRYPT_SO_VERSION])
 
 dnl Suggest -O3 without debugging symbols if there are no user-specified CFLAGS
