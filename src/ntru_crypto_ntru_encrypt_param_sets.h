@@ -41,7 +41,7 @@
 
 typedef struct _NTRU_ENCRYPT_PARAM_SET {
     NTRU_ENCRYPT_PARAM_SET_ID id;                 /* parameter-set ID */
-    const char*               name;                /* human readable param set name */
+    const char*               name;               /* human readable param set name */
     uint8_t const             OID[3];             /* pointer to OID */
     uint8_t                   der_id;             /* parameter-set DER id */
     uint8_t                   N_bits;             /* no. of bits in N (i.e. in
@@ -49,6 +49,8 @@ typedef struct _NTRU_ENCRYPT_PARAM_SET {
     uint16_t                  N;                  /* ring dimension */
     uint16_t                  sec_strength_len;   /* no. of octets of
                                                      security strength */
+    uint16_t                  b_len;              /* no. of octets for random
+                                                     string b */
     uint16_t                  q;                  /* big modulus */
     uint8_t                   q_bits;             /* no. of bits in q (i.e. in
                                                      a coefficient */

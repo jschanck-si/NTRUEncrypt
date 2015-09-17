@@ -196,7 +196,7 @@ ntru_crypto_ntru_encrypt(
                       (pad_deg << 1) +      /* 2N-byte buffer for ring elements
                                                 and overflow from temp buffer */
                       (dr << 2) +           /* buffer for r indices */
-                      params->sec_strength_len;
+                      params->b_len;
                                             /* buffer for b */
     scratch_buf = MALLOC(scratch_buf_len);
     if (!scratch_buf)
@@ -239,7 +239,7 @@ ntru_crypto_ntru_encrypt(
         /* get b */
         result = ntru_crypto_drbg_generate(drbg_handle,
                                            params->sec_strength_len << 3,
-                                           params->sec_strength_len, b_buf);
+                                           params->b_len, b_buf);
 
         if (result == NTRU_OK)
         {
@@ -249,8 +249,8 @@ ntru_crypto_ntru_encrypt(
             ptr += 3;
             memcpy(ptr, pt, pt_len);
             ptr += pt_len;
-            memcpy(ptr, b_buf, params->sec_strength_len);
-            ptr += params->sec_strength_len;
+            memcpy(ptr, b_buf, params->b_len);
+            ptr += params->b_len;
             memcpy(ptr, pubkey_packed, params->sec_strength_len);
             ptr += params->sec_strength_len;
 
@@ -308,15 +308,15 @@ ntru_crypto_ntru_encrypt(
         {
             uint8_t  *Mtrin_buf = tmp_buf + params->N;
             uint8_t  *M_buf = Mtrin_buf + params->N -
-                              (params->sec_strength_len + params->m_len_len +
+                              (params->b_len + params->m_len_len +
                                params->m_len_max + 2);
             uint16_t  i;
 
             /* form the padded message M */
 
             ptr = M_buf;
-            memcpy(ptr, b_buf, params->sec_strength_len);
-            ptr += params->sec_strength_len;
+            memcpy(ptr, b_buf, params->b_len);
+            ptr += params->b_len;
             if (params->m_len_len == 2)
                 *ptr++ = (uint8_t)((pt_len >> 8) & 0xff);
             *ptr++ = (uint8_t)(pt_len & 0xff);
@@ -714,7 +714,7 @@ ntru_crypto_ntru_decrypt(
 
         /* validate the padded message cM and copy cm to m_buf */
 
-        ptr = M_buf + params->sec_strength_len;
+        ptr = M_buf + params->b_len;
 
         if (params->m_len_len == 2)
         {
@@ -748,8 +748,8 @@ ntru_crypto_ntru_decrypt(
         ptr += 3;
         memcpy(ptr, m_buf, cm_len);
         ptr += cm_len;
-        memcpy(ptr, M_buf, params->sec_strength_len);
-        ptr += params->sec_strength_len;
+        memcpy(ptr, M_buf, params->b_len);
+        ptr += params->b_len;
         memcpy(ptr, pubkey_packed, params->sec_strength_len);
         ptr += params->sec_strength_len;
 

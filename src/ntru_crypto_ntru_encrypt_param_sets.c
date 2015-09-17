@@ -46,6 +46,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         9,                           /* no. of bits in N (i.e., in an index) */
         401,                         /* N */
         14,                          /* security strength in octets */
+        14,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -70,6 +71,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         9,                           /* no. of bits in N (i.e., in an index) */
         449,                         /* N */
         16,                          /* security strength in octets */
+        16,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -94,6 +96,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         677,                         /* N */
         24,                          /* security strength in octets */
+        24,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -118,6 +121,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         11,                          /* no. of bits in N (i.e., in an index) */
         1087,                        /* N */
         32,                          /* security strength in octets */
+        32,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -142,6 +146,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         541,                         /* N */
         14,                          /* security strength in octets */
+        14,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -166,6 +171,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         613,                         /* N */
         16,                          /* securuity strength in octets */
+        16,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -190,6 +196,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         887,                         /* N */
         24,                          /* security strength in octets */
+        24,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -214,6 +221,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         11,                          /* no. of bits in N (i.e., in an index) */
         1171,                        /* N */
         32,                          /* security strength in octets */
+        32,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -238,6 +246,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         659,                         /* N */
         14,                          /* security strength in octets */
+        14,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -262,6 +271,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         761,                         /* N */
         16,                          /* security strength in octets */
+        16,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -286,6 +296,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         11,                          /* no. of bits in N (i.e., in an index) */
         1087,                        /* N */
         24,                          /* security strength in octets */
+        24,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -310,6 +321,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         11,                          /* no. of bits in N (i.e., in an index) */
         1499,                        /* N */
         32,                          /* security strength in octets */
+        32,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         FALSE,                       /* product form */
@@ -334,6 +346,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         9,                           /* no. of bits in N (i.e., in an index) */
         401,                         /* N */
         14,                          /* security strength in octets */
+        14,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         TRUE,                        /* product form */
@@ -358,6 +371,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         9,                           /* no. of bits in N (i.e., in an index) */
         439,                         /* N */
         16,                          /* security strength in octets */
+        16,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         TRUE,                        /* product form */
@@ -382,6 +396,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         593,                         /* N */
         24,                          /* security strength in octets */
+        24,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         TRUE,                        /* product form */
@@ -406,6 +421,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         10,                          /* no. of bits in N (i.e., in an index) */
         743,                         /* N */
         32,                          /* security strength in octets */
+        32,                          /* no. of octets for random string b */
         2048,                        /* q */
         11,                          /* no. of bits in q (i.e., in a coeff) */
         TRUE,                        /* product form */
