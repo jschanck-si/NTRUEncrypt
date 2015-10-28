@@ -57,8 +57,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         2005,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
-        32,                          /* min. no. of hash calls for IGF-2 */
-        9,                           /* min. no. of hash calls for MGF-TP-1 */
+        41,                          /* min. no. of hash calls for IGF-2 */
+        7,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -82,8 +82,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         449,                         /* 2^c - (2^c mod N) */
         9,                           /* c */
         1,                           /* lLen */
-        31,                          /* min. no. of hash calls for IGF-2 */
-        9,                           /* min. no. of hash calls for MGF-TP-1 */
+        47,                          /* min. no. of hash calls for IGF-2 */
+        8,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -107,8 +107,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         2031,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
-        27,                          /* min. no. of hash calls for IGF-2 */
-        9,                           /* min. no. of hash calls for MGF-TP-1 */
+        32,                          /* min. no. of hash calls for IGF-2 */
+        8,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -132,8 +132,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         7609,                        /* 2^c - (2^c mod N) */
         13,                          /* c */
         1,                           /* lLen */
-        25,                          /* min. no. of hash calls for IGF-2 */
-        14,                          /* min. no. of hash calls for MGF-TP-1 */
+        27,                          /* min. no. of hash calls for IGF-2 */
+        11,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -157,8 +157,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         3787,                        /* 2^c - (2^c mod N) */
         12,                          /* c */
         1,                           /* lLen */
-        15,                          /* min. no. of hash calls for IGF-2 */
-        11,                          /* min. no. of hash calls for MGF-TP-1 */
+        16,                          /* min. no. of hash calls for IGF-2 */
+        9,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -182,8 +182,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         1839,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
-        16,                          /* min. no. of hash calls for IGF-2 */
-        13,                          /* min. no. of hash calls for MGF-TP-1 */
+        18,                          /* min. no. of hash calls for IGF-2 */
+        10,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -207,8 +207,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         887,                         /* 2^c - (2^c mod N) */
         10,                          /* c */
         1,                           /* lLen */
-        13,                          /* min. no. of hash calls for IGF-2 */
-        12,                          /* min. no. of hash calls for MGF-TP-1 */
+        16,                          /* min. no. of hash calls for IGF-2 */
+        9,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -232,8 +232,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         3513,                        /* 2^c - (2^c mod N) */
         12,                          /* c */
         1,                           /* lLen */
-        20,                          /* min. no. of hash calls for IGF-2 */
-        15,                          /* min. no. of hash calls for MGF-TP-1 */
+        25,                          /* min. no. of hash calls for IGF-2 */
+        12,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -258,7 +258,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         11,                          /* c */
         1,                           /* lLen */
         11,                          /* min. no. of hash calls for IGF-2 */
-        14,                          /* min. no. of hash calls for MGF-TP-1 */
+        10,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -282,8 +282,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         3805,                        /* 2^c - (2^c mod N) */
         12,                          /* c */
         1,                           /* lLen */
-        13,                          /* min. no. of hash calls for IGF-2 */
-        16,                          /* min. no. of hash calls for MGF-TP-1 */
+        14,                          /* min. no. of hash calls for IGF-2 */
+        12,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -307,8 +307,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         7609,                        /* 2^c - (2^c mod N) */
         13,                          /* c */
         1,                           /* lLen */
-        13,                          /* min. no. of hash calls for IGF-2 */
-        14,                          /* min. no. of hash calls for MGF-TP-1 */
+        14,                          /* min. no. of hash calls for IGF-2 */
+        11,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -332,8 +332,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         7495,                        /* 2^c - (2^c mod N) */
         13,                          /* c */
         1,                           /* lLen */
-        17,                          /* min. no. of hash calls for IGF-2 */
-        19,                          /* min. no. of hash calls for MGF-TP-1 */
+        18,                          /* min. no. of hash calls for IGF-2 */
+        14,                          /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -357,8 +357,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         2005,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
-        10,                          /* min. no. of hash calls for IGF-2 */
-        6,                           /* min. no. of hash calls for MGF-TP-1 */
+        7,                           /* min. no. of hash calls for IGF-2 */
+        7,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -382,8 +382,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         439,                         /* 2^c - (2^c mod N) */
         9,                           /* c */
         1,                           /* lLen */
-        15,                          /* min. no. of hash calls for IGF-2 */
-        6,                           /* min. no. of hash calls for MGF-TP-1 */
+        8,                           /* min. no. of hash calls for IGF-2 */
+        8,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA1, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -407,8 +407,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         1779,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
-        12,                          /* min. no. of hash calls for IGF-2 */
-        5,                           /* min. no. of hash calls for MGF-TP-1 */
+        9,                           /* min. no. of hash calls for IGF-2 */
+        7,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -432,8 +432,8 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         8173,                        /* 2^c - (2^c mod N) */
         13,                          /* c */
         1,                           /* lLen */
-        12,                          /* min. no. of hash calls for IGF-2 */
-        7,                           /* min. no. of hash calls for MGF-TP-1 */
+        9,                           /* min. no. of hash calls for IGF-2 */
+        9,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
     },
@@ -457,7 +457,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         443,                         /* 2^c - (2^c mod N) */
         9,                           /* c */
         1,                           /* lLen */
-        8,                           /* min. no. of hash calls for IGF-2 */
+        5,                           /* min. no. of hash calls for IGF-2 */
         5,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256, /* hash function for MGF-TP-1,
                                         HMAC-DRBG, etc. */
@@ -482,7 +482,7 @@ static NTRU_ENCRYPT_PARAM_SET ntruParamSets[] = {
         1761,                        /* 2^c - (2^c mod N) */
         11,                          /* c */
         1,                           /* lLen */
-        13,                          /* min. no. of hash calls for IGF-2 */
+        7,                          /* min. no. of hash calls for IGF-2 */
         7,                           /* min. no. of hash calls for MGF-TP-1 */
         NTRU_CRYPTO_HASH_ALGID_SHA256,  /* hash function for MGF-TP-1,
                                            HMAC-DRBG, etc. */
