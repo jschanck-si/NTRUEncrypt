@@ -294,11 +294,13 @@ ntru_ring_mult_product_indices(
 {
     uint16_t scratch_polys;
     uint16_t poly_coeffs;
-    ntru_ring_mult_indices_memreq(N, &scratch_polys, &poly_coeffs);
-
-    uint16_t *t2 = t + scratch_polys*poly_coeffs;
-    uint16_t  mod_q_mask = q - 1;
+    uint16_t *t2;
+    uint16_t  mod_q_mask;
     uint16_t  i;
+
+    ntru_ring_mult_indices_memreq(N, &scratch_polys, &poly_coeffs);
+    t2 = t + scratch_polys*poly_coeffs;
+    mod_q_mask = q - 1;
 
     /* t2 = a * b1 */
 

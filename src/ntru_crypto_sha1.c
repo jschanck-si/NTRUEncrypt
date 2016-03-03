@@ -70,8 +70,8 @@
 
 static void
 sha1_blk(
-    uint32_t const *data,       //     in - ptr to 16 32-bit word input block
-    uint32_t       *state)      // in/out - ptr to 5 32-bit word chaining state
+    uint32_t const *data,       /*     in - ptr to 16 32-bit word input block */
+    uint32_t       *state)      /* in/out - ptr to 5 32-bit word chaining state */
 {
     uint32_t A, B, C, D, E;
     uint32_t w[16];
@@ -310,7 +310,7 @@ ntru_crypto_sha1(
 
         if (!init)
         {
-            c->state[0] = H0_INIT;              // standard initialization
+            c->state[0] = H0_INIT;              /* standard initialization */
             c->state[1] = H1_INIT;
             c->state[2] = H2_INIT;
             c->state[3] = H3_INIT;
@@ -555,9 +555,9 @@ ntru_crypto_sha1_final(
 
 uint32_t
 ntru_crypto_sha1_digest(
-    uint8_t const  *data,           //  in - pointer to input data
-    uint32_t        data_len,       //  in - number of bytes of input data
-    uint8_t        *md)             // out - address for message digest
+    uint8_t const  *data,           /*  in - pointer to input data */
+    uint32_t        data_len,       /*  in - number of bytes of input data */
+    uint8_t        *md)             /* out - address for message digest */
 {
     NTRU_CRYPTO_SHA1_CTX c;
 

@@ -54,9 +54,9 @@ ntru_ring_mult_indices(
     uint16_t       *t,          /*  in - temp buffer of N elements */
     uint16_t       *c)          /* out - address for polynomial c */
 {
-  __m128i *T = (__m128i*)t;
-  memset(T,0,2*PAD(N)*sizeof(uint16_t));
+  __m128i *T;
   __m128i *Tp;
+  __m128i *Ti;
 
   uint16_t i;
   uint16_t j;
@@ -66,6 +66,17 @@ ntru_ring_mult_indices(
 
   __m128i a0s[8];
   __m128i aNs[8];
+
+  __m128i neg;
+  __m128i x0;
+  __m128i x1;
+  __m128i x2;
+  __m128i x3;
+  __m128i x4;
+
+  T = (__m128i*)t;
+  memset(T,0,2*PAD(N)*sizeof(uint16_t));
+
   a0s[0] = _mm_lddqu_si128((__m128i *) a);
   aNs[0] = _mm_lddqu_si128((__m128i *) (a+N-8));
   for(i=1; i<8; i++)
@@ -80,12 +91,12 @@ ntru_ring_mult_indices(
     m = k&7;
     k/=8;
     Tp = T+k;
-    __m128i x2 = _mm_add_epi16(*Tp, a0s[m]);
+    x2 = _mm_add_epi16(*Tp, a0s[m]);
     _mm_store_si128(Tp, x2);
     Tp++;
     for(j=8-m; j<=(N-8); j+=8)
     {
-      __m128i x3 = _mm_lddqu_si128((__m128i *) &a[j]);
+      x3 = _mm_lddqu_si128((__m128i *) &a[j]);
       x2 = _mm_add_epi16(*Tp, x3);
       _mm_store_si128(Tp, x2);
       Tp++;
@@ -95,12 +106,12 @@ ntru_ring_mult_indices(
     _mm_store_si128(Tp, x2);
   }
 
-  __m128i neg = _mm_setzero_si128();
+  neg = _mm_setzero_si128();
   neg = _mm_cmpeq_epi8(neg,neg);
   Tp = T;
   for(i=0; i<(2*PAD(N))/8; i++)
   {
-    __m128i x1 = _mm_sign_epi16(*Tp,neg);
+    x1 = _mm_sign_epi16(*Tp,neg);
     _mm_store_si128(Tp, x1);
     Tp++;
   }
@@ -111,12 +122,12 @@ ntru_ring_mult_indices(
     m = k&7;
     k/=8;
     Tp = T+k;
-    __m128i x2 = _mm_add_epi16(*Tp, a0s[m]);
+    x2 = _mm_add_epi16(*Tp, a0s[m]);
     _mm_store_si128(Tp, x2);
     Tp++;
     for(j=8-m; j<=(N-8); j+=8)
     {
-      __m128i x3 = _mm_lddqu_si128((__m128i *) &a[j]);
+      x3 = _mm_lddqu_si128((__m128i *) &a[j]);
       x2 = _mm_add_epi16(*Tp, x3);
       _mm_store_si128(Tp, x2);
       Tp++;
@@ -126,15 +137,15 @@ ntru_ring_mult_indices(
     _mm_store_si128(Tp, x2);
   }
 
-  __m128i *Ti = T;
+  Ti = T;
   Tp = (__m128i *) (((uint16_t *) T)+N);
-  __m128i x0 = _mm_set1_epi16(mod_q_mask);
+  x0 = _mm_set1_epi16(mod_q_mask);
   for(j=0; j<N; j+=8)
   {
-    __m128i x1 = _mm_load_si128(Ti);
-    __m128i x2 = _mm_lddqu_si128(Tp);
-    __m128i x3 = _mm_add_epi16(x1, x2);
-    __m128i x4 = _mm_and_si128(x3, x0);
+    x1 = _mm_load_si128(Ti);
+    x2 = _mm_lddqu_si128(Tp);
+    x3 = _mm_add_epi16(x1, x2);
+    x4 = _mm_and_si128(x3, x0);
     _mm_store_si128(Ti, x4);
     Ti++;
     Tp++;

@@ -432,7 +432,7 @@ sha256_hmac_drbg_reseed(
     uint32_t entropy_bytes;
     uint32_t min_bytes_of_entropy;
     uint8_t  num_bytes_per_byte_of_entropy;
-    uint8_t  key[32];   // array of md_len size for sha256_hmac_drbg_update()
+    uint8_t  key[32];  /* array of md_len size for sha256_hmac_drbg_update() */
     uint32_t result;
     uint32_t i;
 
@@ -498,7 +498,7 @@ sha256_hmac_drbg_generate(
     uint32_t                num_bytes,
     uint8_t                *out)
 {
-    uint8_t  key[32];   // array of md_len size for sha256_hmac_drbg_update()
+    uint8_t  key[32];   /* array of md_len size for sha256_hmac_drbg_update() */
     uint32_t result;
 
     /* check if number of bytes requested exceeds the maximum allowed */

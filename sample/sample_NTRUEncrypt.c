@@ -129,6 +129,8 @@ main(void)
     uint16_t public_key_len;          /* no. of octets in public key */
     uint8_t private_key[607];         /* sized for EES401EP2 */
     uint16_t private_key_len;         /* no. of octets in private key */
+    uint16_t expected_private_key_len;
+    uint16_t expected_encoded_public_key_len;
     uint8_t encoded_public_key[593];  /* sized for EES401EP2 */
     uint16_t encoded_public_key_len;  /* no. of octets in encoded public key */
     uint8_t ciphertext[552];          /* sized fof EES401EP2 */
@@ -179,7 +181,7 @@ main(void)
      * We've already done this by getting the sizes from the previous call
      * to ntru_crypto_ntru_encrypt_keygen() above.
      */
-    uint16_t expected_private_key_len=private_key_len;
+    expected_private_key_len=private_key_len;
     rc = ntru_crypto_ntru_encrypt_keygen(drbg, NTRU_EES401EP2, &public_key_len,
                                          public_key, &private_key_len,
                                          private_key);
@@ -240,7 +242,7 @@ main(void)
      * hold the encoded public key, but in this example we already have it
      * as a local variable.
      */
-    uint16_t expected_encoded_public_key_len=encoded_public_key_len;
+    expected_encoded_public_key_len=encoded_public_key_len;
 
     /* DER-encode the public key for inclusion in a certificate.
      * This creates a SubjectPublicKeyInfo field from a public key.

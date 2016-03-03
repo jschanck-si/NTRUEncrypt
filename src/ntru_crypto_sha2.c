@@ -75,8 +75,8 @@
 
 static void
 sha2_blk(
-    uint32_t const *data,       //     in - ptr to 16 32-bit word input block
-    uint32_t       *state)      // in/out - ptr to 8 32-bit word chaining state
+    uint32_t const *data,     /*     in - ptr to 16 32-bit word input block */
+    uint32_t       *state)    /* in/out - ptr to 8 32-bit word chaining state */
 {
     uint32_t A, B, C, D, E, F, G, H;
     uint32_t w[16];
@@ -312,18 +312,18 @@ sha2_blk(
 
 uint32_t
 ntru_crypto_sha2(
-    NTRU_CRYPTO_HASH_ALGID  algid,  //     in - hash algorithm ID
-    NTRU_CRYPTO_SHA2_CTX   *c,      // in/out - pointer to SHA-2 context
-    uint32_t const         *init,   //     in - pointer to alternate
-                                    //          initialization - may be NULL
-    uint8_t const          *in,     //     in - pointer to input data -
-                                    //          may be NULL if in_len == 0
-    uint32_t                in_len, //     in - number of input data bytes
-    uint32_t                flags,  //     in - INIT, FINISH flags
-    uint8_t                *md)     //    out - address for message digest -
-                                    //          may be NULL if not FINISH
+    NTRU_CRYPTO_HASH_ALGID  algid,  /*     in - hash algorithm ID */
+    NTRU_CRYPTO_SHA2_CTX   *c,      /* in/out - pointer to SHA-2 context */
+    uint32_t const         *init,   /*     in - pointer to alternate */
+                                    /*          initialization - may be NULL */
+    uint8_t const          *in,     /*     in - pointer to input data - */
+                                    /*          may be NULL if in_len == 0 */
+    uint32_t                in_len, /*     in - number of input data bytes */
+    uint32_t                flags,  /*     in - INIT, FINISH flags */
+    uint8_t                *md)     /*    out - address for message digest -
+                                     *          may be NULL if not FINISH */
 {
-    uint32_t    in_blk[16];         // input block
+    uint32_t    in_blk[16];         /* input block */
     uint32_t    space;
     uint8_t    *d = NULL;
 

@@ -50,9 +50,9 @@
 
 extern void
 ntru_crypto_msbyte_2_uint32(
-    uint32_t       *words,      // out - pointer to the output uint32_t array
-    uint8_t const  *bytes,      //  in - pointer to the input byte array
-    uint32_t        n);         //  in - number of words in the output array
+    uint32_t       *words,      /* out - pointer to the output uint32_t array */
+    uint8_t const  *bytes,      /*  in - pointer to the input byte array */
+    uint32_t        n);         /*  in - number of words in the output array */
 
 
 /* ntru_crypto_uint32_2_msbyte()
@@ -67,9 +67,9 @@ ntru_crypto_msbyte_2_uint32(
 
 extern void
 ntru_crypto_uint32_2_msbyte(
-    uint8_t        *bytes,      // out - pointer to the output byte array
-    uint32_t const *words,      //  in - pointer to the input uint32_t array
-    uint32_t        n);         //  in - number of words in the input array
+    uint8_t        *bytes,      /* out - pointer to the output byte array */
+    uint32_t const *words,      /*  in - pointer to the input uint32_t array */
+    uint32_t        n);         /*  in - number of words in the input array */
 
 
 #endif /* NTRU_CRYPTO_MSBYTE_UINT32_H */

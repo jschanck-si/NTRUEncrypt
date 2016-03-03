@@ -17,7 +17,7 @@
 int
 main(int argc, char **argv)
 {
-    int i;
+    uint16_t i;
     uint8_t *public_key;
     uint8_t *private_key;
     uint8_t *message;

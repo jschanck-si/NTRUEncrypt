@@ -61,10 +61,10 @@
 /* SHA-1 context structure */
 
 typedef struct {
-    uint32_t    state[5];           // chaining state
-    uint32_t    num_bits_hashed[2]; // number of bits hashed
-    uint8_t     unhashed[64];       // input data not yet hashed
-    uint32_t    unhashed_len;       // number of bytes of unhashed input data
+    uint32_t    state[5];           /* chaining state */
+    uint32_t    num_bits_hashed[2]; /* number of bits hashed */
+    uint8_t     unhashed[64];       /* input data not yet hashed */
+    uint32_t    unhashed_len;       /* number of bytes of unhashed input data */
 } NTRU_CRYPTO_SHA1_CTX;
 
 

@@ -11,25 +11,32 @@ grade_school_mul(
     uint16_t const  *b,     /*  in - polynomial */
     uint16_t const   N)     /*  in - number of coefficients in a and b */
 {
-  __m128i *T = (__m128i *)res1;
-  memset(T, 0, 2*PAD(N)*sizeof(uint16_t));
+  __m128i *T;
 
   uint16_t i;
   uint16_t j;
   uint16_t m;
 
+  __m128i ai8;
+  __m128i ai8h;
+  __m128i ai8l;
   __m128i abroad[8];
 
   __m128i cur;
   __m128i next;
+
+  __m128i x1;
   __m128i x2;
+
+  T = (__m128i *)res1;
+  memset(T, 0, 2*PAD(N)*sizeof(uint16_t));
   for(i=0; i<PAD(N)/8; i++)
   {
     /* Broadcast each of the uint16's at a[8*i] into 8
        copies of that value in a separate __m128i. */
-    __m128i ai8 = _mm_load_si128((__m128i *) a+i);
-    __m128i ai8h = _mm_unpackhi_epi16(ai8,ai8);
-    __m128i ai8l = _mm_unpacklo_epi16(ai8,ai8);
+    ai8 = _mm_load_si128((__m128i *) a+i);
+    ai8h = _mm_unpackhi_epi16(ai8,ai8);
+    ai8l = _mm_unpacklo_epi16(ai8,ai8);
     abroad[0] = _mm_shuffle_epi32(ai8h, 0xFFFF);
     abroad[1] = _mm_shuffle_epi32(ai8h, 0xAAAA);
     abroad[2] = _mm_shuffle_epi32(ai8h, 0x5555);
@@ -55,7 +62,7 @@ grade_school_mul(
         cur = _mm_alignr_epi8(next, cur, 2);
         next = _mm_srli_si128(next, 2);
 
-        __m128i x1 = _mm_mullo_epi16(cur, abroad[m]);
+        x1 = _mm_mullo_epi16(cur, abroad[m]);
         x2 = _mm_add_epi16(x2, x1);
       }
       x2 = _mm_add_epi16(x2, _mm_load_si128(T+i+j));
@@ -68,7 +75,7 @@ grade_school_mul(
     {
       cur = _mm_srli_si128(cur, 2);
 
-      __m128i x1 = _mm_mullo_epi16(cur, abroad[m]);
+      x1 = _mm_mullo_epi16(cur, abroad[m]);
       x2 = _mm_add_epi16(x2, x1);
     }
     _mm_store_si128(T+i+j, x2);

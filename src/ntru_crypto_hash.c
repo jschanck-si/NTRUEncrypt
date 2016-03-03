@@ -89,7 +89,7 @@ static int const numalgs = (sizeof(algs_params)/sizeof(algs_params[0]));
  */
 static NTRU_CRYPTO_HASH_ALG_PARAMS const *
 get_alg_params(
-    NTRU_CRYPTO_HASH_ALGID algid)        //  in - the hash algorithm to find
+    NTRU_CRYPTO_HASH_ALGID algid)        /*  in - the hash algorithm to find */
 {
     int i;
 
@@ -117,8 +117,8 @@ get_alg_params(
 
 uint32_t
 ntru_crypto_hash_set_alg(
-    NTRU_CRYPTO_HASH_ALGID  algid,  //      in - hash algoirithm to be used
-    NTRU_CRYPTO_HASH_CTX   *c)      //  in/out - pointer to the hash context
+    NTRU_CRYPTO_HASH_ALGID  algid,  /*      in - hash algorithm to be used */
+    NTRU_CRYPTO_HASH_CTX   *c)      /*  in/out - pointer to the hash context */
 {
     if (!c)
     {
@@ -151,8 +151,8 @@ ntru_crypto_hash_set_alg(
 
 uint32_t
 ntru_crypto_hash_block_length(
-   NTRU_CRYPTO_HASH_CTX *c,         //  in - pointer to the hash context
-   uint16_t             *blk_len)   // out - address for block length in bytes
+   NTRU_CRYPTO_HASH_CTX *c,         /*  in - pointer to the hash context */
+   uint16_t             *blk_len)   /* out - address for block length in bytes */
 {
     if (!c || !blk_len)
     {
@@ -184,8 +184,8 @@ ntru_crypto_hash_block_length(
 
 uint32_t
 ntru_crypto_hash_digest_length(
-   NTRU_CRYPTO_HASH_CTX const *c,      //  in - pointer to the hash context
-   uint16_t                   *md_len) // out - addr for digest length in bytes
+   NTRU_CRYPTO_HASH_CTX const *c,      /*  in - pointer to the hash context */
+   uint16_t                   *md_len) /* out - addr for digest length in bytes */
 {
     if (!c || !md_len)
     {
@@ -215,7 +215,7 @@ ntru_crypto_hash_digest_length(
 
 uint32_t
 ntru_crypto_hash_init(
-   NTRU_CRYPTO_HASH_CTX *c)         // in/out - pointer to hash context
+   NTRU_CRYPTO_HASH_CTX *c)         /* in/out - pointer to hash context */
 {
     if (!c)
     {
@@ -247,9 +247,9 @@ ntru_crypto_hash_init(
 
 uint32_t
 ntru_crypto_hash_update(
-   NTRU_CRYPTO_HASH_CTX *c,         // in/out - pointer to hash context
-   uint8_t const        *data,      //     in - pointer to input data
-   uint32_t              data_len)  //     in - number of bytes of input data
+   NTRU_CRYPTO_HASH_CTX *c,         /* in/out - pointer to hash context */
+   uint8_t const        *data,      /*     in - pointer to input data */
+   uint32_t              data_len)  /*     in - number of bytes of input data */
 {
     if (!c || (data_len && !data))
     {
@@ -278,8 +278,8 @@ ntru_crypto_hash_update(
 
 uint32_t
 ntru_crypto_hash_final(
-   NTRU_CRYPTO_HASH_CTX *c,         // in/out - pointer to hash context
-   uint8_t              *md)        //   out  - address for message digest
+   NTRU_CRYPTO_HASH_CTX *c,         /* in/out - pointer to hash context */
+   uint8_t              *md)        /*   out  - address for message digest */
 {
     if (!c || !md)
     {
@@ -313,10 +313,10 @@ ntru_crypto_hash_final(
 
 uint32_t
 ntru_crypto_hash_digest(
-   NTRU_CRYPTO_HASH_ALGID  algid,    //  in - the hash algorithm to use
-   uint8_t const          *data,     //  in - pointer to input data
-   uint32_t                data_len, //  in - number of bytes of input data
-   uint8_t                *md)       // out - address for message digest
+   NTRU_CRYPTO_HASH_ALGID  algid,    /*  in - the hash algorithm to use */
+   uint8_t const          *data,     /*  in - pointer to input data */
+   uint32_t                data_len, /*  in - number of bytes of input data */
+   uint8_t                *md)       /* out - address for message digest */
 {
     NTRU_CRYPTO_HASH_ALG_PARAMS const *alg_params = get_alg_params(algid);
 

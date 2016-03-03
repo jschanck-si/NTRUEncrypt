@@ -40,13 +40,13 @@
 
 #if !defined( NTRUCALL )
   #if !defined(WIN32) || defined (NTRUCRYPTO_STATIC)
-    // Linux, or a Win32 static library
+    /* Linux, or a Win32 static library */
     #define NTRUCALL extern uint32_t
   #elif defined (NTRUCRYPTO_EXPORTS)
-    // Win32 DLL build
+    /* Win32 DLL build */
     #define NTRUCALL extern __declspec(dllexport) uint32_t
   #else
-    // Win32 DLL import
+    /* Win32 DLL import */
     #define NTRUCALL extern __declspec(dllimport) uint32_t
   #endif
 #endif /* NTRUCALL */

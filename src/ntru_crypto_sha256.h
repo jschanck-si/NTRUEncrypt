@@ -120,9 +120,9 @@ ntru_crypto_sha256_final(
 
 extern uint32_t
 ntru_crypto_sha256_digest(
-    uint8_t const  *data,           //  in - pointer to input data
-    uint32_t        data_len,       //  in - number of bytes of input data
-    uint8_t        *md);            // out - address for message digest
+    uint8_t const  *data,           /*  in - pointer to input data */
+    uint32_t        data_len,       /*  in - number of bytes of input data */
+    uint8_t        *md);            /* out - address for message digest */
 
 
 #endif /* NTRU_CRYPTO_SHA256_H */

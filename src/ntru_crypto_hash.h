@@ -93,8 +93,8 @@ typedef struct {
 
 extern uint32_t
 ntru_crypto_hash_set_alg(
-    NTRU_CRYPTO_HASH_ALGID algid,   //      in - hash algoirithm to be used
-    NTRU_CRYPTO_HASH_CTX  *c);      //  in/out - pointer to the hash context
+    NTRU_CRYPTO_HASH_ALGID algid,   /*      in - hash algoirithm to be used */
+    NTRU_CRYPTO_HASH_CTX  *c);      /* in/out - pointer to the hash context */
 
 
 /* ntru_crypto_hash_block_length
@@ -112,8 +112,8 @@ ntru_crypto_hash_set_alg(
 
 extern uint32_t
 ntru_crypto_hash_block_length(
-   NTRU_CRYPTO_HASH_CTX *c,         //  in - pointer to the hash context
-   uint16_t             *blk_len);  // out - address for block length in bytes
+   NTRU_CRYPTO_HASH_CTX *c,        /*  in - pointer to the hash context */
+   uint16_t             *blk_len); /* out - address for block length in bytes */
 
 
 /* ntru_crypto_hash_digest_length
@@ -131,8 +131,8 @@ ntru_crypto_hash_block_length(
 
 extern uint32_t
 ntru_crypto_hash_digest_length(
-   NTRU_CRYPTO_HASH_CTX const *c,       //  in - pointer to the hash context
-   uint16_t                   *md_len); // out - addrfor digest length in bytes
+   NTRU_CRYPTO_HASH_CTX const *c,      /*  in - pointer to the hash context */
+   uint16_t                   *md_len);/*out - addr for digest length in bytes*/
 
 
 /* ntru_crypto_hash_init
@@ -148,7 +148,7 @@ ntru_crypto_hash_digest_length(
 
 extern uint32_t
 ntru_crypto_hash_init(
-   NTRU_CRYPTO_HASH_CTX *c);        // in/out - pointer to hash context
+   NTRU_CRYPTO_HASH_CTX *c);        /* in/out - pointer to hash context */
 
 
 /* ntru_crypto_hash_update
@@ -167,9 +167,9 @@ ntru_crypto_hash_init(
 
 extern uint32_t
 ntru_crypto_hash_update(
-   NTRU_CRYPTO_HASH_CTX *c,         // in/out - pointer to hash context
-   uint8_t const        *data,      //     in - pointer to input data
-   uint32_t              data_len); //     in - number of bytes of input data
+   NTRU_CRYPTO_HASH_CTX *c,         /* in/out - pointer to hash context */
+   uint8_t const        *data,      /*     in - pointer to input data */
+   uint32_t              data_len); /*     in - number of bytes of input data */
 
 
 /* ntru_crypto_hash_final
@@ -185,8 +185,8 @@ ntru_crypto_hash_update(
 
 extern uint32_t
 ntru_crypto_hash_final(
-   NTRU_CRYPTO_HASH_CTX *c,         // in/out - pointer to hash context
-   uint8_t              *md);       //   out  - address for message digest
+   NTRU_CRYPTO_HASH_CTX *c,         /* in/out - pointer to hash context */
+   uint8_t              *md);       /*   out  - address for message digest */
 
 
 /* ntru_crypto_hash_digest
@@ -206,10 +206,10 @@ ntru_crypto_hash_final(
 
 extern uint32_t
 ntru_crypto_hash_digest(
-   NTRU_CRYPTO_HASH_ALGID  algid,    //  in - the hash algorithm to use
-   uint8_t const          *data,     //  in - pointer to input data
-   uint32_t                data_len, //  in - number of bytes of input data
-   uint8_t                *md);      // out - address for message digest
+   NTRU_CRYPTO_HASH_ALGID  algid,    /*  in - the hash algorithm to use */
+   uint8_t const          *data,     /*  in - pointer to input data */
+   uint32_t                data_len, /*  in - number of bytes of input data */
+   uint8_t                *md);      /* out - address for message digest */
 
 
 #endif /* NTRU_CRYPTO_HASH_H */

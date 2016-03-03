@@ -58,7 +58,7 @@ typedef enum {
 #define NTRU_CRYPTO_HASH_BAD_ALG         ((uint32_t)0x20)
 #define NTRU_CRYPTO_HASH_OUT_OF_MEMORY   ((uint32_t)0x21)
 
-// For backward-compatibility
+/* For backward-compatibility */
 typedef uint32_t NTRU_CRYPTO_HASH_ERROR;
 
 

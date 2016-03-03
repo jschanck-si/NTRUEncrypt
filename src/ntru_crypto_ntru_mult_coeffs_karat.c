@@ -40,6 +40,16 @@ karatsuba(
 {
     uint16_t i;
 
+    uint16_t const p = k>>1;
+
+    uint16_t *res2;
+    uint16_t *res3;
+    uint16_t *res4;
+    uint16_t *tmp2;
+    uint16_t const *a2;
+    uint16_t const *b2;
+
+
     /* Grade school multiplication for small / odd inputs */
     if(k <= 38 || (k & 1) != 0)
     {
@@ -47,14 +57,12 @@ karatsuba(
       return;
     }
 
-    uint16_t const p = k>>1;
-
-    uint16_t *res2 = res1+p;
-    uint16_t *res3 = res1+k;
-    uint16_t *res4 = res1+k+p;
-    uint16_t *tmp2 = tmp1+p;
-    uint16_t const *a2 = a+p;
-    uint16_t const *b2 = b+p;
+    res2 = res1+p;
+    res3 = res1+k;
+    res4 = res1+k+p;
+    tmp2 = tmp1+p;
+    a2 = a+p;
+    b2 = b+p;
 
     for(i=0; i<p; i++)
     {
