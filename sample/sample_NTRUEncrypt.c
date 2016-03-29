@@ -44,12 +44,12 @@ get_entropy(
     ENTROPY_CMD  cmd,
     uint8_t     *out)
 {
-    /* 21 bytes of entropy are needed to instantiate a DRBG with a
-     * security strength of 112 bits.
+    /* 2k/8 bytes of entropy are needed to instantiate a DRBG with a
+     * security strength of k bits. Here k = 112.
      */
-    static uint8_t seed[] = {
-        'U','s','e',' ','a',' ','d','i','f','f','e','r','e','n','t',' ',
-        's','e','e','d','!'
+    static uint8_t seed[28] = {
+        'P','l','e','a','s','e',' ','u','s','e',' ','a',' ',
+        'd','i','f','f','e','r','e','n','t',' ','s','e','e','d','!'
     };
     static size_t index;
 
@@ -152,7 +152,7 @@ main(void)
                                       (ENTROPY_FN) &get_entropy, &drbg);
     if (rc != DRBG_OK)
         /* An error occurred during DRBG instantiation. */
-        return 1;
+        goto error;
     printf("DRBG at 112-bit security for key generation instantiated "
             "successfully.\n");
 
@@ -164,7 +164,7 @@ main(void)
                                          NULL, &private_key_len, NULL);
     if (rc != NTRU_OK)
         /* An error occurred requesting the buffer sizes needed. */
-        return 1;
+        goto error;
     printf("Public-key buffer size required: %d octets.\n", public_key_len);
     printf("Private-key buffer size required: %d octets.\n", private_key_len);
 
@@ -200,7 +200,7 @@ main(void)
     rc = ntru_crypto_drbg_uninstantiate(drbg);
     if ((rc != DRBG_OK) || error)
         /* An error occurred uninstantiating the DRBG, or generating keys. */
-        return 1;
+        goto error;
     printf("Key-generation DRBG uninstantiated successfully.\n");
 
 
@@ -233,7 +233,7 @@ main(void)
             public_key_len, public_key, &encoded_public_key_len, NULL);
     if (rc != NTRU_OK)
         /* An error occurred requesting the buffer size needed. */
-        return 1;
+        goto error;
     printf("DER-encoded public-key buffer size required: %d octets.\n",
             encoded_public_key_len);
 
@@ -290,7 +290,7 @@ main(void)
             &public_key_len, NULL, &next, &next_len);
     if (rc != NTRU_OK)
         /* An error occurred requesting the buffer size needed. */
-        return 1;
+        goto error;
     printf("Public-key buffer size required: %d octets.\n", public_key_len);
 
 
@@ -312,7 +312,7 @@ main(void)
          * This could indicate that the field is not a valid encoding
          * of an NTRUEncrypt public key.
          */
-        return 1;
+        goto error;
     printf("Public key decoded from SubjectPublicKeyInfo successfully.\n");
 
 
@@ -325,7 +325,7 @@ main(void)
                                       &drbg);
     if (rc != DRBG_OK)
         /* An error occurred during DRBG instantiation. */
-        return 1;
+        goto error;
     printf("DRBG at 112-bit security for encryption instantiated "
             "successfully.\n");
 
@@ -340,7 +340,7 @@ main(void)
                                   NULL);
     if (rc != NTRU_OK)
         /* An error occurred requesting the buffer size needed. */
-        return 1;
+        goto error;
     printf("Ciphertext buffer size required: %d octets.\n", ciphertext_len);
 
 
@@ -402,7 +402,7 @@ main(void)
                                   ciphertext, &plaintext_len, NULL);
     if (rc != NTRU_OK)
         /* An error occurred requesting the buffer size needed. */
-        return 1;
+        goto error;
     printf("Maximum plaintext buffer size required: %d octets.\n",
             plaintext_len);
 
@@ -452,4 +452,8 @@ main(void)
 
 
     return 0;
+
+error:
+    printf("Error (0x%x)\n", rc);
+    return 1;
 }
